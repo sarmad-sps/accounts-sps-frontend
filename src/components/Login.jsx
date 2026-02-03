@@ -62,7 +62,7 @@ export default function Login({ onLogin }) {
             </div>
           </div>
 
-          {err && <div className="error-msg">⚠️ {err}</div>}
+          {err && <div className="error-msg"> {err}</div>}
 
           <button className={`login-btn ${busy ? 'loading' : ''}`} disabled={busy}>
             {busy ? <span className="spinner"></span> : "Unlock Dashboard"}

@@ -13,7 +13,7 @@ export function clearToken() {
 }
 
 // ─── Backend Base URL ─────────────────────────────
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api";
 
 // ─── Core Request Function ────────────────────────
 async function req(path, options = {}) {

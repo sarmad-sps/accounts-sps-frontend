@@ -54,7 +54,7 @@ export default function PaymentLedger() {
   const paymentModes = ["Online", "Bank Transfer", "Check", "Cash"];
   const banks = ["HBL", "Islamic Bank", "Other"];
 
-  const API_URL = "http://localhost:3000/api/payments";
+  const API_URL = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments";
 
   useEffect(() => {
     fetchPayments();

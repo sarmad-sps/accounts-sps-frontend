@@ -15,7 +15,7 @@ export default function UserReqForm({ role = "user" }) {
   const [receiptData, setReceiptData] = useState({ invoiceNo: "", receivedQty: "", paymentMethod: "Cash", bank: (BANKS && BANKS[0] && BANKS[0].key) || "BANK_ISLAMI", paymentStatus: "Paid", amount: "" });
   const [errorMsg, setErrorMsg] = useState("");
 
-  const BASE_URL = "http://localhost:3000/api/inventory-requests";
+  const BASE_URL = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests";
 
   useEffect(() => {
     fetchRequests();

@@ -18,7 +18,7 @@ export default function StoreInventory({ role }) {
   const token = localStorage.getItem("sps_token");
   const canModify = role?.toLowerCase() === "store";
   const categories = ["All", "Kitchen", "Grocery", "Stationery", "Electronics", "Cleaning"];
-  const API_URL = "http://localhost:3000/api/inventory-items";
+  const API_URL = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-items";
 
   const restrictedKeywords = {
     Kitchen: ["pen", "paper", "laptop", "mouse", "keyboard", "broom", "mop", "stapler", "notebook", "ink"],

@@ -4,7 +4,7 @@ import logo from "../assets/sps-logo.png";
 import html2pdf from "html2pdf.js";
 
 export default function SalaryManager() {
-  const API_URL = "http://localhost:3000/api/salaries";
+  const API_URL = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries";
 
   const [salaries, setSalaries] = useState([]);
   const [empName, setEmpName] = useState("");
