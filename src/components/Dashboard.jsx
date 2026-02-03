@@ -100,22 +100,22 @@ export default function Dashboard() {
     async function fetchState() {
       try {
         // 1️⃣ Main state (receivings)
-        const resState = await fetch("/api/state");
+        const resState = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state");
         if (!resState.ok) throw new Error("Failed to fetch state");
         const stateData = await resState.json();
 
         // 2️⃣ Payments / Expenses
-        const resPayments = await fetch("/api/payments");
+        const resPayments = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments");
         if (!resPayments.ok) throw new Error("Failed to fetch payments");
         const payments = await resPayments.json();
 
         // 3️⃣ Salaries
-        const resSalaries = await fetch("/api/salaries");
+        const resSalaries = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries");
         if (!resSalaries.ok) throw new Error("Failed to fetch salaries");
         const salaries = await resSalaries.json();
 
         // 4️⃣ Inventory Requests (Accountant Receipts)
-        const resInventory = await fetch("/api/inventory-requests");
+        const resInventory = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests");
         if (!resInventory.ok)
           throw new Error("Failed to fetch inventory requests");
         const inventoryRequests = await resInventory.json();

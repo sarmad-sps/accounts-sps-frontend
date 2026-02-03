@@ -35,7 +35,7 @@ const FinanceStatementApp = () => {
         const ledger = [];
 
         // ===== RECEIVINGS =====
-        const stateRes = await fetch("/api/state");
+        const stateRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state");
         const stateData = await stateRes.json();
 
         (stateData.receivings || []).forEach((r) => {
@@ -55,7 +55,7 @@ const FinanceStatementApp = () => {
         });
 
         // ===== PAYMENTS =====
-        const payRes = await fetch("/api/payments");
+        const payRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments");
         const payments = await payRes.json();
 
         payments.forEach((p) => {
@@ -75,7 +75,7 @@ const FinanceStatementApp = () => {
         });
 
         // ===== SALARIES =====
-        const salRes = await fetch("/api/salaries");
+        const salRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries");
         const salaries = await salRes.json();
 
         salaries.forEach((s) => {
@@ -94,7 +94,7 @@ const FinanceStatementApp = () => {
           }
         });
 
-const invRes = await fetch("/api/inventory-requests");
+const invRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests");
 const inventory = await invRes.json();
 
 inventory.forEach(r => {
