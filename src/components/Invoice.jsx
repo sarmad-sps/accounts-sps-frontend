@@ -251,52 +251,265 @@ export default function Invoice({ record, companyName, mode = "invoice" }) {
 
 // --- Styles Updated for Visibility ---
 const previewStyles = {
-  container: { padding: "20px", display: "flex", flexDirection: "column", gap: "24px", alignItems: "center", background: "#f1f5f9", minHeight: "100vh" },
-  actionBar: { 
-    width: "100%", maxWidth: "210mm", background: "#ffffff", border: "1px solid #e2e8f0", 
-    borderRadius: "16px", padding: "16px 24px", display: "flex", justifyContent: "space-between", 
-    alignItems: "center", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" 
+  container: { 
+    padding: "clamp(12px, 3vw, 20px)", 
+    display: "flex", 
+    flexDirection: "column", 
+    gap: "clamp(16px, 4vw, 24px)", 
+    alignItems: "center", 
+    background: "#f1f5f9", 
+    minHeight: "100vh",
+    width: "100%",
+    boxSizing: "border-box"
   },
-  infoGroup: { display: "flex", gap: "16px", alignItems: "center" },
-  statusDot: { width: "12px", height: "12px", borderRadius: "50%" },
-  mainTitle: { fontSize: "18px", fontWeight: "700", color: "#1e293b" },
-  idSubtitle: { fontSize: "13px", color: "#64748b" },
-  buttonGroup: { display: "flex", gap: "12px" },
-  primaryBtn: { padding: "10px 20px", borderRadius: "8px", color: "white", border: "none", fontWeight: "600", cursor: "pointer" },
+  actionBar: { 
+    width: "100%", 
+    maxWidth: "210mm", 
+    background: "#ffffff", 
+    border: "1px solid #e2e8f0", 
+    borderRadius: "12px", 
+    padding: "clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 24px)", 
+    display: "flex", 
+    justifyContent: "space-between", 
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "clamp(10px, 2.5vw, 16px)",
+    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+    boxSizing: "border-box"
+  },
+  infoGroup: { 
+    display: "flex", 
+    gap: "clamp(10px, 2.5vw, 16px)", 
+    alignItems: "center",
+    flex: 1,
+    minWidth: "clamp(200px, 100%, 300px)"
+  },
+  statusDot: { 
+    width: "clamp(10px, 2vw, 12px)", 
+    height: "clamp(10px, 2vw, 12px)", 
+    borderRadius: "50%",
+    flexShrink: 0
+  },
+  mainTitle: { 
+    fontSize: "clamp(15px, 4vw, 18px)", 
+    fontWeight: "700", 
+    color: "#1e293b" 
+  },
+  idSubtitle: { 
+    fontSize: "clamp(11px, 3vw, 13px)", 
+    color: "#64748b",
+    wordBreak: "break-word"
+  },
+  buttonGroup: { 
+    display: "flex", 
+    gap: "clamp(8px, 2vw, 12px)",
+    flexWrap: "wrap"
+  },
+  primaryBtn: { 
+    padding: "clamp(8px, 2vw, 10px) clamp(14px, 3vw, 20px)", 
+    borderRadius: "8px", 
+    color: "white", 
+    border: "none", 
+    fontWeight: "600", 
+    cursor: "pointer",
+    fontSize: "clamp(12px, 3.2vw, 14px)",
+    whiteSpace: "nowrap",
+    minHeight: "clamp(34px, 8vw, 40px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease"
+  },
   secondaryBtn: { 
-    padding: "10px 20px", borderRadius: "8px", color: "#1e293b", 
-    background: "#f1f5f9", border: "1px solid #cbd5e1", fontWeight: "600", cursor: "pointer" 
+    padding: "clamp(8px, 2vw, 10px) clamp(14px, 3vw, 20px)", 
+    borderRadius: "8px", 
+    color: "#1e293b", 
+    background: "#f1f5f9", 
+    border: "1px solid #cbd5e1", 
+    fontWeight: "600", 
+    cursor: "pointer",
+    fontSize: "clamp(12px, 3.2vw, 14px)",
+    whiteSpace: "nowrap",
+    minHeight: "clamp(34px, 8vw, 40px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease"
   },
 };
 
 const paperStyles = {
-  canvas: { width: "210mm", minHeight: "297mm", background: "#fff", display: "flex", flexDirection: "column", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" },
-  innerPadding: { padding: "50px 60px", flex: 1 },
-  header: { display: "flex", justifyContent: "space-between", marginBottom: "40px" },
-  brand: { display: "flex", gap: "15px", alignItems: "center" },
-  logoImg: { width: "60px", height: "60px", objectFit: "contain" },
-  brandName: { fontSize: "20px", fontWeight: "800", color: "#0f172a" },
-  brandTagline: { fontSize: "11px", color: "#64748b" },
-  meta: { textAlign: "right" },
-  badge: { padding: "8px 15px", borderRadius: "6px", fontSize: "14px", fontWeight: "800", marginBottom: "10px", display: "inline-block" },
-  metaRow: { fontSize: "13px", marginBottom: "2px" },
-  partiesGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginBottom: "30px" },
-  partyBox: { border: "1px solid #e2e8f0", borderRadius: "8px", padding: "15px", background: "#fcfcfc" },
-  partyTitle: { fontSize: "12px", fontWeight: "800", marginBottom: "8px" },
-  partyName: { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
-  partyDetail: { fontSize: "13px", color: "#475569" },
-  tableWrapper: { border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden", marginBottom: "25px" },
-  tableHeader: { padding: "10px 15px", fontSize: "15px", fontWeight: "700" },
-  gridTable: { display: "grid", gridTemplateColumns: "1fr 1fr" },
-  gridItem: { padding: "10px 15px", display: "flex", justifyContent: "space-between" },
-  gridLabel: { fontSize: "12px", color: "#64748b" },
-  gridValue: { fontSize: "13px", fontWeight: "600" },
-  summaryBox: { display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", padding: "20px", borderRadius: "8px", marginBottom: "30px" },
-  summaryLabel: { fontSize: "12px", fontWeight: "600", color: "#64748b" },
-  summaryValue: { fontSize: "24px", fontWeight: "800", color: "#0f172a" },
-  footerSignatures: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "40px" },
-  stampBox: { border: "2px solid", padding: "10px", borderRadius: "4px", fontWeight: "800", textAlign: "center", minWidth: "150px" },
-  sigLine: { width: "180px", height: "1px", background: "#0f172a", marginBottom: "5px" },
-  sigText: { fontSize: "12px", fontWeight: "700" },
-  footerBar: { padding: "20px", background: "#f8fafc", fontSize: "10px", textAlign: "center", borderTop: "1px solid #e2e8f0" },
+  canvas: { 
+    width: "100%",
+    maxWidth: "210mm",
+    minHeight: "297mm", 
+    background: "#fff", 
+    display: "flex", 
+    flexDirection: "column", 
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+    boxSizing: "border-box"
+  },
+  innerPadding: { 
+    padding: "clamp(30px, 5vw, 50px) clamp(20px, 4vw, 60px)", 
+    flex: 1,
+    boxSizing: "border-box"
+  },
+  header: { 
+    display: "flex", 
+    justifyContent: "space-between", 
+    marginBottom: "clamp(24px, 5vw, 40px)",
+    flexWrap: "wrap",
+    gap: "clamp(12px, 3vw, 20px)"
+  },
+  brand: { 
+    display: "flex", 
+    gap: "clamp(10px, 2.5vw, 15px)", 
+    alignItems: "center" 
+  },
+  logoImg: { 
+    width: "clamp(40px, 8vw, 60px)", 
+    height: "clamp(40px, 8vw, 60px)", 
+    objectFit: "contain" 
+  },
+  brandName: { 
+    fontSize: "clamp(16px, 4.5vw, 20px)", 
+    fontWeight: "800", 
+    color: "#0f172a" 
+  },
+  brandTagline: { 
+    fontSize: "clamp(9px, 2.5vw, 11px)", 
+    color: "#64748b" 
+  },
+  meta: { 
+    textAlign: "right",
+    minWidth: "clamp(120px, 30%, 200px)"
+  },
+  badge: { 
+    padding: "clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 15px)", 
+    borderRadius: "6px", 
+    fontSize: "clamp(12px, 3.2vw, 14px)", 
+    fontWeight: "800", 
+    marginBottom: "10px", 
+    display: "inline-block" 
+  },
+  metaRow: { 
+    fontSize: "clamp(11px, 3vw, 13px)", 
+    marginBottom: "2px",
+    wordBreak: "break-word"
+  },
+  partiesGrid: { 
+    display: "grid", 
+    gridTemplateColumns: "repeat(auto-fit, minmax(clamp(160px, 100%, 200px), 1fr))", 
+    gap: "clamp(16px, 4vw, 30px)", 
+    marginBottom: "clamp(20px, 4vw, 30px)" 
+  },
+  partyBox: { 
+    border: "1px solid #e2e8f0", 
+    borderRadius: "8px", 
+    padding: "clamp(12px, 3vw, 15px)", 
+    background: "#fcfcfc",
+    boxSizing: "border-box"
+  },
+  partyTitle: { 
+    fontSize: "clamp(10px, 2.5vw, 12px)", 
+    fontWeight: "800", 
+    marginBottom: "8px" 
+  },
+  partyName: { 
+    fontSize: "clamp(12px, 3.2vw, 14px)", 
+    fontWeight: "700", 
+    color: "#0f172a" 
+  },
+  partyDetail: { 
+    fontSize: "clamp(11px, 3vw, 13px)", 
+    color: "#475569",
+    wordBreak: "break-word"
+  },
+  tableWrapper: { 
+    border: "1px solid #e2e8f0", 
+    borderRadius: "8px", 
+    overflow: "hidden", 
+    marginBottom: "clamp(16px, 4vw, 25px)",
+    width: "100%",
+    boxSizing: "border-box"
+  },
+  tableHeader: { 
+    padding: "clamp(10px, 2.5vw, 10px) clamp(12px, 2.5vw, 15px)", 
+    fontSize: "clamp(13px, 3.5vw, 15px)", 
+    fontWeight: "700" 
+  },
+  gridTable: { 
+    display: "grid", 
+    gridTemplateColumns: "1fr 1fr" 
+  },
+  gridItem: { 
+    padding: "clamp(8px, 2vw, 10px) clamp(12px, 2.5vw, 15px)", 
+    display: "flex", 
+    justifyContent: "space-between",
+    gap: "8px"
+  },
+  gridLabel: { 
+    fontSize: "clamp(10px, 2.5vw, 12px)", 
+    color: "#64748b" 
+  },
+  gridValue: { 
+    fontSize: "clamp(11px, 3vw, 13px)", 
+    fontWeight: "600" 
+  },
+  summaryBox: { 
+    display: "flex", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    background: "#f8fafc", 
+    padding: "clamp(14px, 3.5vw, 20px)", 
+    borderRadius: "8px", 
+    marginBottom: "clamp(20px, 4vw, 30px)",
+    flexWrap: "wrap",
+    gap: "12px"
+  },
+  summaryLabel: { 
+    fontSize: "clamp(10px, 2.5vw, 12px)", 
+    fontWeight: "600", 
+    color: "#64748b" 
+  },
+  summaryValue: { 
+    fontSize: "clamp(18px, 5vw, 24px)", 
+    fontWeight: "800", 
+    color: "#0f172a" 
+  },
+  footerSignatures: { 
+    display: "flex", 
+    justifyContent: "space-between", 
+    alignItems: "flex-end", 
+    marginTop: "clamp(24px, 5vw, 40px)",
+    flexWrap: "wrap",
+    gap: "clamp(12px, 3vw, 20px)"
+  },
+  stampBox: { 
+    border: "2px solid", 
+    padding: "clamp(8px, 2vw, 10px)", 
+    borderRadius: "4px", 
+    fontWeight: "800", 
+    textAlign: "center", 
+    minWidth: "clamp(100px, 20vw, 150px)",
+    fontSize: "clamp(10px, 2.5vw, 12px)"
+  },
+  sigLine: { 
+    width: "clamp(100px, 25vw, 180px)", 
+    height: "1px", 
+    background: "#0f172a", 
+    marginBottom: "5px" 
+  },
+  sigText: { 
+    fontSize: "clamp(10px, 2.5vw, 12px)", 
+    fontWeight: "700" 
+  },
+  footerBar: { 
+    padding: "clamp(12px, 3vw, 20px)", 
+    background: "#f8fafc", 
+    fontSize: "clamp(8px, 2vw, 10px)", 
+    textAlign: "center", 
+    borderTop: "1px solid #e2e8f0",
+    wordBreak: "break-word"
+  },
 };

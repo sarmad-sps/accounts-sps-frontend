@@ -476,7 +476,7 @@ const payrollStyle = `
   .payroll-container {
     color: var(--text);
     min-height: 100vh;
-    padding: 24px;
+    padding: clamp(16px, 4vw, 24px);
     font-family: Inter, system-ui, sans-serif;
     background: #e5e7eb;
   }
@@ -486,9 +486,10 @@ const payrollStyle = `
     margin: 0 auto;
     background: var(--card);
     border-radius: 16px;
-    padding: 28px;
+    padding: clamp(20px, 5vw, 28px);
     border: 1px solid var(--border);
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    box-sizing: border-box;
   }
 
   .header {
@@ -496,18 +497,18 @@ const payrollStyle = `
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 32px;
-    padding: 16px 20px;
+    gap: clamp(12px, 3vw, 20px);
+    margin-bottom: clamp(20px, 5vw, 32px);
+    padding: clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 20px);
     background: #ffffff;
     border-radius: 12px;
     border: 1px solid var(--border);
-    color:black;
+    color: black;
   }
 
   h1 {
     margin: 0;
-    font-size: 28px;
+    font-size: clamp(22px, 6vw, 28px);
     font-weight: 800;
     color: var(--text);
   }
@@ -515,19 +516,19 @@ const payrollStyle = `
   .subtitle {
     color: var(--dim);
     margin-top: 4px;
-    font-size: 14px;
+    font-size: clamp(12px, 3.2vw, 14px);
   }
 
   .total-box {
     background: #f9fafb;
-    padding: 12px 24px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(16px, 4vw, 24px);
     border-radius: 12px;
     border: 1px solid var(--border);
     text-align: center;
   }
 
   .total-amount {
-    font-size: 22px;
+    font-size: clamp(18px, 5vw, 22px);
     font-weight: 800;
     color: var(--success);
   }
@@ -535,27 +536,27 @@ const payrollStyle = `
   .add-form {
     background: #f9fafb;
     border: 1px solid var(--border);
-    padding: 24px;
+    padding: clamp(16px, 4vw, 24px);
     border-radius: 12px;
-    margin-bottom: 32px;
+    margin-bottom: clamp(20px, 5vw, 32px);
   }
 
   .add-form h3 {
-    margin: 0 0 20px 0;
+    margin: 0 0 clamp(14px, 3.5vw, 20px) 0;
     color: var(--text);
-    font-size: 18px;
+    font-size: clamp(16px, 4.5vw, 18px);
     font-weight: 700;
   }
 
   .form-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 100%, 220px), 1fr));
+    gap: clamp(14px, 3.5vw, 20px);
   }
 
   .field label {
-    font-size: 12px;
-    margin-bottom: 6px;
+    font-size: clamp(10px, 2.5vw, 12px);
+    margin-bottom: clamp(4px, 1vw, 6px);
     display: block;
     color: var(--dim);
     font-weight: 600;
@@ -565,50 +566,52 @@ const payrollStyle = `
   .field input,
   .field select {
     width: 100%;
-    padding: 10px 12px;
+    padding: clamp(8px, 2vw, 10px) clamp(10px, 2.5vw, 12px);
     background: #ffffff;
     border: 1px solid var(--border);
     color: var(--text);
     border-radius: 8px;
-    font-size: 14px;
+    font-size: clamp(13px, 3.5vw, 14px);
+    box-sizing: border-box;
   }
 
   .submit-button {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 24px);
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     width: 100%;
-    font-size: 15px;
-    margin-top: 28px;
+    font-size: clamp(13px, 3.5vw, 15px);
+    margin-top: clamp(18px, 4vw, 28px);
+    min-height: clamp(36px, 8vw, 44px);
   }
 
   .list-title {
-    font-size: 20px;
+    font-size: clamp(18px, 5vw, 20px);
     font-weight: 700;
-    margin: 32px 0 16px;
+    margin: clamp(20px, 5vw, 32px) 0 clamp(10px, 2.5vw, 16px);
     color: var(--text);
   }
 
   .records {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: clamp(10px, 2.5vw, 12px);
   }
 
   .record-row {
     background: #ffffff;
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px 20px;
+    padding: clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 20px);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: clamp(10px, 2.5vw, 16px);
     transition: all 0.15s;
   }
 
@@ -619,13 +622,13 @@ const payrollStyle = `
   .record-left {
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-width: 220px;
+    gap: clamp(8px, 2vw, 12px);
+    min-width: clamp(150px, 100%, 220px);
   }
 
   .avatar {
-    width: 44px;
-    height: 44px;
+    width: clamp(36px, 8vw, 44px);
+    height: clamp(36px, 8vw, 44px);
     background: var(--primary);
     color: white;
     border-radius: 10px;
@@ -633,16 +636,17 @@ const payrollStyle = `
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 18px;
+    font-size: clamp(14px, 3.5vw, 18px);
+    flex-shrink: 0;
   }
 
   .name {
     font-weight: 600;
-    font-size: 15px;
+    font-size: clamp(13px, 3.5vw, 15px);
   }
 
   .meta {
-    font-size: 13px;
+    font-size: clamp(11px, 3vw, 13px);
     color: var(--dim);
   }
 
@@ -650,35 +654,39 @@ const payrollStyle = `
     text-align: right;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: clamp(4px, 1vw, 6px);
     align-items: flex-end;
   }
 
   .amt {
     color: var(--success);
     font-weight: 800;
-    font-size: 18px;
+    font-size: clamp(16px, 4vw, 18px);
   }
 
   .date {
-    font-size: 13px;
+    font-size: clamp(11px, 3vw, 13px);
     color: var(--dim);
   }
 
   .actions {
     display: flex;
-    gap: 12px;
+    gap: clamp(8px, 2vw, 12px);
+    flex-wrap: wrap;
   }
 
   .view,
   .del {
     background: none;
     border: none;
-    font-size: 13px;
+    font-size: clamp(11px, 3vw, 13px);
     font-weight: 600;
     cursor: pointer;
-    padding: 6px 12px;
+    padding: clamp(5px, 1.2vw, 6px) clamp(8px, 2vw, 12px);
     border-radius: 6px;
+    min-height: clamp(28px, 6vw, 32px);
+    display: flex;
+    align-items: center;
   }
 
   .view {
@@ -694,8 +702,8 @@ const payrollStyle = `
   .empty {
     text-align: center;
     color: var(--dim);
-    padding: 60px 0;
-    font-size: 15px;
+    padding: clamp(40px, 10vw, 60px) clamp(12px, 3vw, 20px);
+    font-size: clamp(13px, 3.5vw, 15px);
   }
 
   /* MODAL & PAYSLIP - Light Theme */
@@ -708,7 +716,7 @@ const payrollStyle = `
     align-items: flex-start;
     justify-content: center;
     z-index: 1000;
-    padding: 40px 20px;
+    padding: clamp(20px, 4vw, 40px);
     overflow-y: auto;
   }
 
@@ -722,10 +730,11 @@ const payrollStyle = `
   }
 
   .slip-document {
-    padding: 50px 60px;
+    padding: clamp(30px, 5vw, 50px) clamp(30px, 5vw, 60px);
     background: white;
     position: relative;
     color: #111827;
+    box-sizing: border-box;
   }
 
   .slip-document::before {
@@ -734,7 +743,7 @@ const payrollStyle = `
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
-    font-size: 140px;
+    font-size: clamp(80px, 20vw, 140px);
     font-weight: 900;
     color: rgba(0,0,0,0.03);
     pointer-events: none;
@@ -744,25 +753,27 @@ const payrollStyle = `
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 40px;
+    margin-bottom: clamp(24px, 5vw, 40px);
     border-bottom: 3px solid #1d4ed8;
-    padding-bottom: 20px;
+    padding-bottom: clamp(14px, 3.5vw, 20px);
+    gap: clamp(12px, 3vw, 20px);
+    flex-wrap: wrap;
   }
 
   .company-block {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: clamp(14px, 3.5vw, 24px);
   }
 
   .logo-placeholder {
-    width: 90px;
-    height: 90px;
+    width: clamp(60px, 15vw, 90px);
+    height: clamp(60px, 15vw, 90px);
   }
 
   .company-details h2 {
     margin: 0;
-    font-size: 26px;
+    font-size: clamp(20px, 5.5vw, 26px);
     color: #111827;
     text-transform: uppercase;
     letter-spacing: 1.2px;
@@ -770,7 +781,7 @@ const payrollStyle = `
 
   .company-details p {
     margin: 4px 0;
-    font-size: 13px;
+    font-size: clamp(11px, 3vw, 13px);
     color: #4b5563;
   }
 
@@ -778,46 +789,48 @@ const payrollStyle = `
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 35px;
+    margin-bottom: clamp(20px, 5vw, 35px);
+    gap: clamp(12px, 3vw, 20px);
+    flex-wrap: wrap;
   }
 
   .slip-title-block h1 {
     margin: 0;
-    font-size: 32px;
+    font-size: clamp(24px, 6.5vw, 32px);
     color: #111827;
     border-left: 6px solid #1d4ed8;
-    padding-left: 18px;
+    padding-left: clamp(12px, 3vw, 18px);
   }
 
   .meta-info {
     text-align: right;
-    font-size: 14px;
+    font-size: clamp(12px, 3.2vw, 14px);
     color: #4b5563;
   }
 
   .info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    gap: clamp(24px, 6vw, 40px);
     background: #f9fafb;
-    padding: 24px;
+    padding: clamp(16px, 4vw, 24px);
     border-radius: 8px;
-    margin-bottom: 35px;
+    margin-bottom: clamp(24px, 5vw, 35px);
     border: 1px solid #e5e7eb;
   }
 
   .info-grid h3 {
-    margin: 0 0 12px;
-    font-size: 14px;
+    margin: 0 0 clamp(8px, 2vw, 12px);
+    font-size: clamp(12px, 3.2vw, 14px);
     text-transform: uppercase;
     color: #1d4ed8;
     border-bottom: 1px solid #cbd5e1;
-    padding-bottom: 6px;
+    padding-bottom: clamp(4px, 1vw, 6px);
   }
 
   .info-grid p {
-    margin: 6px 0;
-    font-size: 13.5px;
+    margin: clamp(4px, 1vw, 6px) 0;
+    font-size: clamp(12px, 3.2vw, 13.5px);
     color: #111827;
   }
 
@@ -827,7 +840,7 @@ const payrollStyle = `
     border: 1px solid #d1d5db;
     border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 40px;
+    margin-bottom: clamp(28px, 6vw, 40px);
   }
 
   .table-wrapper {
@@ -845,17 +858,17 @@ const payrollStyle = `
 
   .slip-table th {
     background: #f3f4f6;
-    padding: 12px 16px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px);
     text-align: left;
-    font-size: 12px;
+    font-size: clamp(11px, 3vw, 12px);
     text-transform: uppercase;
     color: #4b5563;
     border-bottom: 1px solid #d1d5db;
   }
 
   .slip-table td {
-    padding: 12px 16px;
-    font-size: 13.5px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px);
+    font-size: clamp(12px, 3.2vw, 13.5px);
     border-bottom: 1px solid #e5e7eb;
     color: #111827;
   }
@@ -868,50 +881,54 @@ const payrollStyle = `
   .net-pay-box {
     background: #1d4ed8;
     color: white;
-    padding: 16px 24px;
+    padding: clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 35px 0;
+    margin: clamp(20px, 5vw, 35px) 0;
     border-radius: 10px;
-    font-size: 18px;
+    font-size: clamp(14px, 3.5vw, 18px);
+    flex-wrap: wrap;
+    gap: clamp(12px, 3vw, 16px);
   }
 
   .net-label {
     font-weight: 600;
     letter-spacing: 0.5px;
+    font-size: clamp(13px, 3.5vw, 16px);
   }
 
   .net-value {
-    font-size: 28px;
+    font-size: clamp(20px, 6vw, 28px);
     font-weight: 800;
   }
 
   .footer-note {
-    margin-top: 50px;
+    margin-top: clamp(30px, 7vw, 50px);
     text-align: center;
-    font-size: 12px;
+    font-size: clamp(10px, 2.5vw, 12px);
     color: #6b7280;
     font-style: italic;
   }
 
   .modal-actions {
     display: flex;
-    gap: 16px;
+    gap: clamp(10px, 2.5vw, 16px);
     justify-content: center;
-    padding: 24px 40px;
+    padding: clamp(16px, 4vw, 24px) clamp(24px, 5vw, 40px);
     background: #f9fafb;
     border-top: 1px solid #d1d5db;
+    flex-wrap: wrap;
   }
 
   .action-btn {
-    padding: 12px 28px;
-    font-size: 14px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(20px, 4vw, 28px);
+    font-size: clamp(12px, 3.2vw, 14px);
     font-weight: 600;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    min-width: 150px;
+    min-width: clamp(120px, 25vw, 150px);
     transition: all 0.2s;
   }
 

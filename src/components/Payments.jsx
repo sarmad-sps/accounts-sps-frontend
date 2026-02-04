@@ -187,17 +187,18 @@ export default function StoreInventory({ role }) {
             key={cat}
             onClick={() => setSelectedCategory(cat)}
             style={{
-              padding: "12px 24px",
+              padding: "clamp(10px, 2.5vw, 12px) clamp(16px, 4vw, 24px)",
               borderRadius: "14px",
               border: "1px solid",
               borderColor: selectedCategory === cat ? "#6366f1" : "#d1d5db",
               backgroundColor: selectedCategory === cat ? "rgba(99, 102, 241, 0.1)" : "#0C2C55",
               color: selectedCategory === cat ? "#818cf8" : "#94a3b8",
               fontWeight: "700",
-              fontSize: "14px",
+              fontSize: "clamp(12px, 3.2vw, 14px)",
               cursor: "pointer",
               transition: "all 0.3s",
               whiteSpace: "nowrap",
+              minHeight: "clamp(32px, 7vw, 36px)",
             }}
           >
             {cat}
@@ -210,8 +211,9 @@ export default function StoreInventory({ role }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          gap: "20px",
-          marginBottom: "25px",
+          gap: "clamp(12px, 3vw, 20px)",
+          marginBottom: "clamp(18px, 4vw, 25px)",
+          flexWrap: "wrap",
         }}
       >
         <div style={styles.searchBox}>
@@ -267,10 +269,10 @@ export default function StoreInventory({ role }) {
               return (
                 <tr key={item._id} style={styles.tr}>
                   <td style={styles.td}>
-                    <div style={{ fontWeight: "700", color: "black", fontSize: "15px" }}>
+                    <div style={{ fontWeight: "700", color: "black", fontSize: "clamp(13px, 3.5vw, 15px)" }}>
                       {item.name}
                     </div>
-                    <div style={{ fontSize: "11px", color: "#64748b", marginTop: "3px", textTransform: "uppercase" }}>
+                    <div style={{ fontSize: "clamp(10px, 2.5vw, 11px)", color: "#64748b", marginTop: "3px", textTransform: "uppercase" }}>
                       {item.category}
                     </div>
                   </td>
@@ -280,9 +282,9 @@ export default function StoreInventory({ role }) {
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        padding: "6px 14px",
+                        padding: "clamp(5px, 1.2vw, 6px) clamp(10px, 2.5vw, 14px)",
                         borderRadius: "999px",
-                        fontSize: "11px",
+                        fontSize: "clamp(10px, 2.5vw, 11px)",
                         fontWeight: "700",
                         background: bg,
                         color: color,
@@ -296,17 +298,17 @@ export default function StoreInventory({ role }) {
                   </td>
 
                   <td style={styles.td}>
-                    <span style={{ fontSize: "17px", fontWeight: "700", color: "black" }}>
+                    <span style={{ fontSize: "clamp(15px, 4vw, 17px)", fontWeight: "700", color: "black" }}>
                       {qty}
                     </span>
-                    <span style={{ fontSize: "13px", color: "#64748b", marginLeft: "5px" }}>
+                    <span style={{ fontSize: "clamp(12px, 3.2vw, 13px)", color: "#64748b", marginLeft: "5px" }}>
                       {item.unit || "pcs"}
                     </span>
                   </td>
 
                   {canModify && (
                     <td style={{ ...styles.td, textAlign: "right" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "clamp(6px, 1.5vw, 10px)", flexWrap: "wrap" }}>
                         <button
                           onClick={() => handleEdit(item)}
                           style={styles.iconBtn}
@@ -335,12 +337,12 @@ export default function StoreInventory({ role }) {
       {showModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "28px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(16px, 4vw, 28px)", gap: "12px" }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: "21px", color: "black" }}>
+                <h3 style={{ margin: 0, fontSize: "clamp(18px, 5vw, 21px)", color: "black" }}>
                   {editingItem ? "Edit Item" : "Add New Item"}
                 </h3>
-                <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#818cf8" }}>
+                <p style={{ margin: "4px 0 0", fontSize: "clamp(12px, 3.2vw, 13px)", color: "#818cf8" }}>
                   Category: {editingItem ? editingItem.category : selectedCategory}
                 </p>
               </div>
@@ -360,7 +362,7 @@ export default function StoreInventory({ role }) {
               />
             </div>
 
-            <div style={{ display: "flex", gap: "16px" }}>
+            <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 16px)", flexWrap: "wrap" }}>
               <div style={{ ...styles.formItem, flex: 1 }}>
                 <label style={styles.label}>Quantity</label>
                 <input
@@ -411,32 +413,35 @@ const styles = {
     display: "flex",
     alignItems: "center",
     background: "#ffffff", 
-    padding: "0 18px",
+    padding: "0 clamp(12px, 3vw, 18px)",
     borderRadius: "16px",
     border: "1px solid #e2e8f0", 
     maxWidth: "480px",
   },
   searchInput: {
     border: "none",
-    padding: "14px 0",
+    padding: "clamp(12px, 3vw, 14px) 0",
     outline: "none",
     width: "100%",
     background: "transparent",
     color: "#1e293b", 
-    fontSize: "15px",
+    fontSize: "clamp(13px, 3.5vw, 15px)",
   },
   addButton: {
     background: "#6366f1",
     color: "#ffffff",
     border: "none",
-    padding: "14px 28px",
+    padding: "clamp(12px, 3vw, 14px) clamp(20px, 4vw, 28px)",
     borderRadius: "16px",
     fontWeight: "700",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "clamp(6px, 1.5vw, 10px)",
     boxShadow: "0 4px 14px rgba(99, 102, 241, 0.25)",
+    fontSize: "clamp(13px, 3.5vw, 15px)",
+    minHeight: "clamp(36px, 8vw, 44px)",
+    whiteSpace: "nowrap",
   },
   card: {
     background: "#f8fafc",
@@ -448,8 +453,8 @@ const styles = {
   thRow: { background: "#f1f5f9" }, 
   th: {
     textAlign: "left",
-    padding: "18px 24px",
-    fontSize: "12px",
+    padding: "clamp(12px, 3vw, 18px) clamp(14px, 3.5vw, 24px)",
+    fontSize: "clamp(10px, 2.5vw, 12px)",
     color: "#64748b", 
     textTransform: "uppercase",
     letterSpacing: "0.8px",
@@ -461,18 +466,21 @@ const styles = {
     color: "#1e293b", 
   },
   td: { 
-    padding: "16px 24px",
-    color: "#334155" 
+    padding: "clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 24px)",
+    color: "#334155",
+    fontSize: "clamp(12px, 3.2vw, 14px)"
   },
   iconBtn: {
     background: "#e2e8f0", 
     border: "none",
     cursor: "pointer",
-    padding: "8px",
+    padding: "clamp(6px, 1.5vw, 8px)",
     borderRadius: "8px",
     display: "inline-flex",
     alignItems: "center",
     transition: "all 0.2s",
+    minHeight: "clamp(32px, 7vw, 36px)",
+    minWidth: "clamp(32px, 7vw, 36px)",
   },
   
   modalOverlay: {
@@ -486,57 +494,66 @@ const styles = {
   },
   modalContent: {
     background: "#ffffff", 
-    padding: "40px",
+    padding: "clamp(24px, 5vw, 40px)",
     borderRadius: "24px",
     width: "440px",
     maxWidth: "90vw",
     border: "1px solid #e2e8f0",
     boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+    boxSizing: "border-box",
   },
   label: {
     display: "block",
-    fontSize: "12px",
+    fontSize: "clamp(10px, 2.5vw, 12px)",
     fontWeight: "600",
     color: "#64748b",
-    marginBottom: "8px",
+    marginBottom: "clamp(6px, 1.5vw, 8px)",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
   input: {
     width: "100%",
-    padding: "14px 16px",
+    padding: "clamp(12px, 3vw, 14px) clamp(12px, 3vw, 16px)",
     background: "#f8fafc", 
     border: "1px solid #e2e8f0",
     borderRadius: "12px",
     color: "#1e293b", 
-    fontSize: "15px",
+    fontSize: "clamp(13px, 3.5vw, 15px)",
     outline: "none",
+    boxSizing: "border-box",
   },
   saveBtn: {
     width: "100%",
-    padding: "16px",
+    padding: "clamp(12px, 3vw, 16px)",
     background: "#6366f1",
     color: "#ffffff",
     border: "none",
     borderRadius: "14px",
     fontWeight: "700",
-    fontSize: "15px",
+    fontSize: "clamp(13px, 3.5vw, 15px)",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "10px",
-    marginTop: "24px",
+    gap: "clamp(6px, 1.5vw, 10px)",
+    marginTop: "clamp(16px, 4vw, 24px)",
     transition: "background 0.2s",
+    minHeight: "clamp(40px, 9vw, 48px)",
+    boxSizing: "border-box",
   },
   closeBtn: {
     background: "transparent",
     border: "none",
     color: "#64748b",
     cursor: "pointer",
-    padding: "8px",
+    padding: "clamp(6px, 1.5vw, 8px)",
     borderRadius: "8px",
     transition: "all 0.2s",
+    minHeight: "clamp(32px, 7vw, 36px)",
+    minWidth: "clamp(32px, 7vw, 36px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  formItem: { marginBottom: "20px" },
+  formItem: { marginBottom: "clamp(14px, 3.5vw, 20px)" },
 };

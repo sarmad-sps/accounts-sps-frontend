@@ -222,76 +222,166 @@ inventory.forEach(r => {
   );
 
   return (
-    <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", padding: "40px 20px", fontFamily: "sans-serif" }}>
+    <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", padding: "clamp(20px, 5vw, 40px)", fontFamily: "sans-serif", boxSizing: "border-box" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         
         {/* HEADER BAR */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src={splogo} alt="Logo" style={{ height: '40px' }} />
+        <div style={{ display: 'flex', flexDirection: window.innerWidth < 640 ? 'column' : 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'clamp(20px, 5vw, 30px)', gap: 'clamp(12px, 3vw, 20px)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 12px)' }}>
+            <img src={splogo} alt="Logo" style={{ height: 'clamp(32px, 8vw, 40px)' }} />
             <div>
-              <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#1e293b', margin: 0 }}>Secure Path Solutions</h1>
-              <span style={{ fontSize: '13px', color: '#64748b' }}>Ledger Management System</span>
+              <h1 style={{ fontSize: 'clamp(18px, 5vw, 22px)', fontWeight: '800', color: '#1e293b', margin: 0 }}>Secure Path Solutions</h1>
+              <span style={{ fontSize: 'clamp(11px, 2.5vw, 13px)', color: '#64748b' }}>Ledger Management System</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <select value={month} onChange={(e) => setMonth(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}>
+          {/* <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 10px)', width: window.innerWidth < 640 ? '100%' : 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <select value={month} onChange={(e) => setMonth(e.target.value)} style={{ padding: 'clamp(8px, 2vw, 10px) clamp(12px, 3vw, 14px)', borderRadius: 'clamp(6px, 1.5vw, 8px)', border: '2px solid #e2e8f0', outline: 'none', fontSize: 'clamp(11px, 2.5vw, 13px)', minWidth: 'clamp(90px, 20vw, 120px)', background: '#ffffff', color: '#1e293b', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.08)', transition: 'all 0.2s ease', appearance: 'none', backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%221e293b%22 stroke-width=%222%22%3e%3cpath d=%22M6 9l6 6 6-6%22/%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right clamp(6px, 1.5vw, 10px) center', backgroundSize: 'clamp(14px, 3vw, 18px)', paddingRight: 'clamp(28px, 7vw, 32px)' }} onFocus={(e) => { e.target.style.borderColor = '#1e3a8a'; e.target.style.boxShadow = '0 0 0 3px rgba(30, 58, 138, 0.1)'; }} onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'; }}>
               {["January","February","March","April","May","June","July","August","September","October","November","December"].map(m => <option key={m}>{m}</option>)}
             </select>
-            <select value={year} onChange={(e) => setYear(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}>
+            <select value={year} onChange={(e) => setYear(e.target.value)} style={{ padding: 'clamp(8px, 2vw, 10px) clamp(12px, 3vw, 14px)', borderRadius: 'clamp(6px, 1.5vw, 8px)', border: '2px solid #e2e8f0', outline: 'none', fontSize: 'clamp(11px, 2.5vw, 13px)', minWidth: 'clamp(70px, 15vw, 90px)', background: '#ffffff', color: '#1e293b', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.08)', transition: 'all 0.2s ease', appearance: 'none', backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%221e293b%22 stroke-width=%222%22%3e%3cpath d=%22M6 9l6 6 6-6%22/%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right clamp(6px, 1.5vw, 10px) center', backgroundSize: 'clamp(14px, 3vw, 18px)', paddingRight: 'clamp(28px, 7vw, 32px)' }} onFocus={(e) => { e.target.style.borderColor = '#1e3a8a'; e.target.style.boxShadow = '0 0 0 3px rgba(30, 58, 138, 0.1)'; }} onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'; }}>
               {["2024","2025","2026"].map(y => <option key={y}>{y}</option>)}
             </select>
-            <button onClick={downloadPDF} style={{ background: '#1e3a8a', color: 'white', padding: '10px 24px', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', transition: '0.2s opacity' }}>Download Statement</button>
-          </div>
+            <button onClick={downloadPDF} style={{ background: '#1e3a8a', color: 'white', padding: 'clamp(8px, 2vw, 10px) clamp(16px, 5vw, 24px)', borderRadius: 'clamp(6px, 1.5vw, 8px)', border: 'none', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: 'clamp(11px, 2.5vw, 14px)', minHeight: 'clamp(32px, 7vw, 36px)', boxShadow: '0 2px 8px rgba(30, 58, 138, 0.25)' }} onMouseEnter={(e) => { e.target.style.background = '#1e3a8a'; e.target.style.boxShadow = '0 4px 12px rgba(30, 58, 138, 0.35)'; e.target.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.target.style.background = '#1e3a8a'; e.target.style.boxShadow = '0 2px 8px rgba(30, 58, 138, 0.25)'; e.target.style.transform = 'translateY(0)'; }}>Download Statement</button>
+          </div> */}
+          <div style={{ 
+  display: 'flex', 
+  gap: '12px', 
+  width: '100%', 
+  maxWidth: '650px', 
+  flexWrap: 'wrap', 
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  padding: '8px'
+}}>
+  {/* Selector Container for Mobile Side-by-Side */}
+  <div style={{ 
+    display: 'flex', 
+    gap: '10px', 
+    flex: window.innerWidth < 640 ? '1 1 100%' : 'none' 
+  }}>
+    {[ 
+      { value: month, setter: setMonth, options: ["January","February","March","April","May","June","July","August","September","October","November","December"] },
+      { value: year, setter: setYear, options: ["2024","2025","2026"] }
+    ].map((select, idx) => (
+      <div key={idx} style={{ position: 'relative', flex: 1 }}>
+        <select 
+          value={select.value} 
+          onChange={(e) => select.setter(e.target.value)} 
+          style={{ 
+            width: '100%',
+            padding: '10px 32px 10px 14px', 
+            borderRadius: '10px', 
+            border: '1px solid #cbd5e1', 
+            outline: 'none', 
+            fontSize: '14px', 
+            background: '#f8fafc', 
+            color: '#334155', 
+            fontWeight: '500', 
+            cursor: 'pointer', 
+            appearance: 'none',
+            transition: 'all 0.2s ease',
+            backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3e%3cpath d=%22M6 9l6 6 6-6%22/%3e%3c/svg%3e")',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 10px center',
+            backgroundSize: '14px'
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = '#3b82f6';
+            e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = '#cbd5e1';
+            e.target.style.boxShadow = 'none';
+          }}
+        >
+          {select.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        </select>
+      </div>
+    ))}
+  </div>
+
+  {/* Professional Download Button */}
+  <button 
+    onClick={downloadPDF} 
+    style={{ 
+      flex: window.innerWidth < 640 ? '1 1 100%' : 'none',
+      background: '#0f172a', 
+      color: 'white', 
+      padding: '11px 24px', 
+      borderRadius: '10px', 
+      border: 'none', 
+      fontWeight: '600', 
+      cursor: 'pointer', 
+      fontSize: '14px', 
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      transition: 'transform 0.1s active, background 0.2s'
+    }}
+    onMouseEnter={(e) => e.target.style.background = '#334155'}
+    onMouseLeave={(e) => e.target.style.background = '#0f172a'}
+    onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
+    onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download Statement
+  </button>
+</div>
         </div>
 
         {/* SUMMARY TILES */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(3, 1fr)', gap: 'clamp(16px, 4vw, 20px)', marginBottom: 'clamp(20px, 5vw, 30px)' }}>
           <div style={S.tile('#10b981')}>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>TOTAL CREDITS</span>
-            <div style={{ fontSize: '26px', fontWeight: '800', color: '#059669', marginTop: '5px' }}>Rs. {totalCredit.toLocaleString()}</div>
+            <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>TOTAL CREDITS</span>
+            <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#059669', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {totalCredit.toLocaleString()}</div>
           </div>
           <div style={S.tile('#ef4444')}>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>TOTAL DEBITS</span>
-            <div style={{ fontSize: '26px', fontWeight: '800', color: '#dc2626', marginTop: '5px' }}>Rs. {totalDebit.toLocaleString()}</div>
+            <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>TOTAL DEBITS</span>
+            <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#dc2626', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {totalDebit.toLocaleString()}</div>
           </div>
           <div style={S.tile('#1e3a8a')}>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>NET BALANCE</span>
-            <div style={{ fontSize: '26px', fontWeight: '800', color: '#1e3a8a', marginTop: '5px' }}>Rs. {net.toLocaleString()}</div>
+            <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>NET BALANCE</span>
+            <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#1e3a8a', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {net.toLocaleString()}</div>
           </div>
         </div>
 
         {/* MAIN LEDGER TABLE */}
         <div style={S.card}>
-          <div style={{ padding: '18px 24px', background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
-            <h2 style={{ fontSize: '16px', margin: 0, color: '#334155' }}>Transaction History for {month} {year}</h2>
+          <div style={{ padding: 'clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px)', background: '#fff', borderBottom: '1px solid #f1f5f9', overflowX: 'auto' }}>
+            <h2 style={{ fontSize: 'clamp(13px, 3.5vw, 16px)', margin: 0, color: '#334155' }}>Transaction History for {month} {year}</h2>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
             <thead>
               <tr>
-                <th style={S.th}>Date</th>
-                <th style={S.th}>Entity/Name</th>
-                <th style={S.th}>Description</th>
-                <th style={{ ...S.th, textAlign: 'right' }}>Credit</th>
-                <th style={{ ...S.th, textAlign: 'right' }}>Debit</th>
+                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Date</th>
+                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Entity/Name</th>
+                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Description</th>
+                <th style={{ ...S.th, textAlign: 'right', padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Credit</th>
+                <th style={{ ...S.th, textAlign: 'right', padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Debit</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length > 0 ? filtered.map((t) => (
                 <tr key={t.id} style={{ transition: 'background 0.2s' }}>
-                  <td style={{ ...S.td, textAlign: 'center', fontSize: '12px' }}>{t.date}</td>
-                  <td style={{ ...S.td, textAlign: 'center', fontWeight: '600' }}>{t.name}</td>
-                  <td style={{ ...S.td, textAlign: 'center', color: '#64748b', fontSize: '13px' }}>{t.desc}</td>
-                  <td style={{ ...S.td, textAlign: 'right', color: '#059669', fontWeight: 'bold' }}>{t.type === 'credit' ? t.amount.toLocaleString() : '—'}</td>
-                  <td style={{ ...S.td, textAlign: 'right', color: '#dc2626', fontWeight: 'bold' }}>{t.type === 'debit' ? t.amount.toLocaleString() : '—'}</td>
+                  <td style={{ ...S.td, textAlign: 'center', fontSize: 'clamp(10px, 2.5vw, 12px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.date}</td>
+                  <td style={{ ...S.td, textAlign: 'center', fontWeight: '600', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.name}</td>
+                  <td style={{ ...S.td, textAlign: 'center', color: '#64748b', fontSize: 'clamp(10px, 2.5vw, 13px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.desc}</td>
+                  <td style={{ ...S.td, textAlign: 'right', color: '#059669', fontWeight: 'bold', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.type === 'credit' ? t.amount.toLocaleString() : '—'}</td>
+                  <td style={{ ...S.td, textAlign: 'right', color: '#dc2626', fontWeight: 'bold', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.type === 'debit' ? t.amount.toLocaleString() : '—'}</td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="5" style={{ padding: '50px', textAlign: 'center', color: '#94a3b8' }}>No transactions found for this period.</td>
+                  <td colSpan="5" style={{ padding: 'clamp(30px, 10vw, 50px)', textAlign: 'center', color: '#94a3b8', fontSize: 'clamp(11px, 2.5vw, 14px)' }}>No transactions found for this period.</td>
                 </tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

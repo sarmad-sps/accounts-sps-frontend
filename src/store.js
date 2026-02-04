@@ -3,7 +3,8 @@ import { api } from "./api";
 
 export const BANKS = [
   { key: "BANK_ISLAMI", label: "Bank Islami" },
-  { key: "HBL", label: "HBL" }
+  { key: "HBL", label: "HBL" },
+ { key: "CASH", label: "Cash in Hand", isCash: true },
 ];
 
 function uid() {

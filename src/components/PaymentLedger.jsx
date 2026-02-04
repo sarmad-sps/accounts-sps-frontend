@@ -330,7 +330,7 @@ export default function PaymentLedger() {
       style={{
         background: "#e5e7eb",
         color: "#111827",
-        padding: "32px",
+        padding: "clamp(16px, 4vw, 32px)",
         fontFamily: "Inter, system-ui, sans-serif",
         minHeight: "100vh",
       }}
@@ -340,53 +340,57 @@ export default function PaymentLedger() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "32px",
-          gap: "20px",
+          marginBottom: "clamp(20px, 5vw, 32px)",
+          gap: "clamp(12px, 3vw, 20px)",
           flexWrap: "wrap",
         }}
       >
         <div>
-          <h1 style={{ fontSize: "2.25rem", fontWeight: 800, margin: 0, letterSpacing: "-0.02em", color: "#111827" }}>
+          <h1 style={{ fontSize: "clamp(22px, 6vw, 36px)", fontWeight: 800, margin: 0, letterSpacing: "-0.02em", color: "#111827" }}>
             Payment Ledger
           </h1>
-          <p style={{ color: "#4b5563", marginTop: "8px" }}>
+          <p style={{ color: "#4b5563", marginTop: "8px", fontSize: "clamp(13px, 3.5vw, 15px)" }}>
             Track outgoing payments • {payments.length} record{payments.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 16px)", flexWrap: "wrap", width: "100%", justifyContent: "flex-start" }}>
           <div
             style={{
               background: "#ffffff",
-              padding: "16px 28px",
+              padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 28px)",
               borderRadius: "16px",
               border: "1px solid #d1d5db",
-              minWidth: "160px",
+              minWidth: "clamp(120px, calc(50% - 5px), 200px)",
               textAlign: "center",
               boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              boxSizing: "border-box",
+              flex: "1 1 auto",
             }}
           >
-            <div style={{ color: "#4b5563", fontSize: "0.8rem", fontWeight: 600, textTransform: "uppercase" }}>
+            <div style={{ color: "#4b5563", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Total Outstanding
             </div>
-            <div style={{ fontSize: "1.8rem", fontWeight: 800, marginTop: "4px", color: "#b45309" }}>
+            <div style={{ fontSize: "clamp(14px, 4.5vw, 26px)", fontWeight: 800, marginTop: "clamp(6px, 1.5vw, 8px)", color: "#b45309", wordBreak: "break-word" }}>
               Rs. {formatCurrency(stats.unpaid)}
             </div>
           </div>
           <div
             style={{
               background: "#ffffff",
-              padding: "16px 28px",
+              padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 28px)",
               borderRadius: "16px",
               border: "1px solid #d1d5db",
-              minWidth: "160px",
+              minWidth: "clamp(120px, calc(50% - 5px), 200px)",
               textAlign: "center",
               boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              boxSizing: "border-box",
+              flex: "1 1 auto",
             }}
           >
-            <div style={{ color: "#4b5563", fontSize: "0.8rem", fontWeight: 600, textTransform: "uppercase" }}>
+            <div style={{ color: "#4b5563", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Total Paid
             </div>
-            <div style={{ fontSize: "1.8rem", fontWeight: 800, marginTop: "4px", color: "#059669" }}>
+            <div style={{ fontSize: "clamp(14px, 4.5vw, 26px)", fontWeight: 800, marginTop: "clamp(6px, 1.5vw, 8px)", color: "#059669", wordBreak: "break-word" }}>
               Rs. {formatCurrency(stats.paid)}
             </div>
           </div>
@@ -398,22 +402,23 @@ export default function PaymentLedger() {
           background: "#ffffff",
           borderRadius: "16px",
           border: "1px solid #d1d5db",
-          padding: "24px",
-          marginBottom: "32px",
+          padding: "clamp(16px, 4vw, 24px)",
+          marginBottom: "clamp(20px, 5vw, 32px)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+          boxSizing: "border-box",
         }}
       >
         <form
           onSubmit={handleSubmit}
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "24px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(clamp(160px, 100%, 220px), 1fr))",
+            gap: "clamp(14px, 3.5vw, 24px)",
             alignItems: "end",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Payee
             </label>
             <div style={{ position: "relative" }}>
@@ -425,19 +430,20 @@ export default function PaymentLedger() {
                 placeholder="Supplier / Person name"
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               />
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Category
             </label>
             <div style={{ position: "relative" }}>
@@ -447,14 +453,15 @@ export default function PaymentLedger() {
                 onChange={(e) => setCategory(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
                   appearance: "none",
                   cursor: "pointer",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               >
                 {categories.map((c) => (
@@ -466,7 +473,7 @@ export default function PaymentLedger() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Amount (PKR)
             </label>
             <div style={{ position: "relative" }}>
@@ -482,19 +489,20 @@ export default function PaymentLedger() {
                 placeholder="0"
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               />
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Status
             </label>
             <div style={{ position: "relative" }}>
@@ -504,14 +512,15 @@ export default function PaymentLedger() {
                 onChange={(e) => setStatus(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
                   appearance: "none",
                   cursor: "pointer",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               >
                 {statusOptions.map((s) => (
@@ -523,7 +532,7 @@ export default function PaymentLedger() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Payment Mode
             </label>
             <div style={{ position: "relative" }}>
@@ -533,14 +542,15 @@ export default function PaymentLedger() {
                 onChange={(e) => setPaymentMode(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
                   appearance: "none",
                   cursor: "pointer",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               >
                 {paymentModes.map((m) => (
@@ -552,7 +562,7 @@ export default function PaymentLedger() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Bank
             </label>
             <div style={{ position: "relative" }}>
@@ -562,14 +572,15 @@ export default function PaymentLedger() {
                 onChange={(e) => setBank(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
                   appearance: "none",
                   cursor: "pointer",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               >
                 {banks.map((b) => (
@@ -581,7 +592,7 @@ export default function PaymentLedger() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
               Remarks
             </label>
             <div style={{ position: "relative" }}>
@@ -592,33 +603,36 @@ export default function PaymentLedger() {
                 placeholder="Invoice #, notes..."
                 style={{
                   width: "100%",
-                  padding: "12px 16px 12px 48px",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
                   background: "#f9fafb",
                   border: "1px solid #d1d5db",
                   borderRadius: "10px",
                   color: "#111827",
-                  fontSize: "1rem",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
                 }}
               />
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "clamp(8px, 2vw, 12px)", alignItems: "center", flexWrap: "wrap" }}>
             <button
               type="submit"
               style={{
                 background: "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
                 color: "white",
                 border: "none",
-                padding: "14px 28px",
+                padding: "clamp(10px, 2.5vw, 14px) clamp(18px, 4vw, 28px)",
                 borderRadius: "10px",
                 fontWeight: 700,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-                minWidth: "160px",
+                gap: "clamp(6px, 1.5vw, 8px)",
+                minWidth: "clamp(140px, 100%, 160px)",
                 justifyContent: "center",
+                fontSize: "clamp(13px, 3.5vw, 15px)",
+                minHeight: "clamp(36px, 8vw, 44px)",
               }}
             >
               {editingId ? <Edit size={20} /> : <Plus size={20} />}
@@ -632,13 +646,15 @@ export default function PaymentLedger() {
                   background: "#fef2f2",
                   color: "#b91c1c",
                   border: "1px solid #fecaca",
-                  padding: "14px 24px",
+                  padding: "clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px)",
                   borderRadius: "10px",
                   fontWeight: 600,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
+                  gap: "clamp(6px, 1.5vw, 8px)",
+                  fontSize: "clamp(13px, 3.5vw, 15px)",
+                  minHeight: "clamp(36px, 8vw, 44px)",
                 }}
               >
                 <RotateCcw size={18} /> Cancel
@@ -653,20 +669,22 @@ export default function PaymentLedger() {
           background: "#ffffff",
           borderRadius: "16px",
           border: "1px solid #d1d5db",
-          padding: "24px",
+          padding: "clamp(16px, 4vw, 24px)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+          boxSizing: "border-box",
+          overflowX: "auto",
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: "24px",
-            gap: "16px",
+            marginBottom: "clamp(16px, 4vw, 24px)",
+            gap: "clamp(10px, 2.5vw, 16px)",
             flexWrap: "wrap",
           }}
         >
-          <div style={{ position: "relative", flex: 1, minWidth: "280px" }}>
+          <div style={{ position: "relative", flex: 1, minWidth: "clamp(200px, 100%, 280px)" }}>
             <Search
               size={18}
               style={{
@@ -683,12 +701,13 @@ export default function PaymentLedger() {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: "100%",
-                padding: "10px 16px 10px 44px",
+                padding: "clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px) clamp(8px, 2vw, 10px) clamp(38px, 8vw, 44px)",
                 background: "#f9fafb",
                 border: "1px solid #d1d5db",
                 borderRadius: "10px",
                 color: "#111827",
-                fontSize: "1rem",
+                fontSize: "clamp(13px, 3.5vw, 16px)",
+                boxSizing: "border-box",
               }}
             />
           </div>
@@ -699,13 +718,14 @@ export default function PaymentLedger() {
               background: "#f3f4f6",
               border: "1px solid #d1d5db",
               color: "#374151",
-              padding: "10px 20px",
+              padding: "clamp(8px, 2vw, 10px) clamp(14px, 3.5vw, 20px)",
               borderRadius: "10px",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: "clamp(6px, 1.5vw, 8px)",
               fontWeight: 500,
+              fontSize: "clamp(12px, 3.2vw, 14px)",
             }}
           >
             <Download size={16} /> Export CSV
@@ -713,15 +733,15 @@ export default function PaymentLedger() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "80px 20px", color: "#6b7280" }}>
-            <div style={{ fontSize: "2.5rem", opacity: 0.4 }}>⌛</div>
-            <h3>Loading records...</h3>
+          <div style={{ textAlign: "center", padding: "clamp(40px, 10vw, 80px) clamp(12px, 3vw, 20px)", color: "#6b7280" }}>
+            <div style={{ fontSize: "clamp(24px, 6vw, 40px)", opacity: 0.4 }}>⌛</div>
+            <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>Loading records...</h3>
           </div>
         ) : filteredEntries.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 20px", color: "#6b7280" }}>
+          <div style={{ textAlign: "center", padding: "clamp(40px, 10vw, 80px) clamp(12px, 3vw, 20px)", color: "#6b7280" }}>
             <AlertCircle size={48} style={{ opacity: 0.4, marginBottom: 16 }} />
-            <h3>No transactions found</h3>
-            <p style={{ marginTop: 8 }}>
+            <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>No transactions found</h3>
+            <p style={{ marginTop: 8, fontSize: "clamp(12px, 3.5vw, 14px)" }}>
               {searchTerm ? "Try different search terms" : "Add your first payment above"}
             </p>
           </div>
@@ -732,32 +752,32 @@ export default function PaymentLedger() {
                 width: "100%",
                 borderCollapse: "collapse",
                 tableLayout: "auto",
-                minWidth: "1100px",
+                minWidth: "clamp(300px, 100%, 1100px)",
               }}
             >
               <thead>
                 <tr style={{ background: "#f9fafb" }}>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Date</th>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Payee</th>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Category</th>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Status</th>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Mode</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Date</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Payee</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Category</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Status</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Mode</th>
                   <th
                     style={{
-                      padding: "16px",
+                      padding: "clamp(10px, 2.5vw, 16px)",
                       color: "#4b5563",
-                      fontSize: "0.75rem",
+                      fontSize: "clamp(10px, 2.5vw, 12px)",
                       textTransform: "uppercase",
                       textAlign: "left",
                       borderBottom: "1px solid #e5e7eb",
                       whiteSpace: "nowrap",
-                      minWidth: "140px",
+                      minWidth: "clamp(100px, 15vw, 140px)",
                     }}
                   >
                     Bank
                   </th>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>Amount</th>
-                  <th style={{ padding: "16px", color: "#4b5563", fontSize: "0.75rem", textTransform: "uppercase", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Actions</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>Amount</th>
+                  <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -769,14 +789,14 @@ export default function PaymentLedger() {
                       transition: "background 0.15s",
                     }}
                   >
-                    <td style={{ padding: "16px 12px", borderBottom: "1px solid #e5e7eb" }}>{item.date}</td>
-                    <td style={{ padding: "16px 12px", borderBottom: "1px solid #e5e7eb", fontWeight: 600 }}>{item.payee}</td>
-                    <td style={{ padding: "16px 12px", borderBottom: "1px solid #e5e7eb" }}>
+                    <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", fontSize: "clamp(12px, 3.2vw, 14px)" }}>{item.date}</td>
+                    <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", fontWeight: 600, fontSize: "clamp(12px, 3.2vw, 14px)" }}>{item.payee}</td>
+                    <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb" }}>
                       <span
                         style={{
-                          padding: "4px 12px",
+                          padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)",
                           borderRadius: "20px",
-                          fontSize: "0.75rem",
+                          fontSize: "clamp(10px, 2.5vw, 12px)",
                           fontWeight: 600,
                           color: "white",
                           backgroundColor: getCategoryColor(item.category),
@@ -785,12 +805,12 @@ export default function PaymentLedger() {
                         {item.category}
                       </span>
                     </td>
-                    <td style={{ padding: "16px 12px", borderBottom: "1px solid #e5e7eb" }}>
+                    <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb" }}>
                       <span
                         style={{
-                          padding: "4px 12px",
+                          padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)",
                           borderRadius: "20px",
-                          fontSize: "0.75rem",
+                          fontSize: "clamp(10px, 2.5vw, 12px)",
                           fontWeight: 600,
                           backgroundColor: getStatusStyle(item.status).bg,
                           color: getStatusStyle(item.status).color,
@@ -800,12 +820,12 @@ export default function PaymentLedger() {
                         {item.status === "Paid" && <CheckCircle size={14} style={{ marginLeft: 6 }} />}
                       </span>
                     </td>
-                    <td style={{ padding: "16px 12px", borderBottom: "1px solid #e5e7eb" }}>
+                    <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb" }}>
                       <span
                         style={{
-                          padding: "4px 12px",
+                          padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)",
                           borderRadius: "20px",
-                          fontSize: "0.75rem",
+                          fontSize: "clamp(10px, 2.5vw, 12px)",
                           fontWeight: 600,
                           color: "white",
                           backgroundColor: getPaymentModeColor(item.paymentMode),
@@ -814,12 +834,12 @@ export default function PaymentLedger() {
                         {item.paymentMode}
                       </span>
                     </td>
-                    <td style={{ padding: "16px 12px", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                    <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>
                       <span
                         style={{
-                          padding: "4px 12px",
+                          padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)",
                           borderRadius: "20px",
-                          fontSize: "0.75rem",
+                          fontSize: "clamp(10px, 2.5vw, 12px)",
                           fontWeight: 600,
                           color: "white",
                           backgroundColor: getBankColor(item.bank),
@@ -832,42 +852,44 @@ export default function PaymentLedger() {
                     </td>
                     <td
                       style={{
-                        padding: "16px 12px",
+                        padding: "clamp(10px, 2.5vw, 16px)",
                         borderBottom: "1px solid #e5e7eb",
                         textAlign: "right",
                         fontWeight: 700,
                         color: item.status === "Unpaid" ? "#7c3aed" : "#374151",
                         textDecoration: item.status === "Paid" ? "line-through" : "none",
+                        fontSize: "clamp(12px, 3.2vw, 14px)",
                       }}
                     >
                       Rs. {formatCurrency(item.amount)}
                     </td>
                     <td
                       style={{
-                        padding: "16px",
+                        padding: "clamp(10px, 2.5vw, 16px)",
                         borderBottom: "1px solid #e5e7eb",
                         display: "flex",
-                        gap: "8px",
+                        gap: "clamp(6px, 1.5vw, 8px)",
                         justifyContent: "center",
+                        flexWrap: "wrap",
                       }}
                     >
                       <button
                         onClick={() => handleView(item)}
-                        style={{ background: "rgba(37,99,235,0.1)", color: "#2563eb", border: "none", padding: "8px", borderRadius: "8px", cursor: "pointer" }}
+                        style={{ background: "rgba(37,99,235,0.1)", color: "#2563eb", border: "none", padding: "clamp(6px, 1.5vw, 8px)", borderRadius: "8px", cursor: "pointer", minHeight: "clamp(32px, 7vw, 36px)", minWidth: "clamp(32px, 7vw, 36px)", display: "flex", alignItems: "center", justifyContent: "center" }}
                         title="View Voucher"
                       >
                         <Eye size={18} />
                       </button>
                       <button
                         onClick={() => startEdit(item)}
-                        style={{ background: "rgba(180,83,9,0.1)", color: "#b45309", border: "none", padding: "8px", borderRadius: "8px", cursor: "pointer" }}
+                        style={{ background: "rgba(180,83,9,0.1)", color: "#b45309", border: "none", padding: "clamp(6px, 1.5vw, 8px)", borderRadius: "8px", cursor: "pointer", minHeight: "clamp(32px, 7vw, 36px)", minWidth: "clamp(32px, 7vw, 36px)", display: "flex", alignItems: "center", justifyContent: "center" }}
                         title="Edit"
                       >
                         <Edit size={18} />
                       </button>
                       <button
                         onClick={() => removePayment(item.id)}
-                        style={{ background: "rgba(220,38,38,0.1)", color: "#dc2626", border: "none", padding: "8px", borderRadius: "8px", cursor: "pointer" }}
+                        style={{ background: "rgba(220,38,38,0.1)", color: "#dc2626", border: "none", padding: "clamp(6px, 1.5vw, 8px)", borderRadius: "8px", cursor: "pointer", minHeight: "clamp(32px, 7vw, 36px)", minWidth: "clamp(32px, 7vw, 36px)", display: "flex", alignItems: "center", justifyContent: "center" }}
                         title="Delete"
                       >
                         <Trash2 size={18} />
@@ -882,39 +904,41 @@ export default function PaymentLedger() {
       </section>
 
      {selectedPayment && (
-  <div id="voucher-preview" style={{ marginTop: "40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+  <div id="voucher-preview" style={{ marginTop: "clamp(20px, 5vw, 40px)", display: "flex", flexDirection: "column", alignItems: "center", padding: "clamp(12px, 3vw, 20px)" }}>
     {/* Main Voucher Container */}
     <div
       ref={voucherRef}
       style={{
-        width: "210mm",
-        minHeight: "297mm", // Full A4 Height taake footer bottom par aaye
+        width: "100%",
+        maxWidth: "210mm",
+        minHeight: "297mm",
         background: "#ffffff",
-        padding: "40px 50px",
+        padding: "clamp(20px, 5vw, 40px) clamp(24px, 5vw, 50px)",
         boxShadow: "0 0 10px rgba(0,0,0,0.1)",
         display: "flex",
         flexDirection: "column",
         position: "relative",
         fontFamily: "'Helvetica', 'Arial', sans-serif",
-        color: "#1a1a1a"
+        color: "#1a1a1a",
+        boxSizing: "border-box"
       }}
     >
       {/* Header Section */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "40px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <img src={logo} alt="Logo" style={{ height: "60px" }} />
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(24px, 5vw, 40px)", gap: "clamp(12px, 3vw, 20px)", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2.5vw, 15px)" }}>
+          <img src={logo} alt="Logo" style={{ height: "clamp(44px, 10vw, 60px)" }} />
           <div>
-            <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "bold", color: "#000" }}>Secure Path Solutions</h2>
-            <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>Premium Vehicle Tracking & Security</p>
+            <h2 style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 22px)", fontWeight: "bold", color: "#000" }}>Secure Path Solutions</h2>
+            <p style={{ margin: 0, fontSize: "clamp(10px, 2.5vw, 12px)", color: "#666" }}>Premium Vehicle Tracking & Security</p>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ 
             background: "#eef2ff", 
             color: "#3b82f6", 
-            padding: "6px 20px", 
+            padding: "clamp(4px, 1vw, 6px) clamp(14px, 3vw, 20px)", 
             borderRadius: "5px", 
-            fontSize: "14px", 
+            fontSize: "clamp(12px, 3.2vw, 14px)", 
             fontWeight: "bold",
             display: "inline-block",
             marginBottom: "10px",
@@ -922,25 +946,25 @@ export default function PaymentLedger() {
           }}>
             OFFICIAL RECEIPT
           </div>
-          <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold" }}>No: <span style={{ fontWeight: "normal" }}>REC-{selectedPayment.id.slice(-8).toUpperCase()}</span></p>
-          <p style={{ margin: "2px 0 0 0", fontSize: "13px", fontWeight: "bold" }}>Date: <span style={{ fontWeight: "normal" }}>{selectedPayment.date}</span></p>
+          <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>No: <span style={{ fontWeight: "normal" }}>REC-{selectedPayment.id.slice(-8).toUpperCase()}</span></p>
+          <p style={{ margin: "2px 0 0 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Date: <span style={{ fontWeight: "normal" }}>{selectedPayment.date}</span></p>
         </div>
       </div>
 
       {/* Address Boxes Section */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "25px", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "15px" }}>
-          <h4 style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
-          <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
-          <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#4b5563", lineHeight: "1.4" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(16px, 4vw, 25px)", marginBottom: "clamp(20px, 5vw, 30px)" }}>
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+          <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
+          <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
+          <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563", lineHeight: "1.4" }}>
             House 1-A, Upper Mall, Lahore<br />
             Tel: 042-111-000-320
           </p>
         </div>
-        <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "15px" }}>
-          <h4 style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Received From / Client</h4>
-          <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold" }}>{selectedPayment.payee}</p>
-          <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#4b5563" }}>
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+          <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Received From / Client</h4>
+          <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>{selectedPayment.payee}</p>
+          <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563" }}>
             Category: {selectedPayment.category}<br />
             Payment Mode: {selectedPayment.paymentMode} ({selectedPayment.bank})
           </p>
@@ -951,35 +975,35 @@ export default function PaymentLedger() {
       <div style={{ 
         background: "#f9fafb", 
         borderLeft: "6px solid #2563eb", 
-        padding: "20px 25px", 
+        padding: "clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 25px)", 
         borderRadius: "4px",
-        marginBottom: "40px"
+        marginBottom: "clamp(24px, 5vw, 40px)"
       }}>
-        <p style={{ margin: "0 0 5px 0", fontSize: "13px", fontWeight: "bold", color: "#4b5563" }}>Total Amount</p>
-        <h2 style={{ margin: 0, fontSize: "28px", fontWeight: "800", color: "#111827" }}>PKR Rs. {formatCurrency(selectedPayment.amount)}.00</h2>
+        <p style={{ margin: "0 0 5px 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold", color: "#4b5563" }}>Total Amount</p>
+        <h2 style={{ margin: 0, fontSize: "clamp(20px, 6vw, 28px)", fontWeight: "800", color: "#111827" }}>PKR Rs. {formatCurrency(selectedPayment.amount)}.00</h2>
       </div>
 
       {/* Remarks Section */}
       <div style={{ flexGrow: 1 }}>
-        <h4 style={{ fontSize: "13px", color: "#111827", borderBottom: "1px solid #e5e7eb", paddingBottom: "8px", marginBottom: "10px" }}>Description / Remarks</h4>
-        <p style={{ fontSize: "14px", color: "#4b5563", lineHeight: "1.6" }}>{selectedPayment.description}</p>
+        <h4 style={{ fontSize: "clamp(11px, 3vw, 13px)", color: "#111827", borderBottom: "1px solid #e5e7eb", paddingBottom: "8px", marginBottom: "10px" }}>Description / Remarks</h4>
+        <p style={{ fontSize: "clamp(12px, 3.2vw, 14px)", color: "#4b5563", lineHeight: "1.6" }}>{selectedPayment.description}</p>
       </div>
 
       {/* Footer (Sticks to bottom) */}
-      <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "20px", textAlign: "center" }}>
-        <p style={{ margin: 0, fontSize: "11px", color: "#4b5563", fontWeight: "bold" }}>
+      <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "clamp(12px, 3vw, 20px)", textAlign: "center" }}>
+        <p style={{ margin: 0, fontSize: "clamp(9px, 2.2vw, 11px)", color: "#4b5563", fontWeight: "bold" }}>
           Phone: <span style={{ fontWeight: "normal" }}>03006492075</span> | Email: <span style={{ fontWeight: "normal" }}>contact@securepathsolution.com</span>
         </p>
-        <p style={{ margin: "4px 0 0 0", fontSize: "10px", color: "#9ca3af" }}>This is a computer-generated document.</p>
+        <p style={{ margin: "4px 0 0 0", fontSize: "clamp(8px, 2vw, 10px)", color: "#9ca3af" }}>This is a computer-generated document.</p>
       </div>
     </div>
 
     {/* Buttons Container */}
-    <div style={{ margin: "30px 0", display: "flex", gap: "15px" }}>
-      <button onClick={downloadAsPDF} style={{ background: "#2563eb", color: "white", padding: "12px 25px", borderRadius: "6px", fontWeight: "bold", border: "none", cursor: "pointer" }}>
+    <div style={{ margin: "clamp(20px, 5vw, 30px) 0", display: "flex", gap: "clamp(10px, 2.5vw, 15px)", flexWrap: "wrap", justifyContent: "center" }}>
+      <button onClick={downloadAsPDF} style={{ background: "#2563eb", color: "white", padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", borderRadius: "6px", fontWeight: "bold", border: "none", cursor: "pointer", fontSize: "clamp(12px, 3.2vw, 14px)", minHeight: "clamp(36px, 8vw, 44px)" }}>
         Download PDF
       </button>
-      <button onClick={() => setSelectedPayment(null)} style={{ background: "#f3f4f6", color: "#4b5563", padding: "12px 25px", borderRadius: "6px", fontWeight: "bold", border: "1px solid #d1d5db", cursor: "pointer" }}>
+      <button onClick={() => setSelectedPayment(null)} style={{ background: "#f3f4f6", color: "#4b5563", padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", borderRadius: "6px", fontWeight: "bold", border: "1px solid #d1d5db", cursor: "pointer", fontSize: "clamp(12px, 3.2vw, 14px)", minHeight: "clamp(36px, 8vw, 44px)" }}>
         Close
       </button>
     </div>
