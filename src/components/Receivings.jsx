@@ -19,6 +19,16 @@ function formatMMDDYYYY(d) {
   return `${mm}/${dd}/${yy}`;
 }
 
+function parseMMDDYYYY(str) {
+  if (!str) return new Date();
+  const parts = str.split("/");
+  if (parts.length === 3) {
+    const [mm, dd, yyyy] = parts;
+    return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  }
+  return new Date();
+}
+
 export default function Receivings({ state, actions }) {
   const [clientName, setClientName] = useState("");
   const [clientAddress, setClientAddress] = useState("");
@@ -49,6 +59,7 @@ export default function Receivings({ state, actions }) {
   const [paymentMode, setPaymentMode] = useState("Cash");
 
   const [selected, setSelected] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   const receivings = state?.receivings || [];
 
@@ -139,6 +150,46 @@ export default function Receivings({ state, actions }) {
     setPaymentMode("Cash");
     setInsuranceCover("");
     setBank(BANKS?.[0]?.key || "BANK_ISLAMI");
+    setEditingId(null);
+  };
+
+  const loadRecordForEdit = (record) => {
+    setEditingId(record.id);
+    setClientName(record.clientName || "");
+    setClientAddress(record.clientAddress || "");
+    setClientPhone(record.clientPhone || "");
+    setParty(record.party || "");
+    setAmount(String(record.amount || ""));
+    setDateObj(parseMMDDYYYY(record.date));
+    setStatus(record.status || "PENDING");
+    setBank(record.bank || BANKS?.[0]?.key || "BANK_ISLAMI");
+    setNotes(record.notes || "");
+    setPaymentMode(record.paymentMode || "Cash");
+    setInsuranceCover(record.insuranceCover || "");
+
+    // Category handling
+    const knownCategories = ["Tracker", "Insurance", "IT Software"];
+    if (knownCategories.includes(record.category)) {
+      setCategory(record.category);
+      setCustomCategory("");
+    } else {
+      setCategory("Other");
+      setCustomCategory(record.category || "");
+    }
+
+    // Tracker fields
+    setTrackerCompany(record.trackerCompany || "");
+    setTrackerType(record.trackerType || "");
+    setAddonService(record.addonService || "");
+    setVehicleType(record.vehicleType || "");
+    setRegistrationNo(record.registrationNo || "");
+    setVehicleBrand(record.vehicleBrand || "");
+    setChassisNumber(record.chassisNumber || "");
+    setEngineNo(record.engineNumber || "");
+    setAgentName(record.agentName || "");
+
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onAdd = (e) => {
@@ -188,8 +239,7 @@ export default function Receivings({ state, actions }) {
         }
       : {};
 
-    const newReceiving = {
-      id: Date.now().toString(),
+    const receivingData = {
       clientName: clientName.trim(),
       clientAddress: clientAddress.trim(),
       clientPhone: clientPhone.trim(),
@@ -205,7 +255,18 @@ export default function Receivings({ state, actions }) {
       ...extra,
     };
 
-    actions.addReceiving(newReceiving);
+    if (editingId) {
+      // Update existing
+      actions.updateReceiving(editingId, receivingData);
+    } else {
+      // Add new
+      const newReceiving = {
+        id: Date.now().toString(),
+        ...receivingData,
+      };
+      actions.addReceiving(newReceiving);
+    }
+
     resetForm();
   };
 
@@ -277,7 +338,17 @@ export default function Receivings({ state, actions }) {
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Add New Receiving</h2>
+        <h2 style={styles.cardTitle}>
+          {editingId ? "Edit Receiving" : "Add New Receiving"}
+        </h2>
+        {editingId && (
+          <div style={styles.editBanner}>
+            <span>Editing record...</span>
+            <button style={styles.cancelEditBtn} onClick={resetForm}>
+              Cancel Edit
+            </button>
+          </div>
+        )}
         <form onSubmit={onAdd}>
           {/* Client Information */}
           <div style={styles.formGrid3}>
@@ -612,7 +683,7 @@ export default function Receivings({ state, actions }) {
 
           <div style={styles.formActions}>
             <button type="submit" style={styles.submitBtn}>
-              Add Receiving
+              {editingId ? "Update Receiving" : "Add Receiving"}
             </button>
           </div>
         </form>
@@ -659,6 +730,13 @@ export default function Receivings({ state, actions }) {
                     </td>
                     <td style={styles.tdActions}>
                       <div style={styles.actionButtons}>
+                        <button
+                          style={styles.editBtn}
+                          onClick={() => loadRecordForEdit(r)}
+                        >
+                          Edit
+                        </button>
+
                         <button
                           style={styles.invoiceBtn}
                           onClick={() => {
@@ -730,7 +808,7 @@ export default function Receivings({ state, actions }) {
   );
 }
 
-// ─── Styles ─── (same as your previous version)
+// ─── Styles ───
 const styles = {
   container: {
     padding: "clamp(16px, 4vw, 24px)",
@@ -795,6 +873,27 @@ const styles = {
     fontWeight: 700,
     margin: "0 0 24px 0",
     color: "#0f172a",
+  },
+  editBanner: {
+    background: "#fef3c7",
+    border: "1px solid #fbbf24",
+    borderRadius: 10,
+    padding: "12px 16px",
+    marginBottom: 20,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontWeight: 600,
+    color: "#92400e",
+  },
+  cancelEditBtn: {
+    padding: "6px 14px",
+    background: "#fff",
+    border: "1px solid #fbbf24",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#92400e",
   },
   label: {
     fontSize: 13,
@@ -915,6 +1014,15 @@ const styles = {
     gap: 10,
     justifyContent: "flex-end",
     flexWrap: "wrap",
+  },
+  editBtn: {
+    padding: "8px 16px",
+    background: "#fef3c7",
+    color: "#92400e",
+    border: "1px solid #fbbf24",
+    borderRadius: 8,
+    fontWeight: 600,
+    cursor: "pointer",
   },
   invoiceBtn: {
     padding: "8px 16px",
