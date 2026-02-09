@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BANKS } from "../store";
 import Invoice from "./Invoice";
-//import Receipt from "./Receipt";
+
 const CATEGORIES = ["Tracker", "Insurance", "IT Software", "Other"];
 
 function fmt(n) {
@@ -33,7 +33,7 @@ export default function Receivings({ state, actions }) {
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [q, setQ] = useState("");
-const [insuranceCover, setInsuranceCover] = useState("");
+  const [insuranceCover, setInsuranceCover] = useState("");
 
   // Tracker fields
   const [trackerCompany, setTrackerCompany] = useState("");
@@ -52,26 +52,25 @@ const [insuranceCover, setInsuranceCover] = useState("");
 
   const receivings = state?.receivings || [];
 
-
   const handleCategoryChange = (val) => {
-  setCategory(val);
+    setCategory(val);
 
-  if (val !== "Tracker") {
-    setTrackerCompany("");
-    setTrackerType("");
-    setAddonService("");
-    setVehicleType("");
-    setRegistrationNo("");
-    setVehicleBrand("");
-    setChassisNumber("");
-    setEngineNo("");
-    setAgentName("");
-  }
+    if (val !== "Tracker") {
+      setTrackerCompany("");
+      setTrackerType("");
+      setAddonService("");
+      setVehicleType("");
+      setRegistrationNo("");
+      setVehicleBrand("");
+      setChassisNumber("");
+      setEngineNo("");
+      setAgentName("");
+    }
 
-  if (val !== "Insurance") {
-    setInsuranceCover("");
-  }
-};
+    if (val !== "Insurance") {
+      setInsuranceCover("");
+    }
+  };
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -138,82 +137,73 @@ const [insuranceCover, setInsuranceCover] = useState("");
     setEngineNo("");
     setAgentName("");
     setPaymentMode("Cash");
+    setInsuranceCover("");
+    setBank(BANKS?.[0]?.key || "BANK_ISLAMI");
   };
 
   const onAdd = (e) => {
     e.preventDefault();
     const cat = category === "Other" ? customCategory.trim() : category;
 
-    if (!clientName.trim()) return alert("Client Name");
-    if (!clientAddress.trim()) return alert("Client Address");
+    if (!clientName.trim()) return alert("Client Name daalain");
+    if (!clientAddress.trim()) return alert("Client Address daalain");
     if (!clientPhone.trim() || !/^\d{10,13}$/.test(clientPhone.trim())) {
       return alert("Client Phone Number sahi daalain (10-13 digits)");
     }
-    // if (!party.trim()) return alert("Company / Party name");
-    if (!amount || Number(amount) <= 0) return alert("add amount");
-    if (!dateObj) return alert("plz select date");
-    if (!cat) return alert("Category select");
+    if (!party.trim()) return alert("Company / Party name daalain");
+    if (!amount || Number(amount) <= 0) return alert("Amount daalain");
+    if (!dateObj) return alert("Date select karain");
+    if (!cat) return alert("Category select karain");
+
+    if (paymentMode !== "Cash" && !bank) {
+      return alert("Online ya Check select kiya hai, Bank select karain");
+    }
 
     if (category === "Tracker") {
-      if (!trackerCompany) return alert("Tracker Company select");
-      if (!trackerType) return alert("Tracker Type select");
-      if (!vehicleType) return alert("Vehicle Type select");
-      if (!registrationNo.trim()) return alert("Registration Number");
-      if (!vehicleBrand.trim()) return alert("Vehicle Brand");
-      if (!chassisNumber.trim()) return alert("Chassis Number");
-      if (!engineno.trim()) return alert("Engine Number");
-      if (!agentName.trim()) return alert("Agent / Installer Name");
+      if (!trackerCompany) return alert("Tracker Company select karain");
+      if (!trackerType) return alert("Tracker Type select karain");
+      if (!vehicleType) return alert("Vehicle Type select karain");
+      if (!registrationNo.trim()) return alert("Registration Number daalain");
+      if (!vehicleBrand.trim()) return alert("Vehicle Brand daalain");
+      if (!chassisNumber.trim()) return alert("Chassis Number daalain");
+      if (!engineno.trim()) return alert("Engine Number daalain");
+      if (!agentName.trim()) return alert("Agent / Installer Name daalain");
     }
-    if (category === "Insurance") {
-  if (!insuranceCover) return alert("Insurance cover note select");
-}
 
+    if (category === "Insurance") {
+      if (!insuranceCover) return alert("Insurance cover type select karain");
+    }
 
     const extra = category === "Tracker"
       ? {
-        trackerCompany,
-        trackerType,
-        addonService: addonService.trim() || null,
-        vehicleType,
-        registrationNo: registrationNo.trim().toUpperCase(),
-        vehicleBrand: vehicleBrand.trim(),
-        chassisNumber: chassisNumber.trim().toUpperCase(),
-        engineNumber: engineno.trim().toUpperCase(),
-        agentName: agentName.trim(),
-      }
+          trackerCompany,
+          trackerType,
+          addonService: addonService.trim() || null,
+          vehicleType,
+          registrationNo: registrationNo.trim().toUpperCase(),
+          vehicleBrand: vehicleBrand.trim(),
+          chassisNumber: chassisNumber.trim().toUpperCase(),
+          engineNumber: engineno.trim().toUpperCase(),
+          agentName: agentName.trim(),
+        }
       : {};
 
-    // const newReceiving = {
-    //   id: Date.now().toString(),
-    //   clientName: clientName.trim(),
-    //   clientAddress: clientAddress.trim(),
-    //   clientPhone: clientPhone.trim(),
-    //   party: party.trim(),
-    //   amount: Number(amount),
-    //   date: formatMMDDYYYY(dateObj),
-    //   status,
-    //   bank,
-    //   notes: notes.trim(),
-    //   category: cat,
-    //   paymentMode,
-    //   ...extra,
-    // };
-const newReceiving = {
-  id: Date.now().toString(),
-  clientName: clientName.trim(),
-  clientAddress: clientAddress.trim(),
-  clientPhone: clientPhone.trim(),
-  party: party.trim(),
-  amount: Number(amount),
-  date: formatMMDDYYYY(dateObj),
-  status,
-  bank,
-  notes: notes.trim(),
-  category: cat,
-  paymentMode,
-  insuranceCover: category === "Insurance" ? insuranceCover : null,
-  ...extra,
-};
+    const newReceiving = {
+      id: Date.now().toString(),
+      clientName: clientName.trim(),
+      clientAddress: clientAddress.trim(),
+      clientPhone: clientPhone.trim(),
+      party: party.trim(),
+      amount: Number(amount),
+      date: formatMMDDYYYY(dateObj),
+      status,
+      bank: paymentMode === "Cash" ? null : bank,
+      notes: notes.trim(),
+      category: cat,
+      paymentMode,
+      insuranceCover: category === "Insurance" ? insuranceCover : null,
+      ...extra,
+    };
 
     actions.addReceiving(newReceiving);
     resetForm();
@@ -221,13 +211,14 @@ const newReceiving = {
 
   const onExportCSV = () => {
     const headers = [
-      "Date", "Client Name", "Client Address", "Client Phone",
-      "Party", "Category",
-      "Tracker Company", "Tracker Type", "Add-on Service",
-      "Vehicle Type", "Registration No", "Vehicle Brand",
-      "Chassis Number", "Engine Number", "Agent Name",
-      "Status", "Bank", "Payment Mode", "Amount", "Notes",
+      "Date","Client Name","Client Address","Client Phone",
+      "Party","Category",
+      "Tracker Company","Tracker Type","Add-on Service",
+      "Vehicle Type","Registration No","Vehicle Brand",
+      "Chassis Number","Engine Number","Agent Name",
+      "Status","Bank","Payment Mode","Amount","Notes",
     ];
+
     const rows = filtered.map((r) => [
       r.date || "",
       `"${(r.clientName || "").replace(/"/g, '""')}"`,
@@ -250,6 +241,7 @@ const newReceiving = {
       r.amount || "",
       `"${(r.notes || "").replace(/"/g, '""').replace(/\n/g, " ")}"`,
     ]);
+
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -257,9 +249,8 @@ const newReceiving = {
     link.href = url;
     link.download = `receivings_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
+    URL.revokeObjectURL(url);
   };
-
-  const bankLabelFunc = (key) => BANKS.find((b) => b.key === key)?.label || key;
 
   return (
     <div style={styles.container}>
@@ -277,7 +268,7 @@ const newReceiving = {
             style={styles.searchInput}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search client name, phone, party, reg#, chassis..."
+            placeholder="Search client, phone, party, reg#, chassis..."
           />
           <button style={styles.exportBtn} onClick={onExportCSV}>
             Export CSV
@@ -286,9 +277,9 @@ const newReceiving = {
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Add Receiving</h2>
+        <h2 style={styles.cardTitle}>Add New Receiving</h2>
         <form onSubmit={onAdd}>
-          {/* Client Info */}
+          {/* Client Information */}
           <div style={styles.formGrid3}>
             <div>
               <label style={styles.label}>Client Name *</label>
@@ -324,7 +315,7 @@ const newReceiving = {
             </div>
           </div>
 
-          {/* Company / Party + Amount */}
+          {/* Party & Amount */}
           <div style={styles.formGrid2}>
             <div>
               <label style={styles.label}>Company / Party *</label>
@@ -349,7 +340,7 @@ const newReceiving = {
             </div>
           </div>
 
-          {/* Date, Status, Bank */}
+          {/* Date & Status */}
           <div style={styles.formGrid3}>
             <div>
               <label style={styles.label}>Date *</label>
@@ -368,16 +359,7 @@ const newReceiving = {
                 <option value="RECEIVED">Received</option>
               </select>
             </div>
-            <div>
-              <label style={styles.label}>Bank</label>
-              <select style={styles.select} value={bank} onChange={(e) => setBank(e.target.value)}>
-                {BANKS.map((b) => (
-                  <option key={b.key} value={b.key}>
-                    {b.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div></div>
           </div>
 
           {/* Payment Mode */}
@@ -389,12 +371,9 @@ const newReceiving = {
                   ...styles.select,
                   background:
                     paymentMode === "Cash" ? "rgba(251,146,60,0.12)" :
-                      paymentMode === "Check" ? "rgba(139,92,246,0.12)" :
-                        "rgba(52,211,153,0.12)",
-                  color:
-                    paymentMode === "Cash" ? "#fb923c" :
-                      paymentMode === "Check" ? "#7c3aed" :
-                        "#34d399",
+                    paymentMode === "Check" ? "rgba(139,92,246,0.12)" :
+                    "rgba(52,211,153,0.12)",
+                  color: "#111827",
                 }}
                 value={paymentMode}
                 onChange={(e) => setPaymentMode(e.target.value)}
@@ -408,6 +387,28 @@ const newReceiving = {
             <div></div>
           </div>
 
+          {/* Bank - conditionally show only if not Cash */}
+          {paymentMode !== "Cash" && (
+            <div style={styles.formGrid2}>
+              <div>
+                <label style={styles.label}>Bank *</label>
+                <select
+                  style={styles.select}
+                  value={bank}
+                  onChange={(e) => setBank(e.target.value)}
+                  required
+                >
+                  {BANKS.map((b) => (
+                    <option key={b.key} value={b.key}>
+                      {b.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div></div>
+            </div>
+          )}
+
           {/* Category & Notes */}
           <div style={styles.formGrid2}>
             <div>
@@ -418,7 +419,7 @@ const newReceiving = {
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 required
               >
-                <option value="">Select your type</option>
+                <option value="">Select type</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -432,19 +433,19 @@ const newReceiving = {
                 style={styles.input}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional..."
+                placeholder="Optional notes..."
               />
             </div>
           </div>
 
           {category === "Other" && (
-            <div style={styles.otherCategory}>
-              <label style={styles.label}>Custom Category *</label>
+            <div style={{ margin: "20px 0" }}>
+              <label style={styles.label}>Custom Category Name *</label>
               <input
                 style={styles.input}
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
-                placeholder="Health Insurance, etc."
+                placeholder="e.g. Health Insurance, Event Expense..."
                 required
               />
             </div>
@@ -453,7 +454,6 @@ const newReceiving = {
           {category === "Tracker" && (
             <div style={styles.trackerCard}>
               <div style={styles.trackerTitle}>Tracker Installation Details</div>
-              <p style={styles.trackerSubtitle}>Device & Vehicle Information</p>
 
               <div style={styles.formGrid2}>
                 <div>
@@ -530,7 +530,7 @@ const newReceiving = {
                     style={styles.input}
                     value={registrationNo}
                     onChange={(e) => setRegistrationNo(e.target.value.toUpperCase())}
-                    placeholder="LEB-19-1234  or  ABC-567"
+                    placeholder="LEB-19-1234 or ABC-567"
                     required
                   />
                 </div>
@@ -541,7 +541,7 @@ const newReceiving = {
                     style={styles.input}
                     value={vehicleBrand}
                     onChange={(e) => setVehicleBrand(e.target.value)}
-                    placeholder="Toyota, Honda, Suzuki, Yamaha..."
+                    placeholder="Toyota, Honda, Suzuki..."
                     required
                   />
                 </div>
@@ -583,29 +583,32 @@ const newReceiving = {
               </div>
             </div>
           )}
-{category === "Insurance" && (
-  <div style={styles.formGrid2}>
-    <div>
-      <label style={styles.label}>Insurance Cover *</label>
-      <select
-        style={styles.select}
-        value={insuranceCover}
-        onChange={(e) => setInsuranceCover(e.target.value)}
-        required
-      >
-        <option value="">Select Cover Type</option>
-        <option value="Motor">Motor</option>
-        <option value="Travel">Travel</option>
-        <option value="Fire">Fire</option>
-        <option value="Marine">Marine</option>
-        <option value="Health">Health</option>
-        <option value="Life">Life</option>
-        <option value="Misc">Misc</option>
-      </select>
-    </div>
-    <div></div>
-  </div>
-)}
+
+          {category === "Insurance" && (
+            <div style={{ margin: "24px 0" }}>
+              <div style={styles.formGrid2}>
+                <div>
+                  <label style={styles.label}>Insurance Cover Type *</label>
+                  <select
+                    style={styles.select}
+                    value={insuranceCover}
+                    onChange={(e) => setInsuranceCover(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Cover Type</option>
+                    <option value="Motor">Motor</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Marine">Marine</option>
+                    <option value="Health">Health</option>
+                    <option value="Life">Life</option>
+                    <option value="Misc">Misc</option>
+                  </select>
+                </div>
+                <div></div>
+              </div>
+            </div>
+          )}
 
           <div style={styles.formActions}>
             <button type="submit" style={styles.submitBtn}>
@@ -614,7 +617,8 @@ const newReceiving = {
           </div>
         </form>
       </div>
-      {/* ─── Simplified Table ─── */}
+
+      {/* List */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Receivings List</h2>
         <div style={styles.tableContainer}>
@@ -622,11 +626,10 @@ const newReceiving = {
             <thead>
               <tr>
                 <th style={styles.th}>Client Name</th>
-                <th style={styles.th}>Client Phone</th>
+                <th style={styles.th}>Phone</th>
                 <th style={styles.th}>Status</th>
-                <th style={styles.th}>Payment Mode</th>
+                <th style={styles.th}>Mode</th>
                 <th style={styles.thActions}>Actions</th>
-                
               </tr>
             </thead>
             <tbody>
@@ -641,7 +644,9 @@ const newReceiving = {
                   <tr key={r.id} style={styles.row}>
                     <td style={styles.td}>
                       <strong>{r.clientName || "-"}</strong>
-                      <div style={{ fontSize: '11px', opacity: 0.6 }}>{r.date}</div>
+                      <div style={styles.secondaryText}>
+                        {r.date} • {r.category}
+                      </div>
                     </td>
                     <td style={styles.td}>{r.clientPhone || "-"}</td>
                     <td style={styles.td}>
@@ -652,17 +657,8 @@ const newReceiving = {
                         {r.paymentMode || "Cash"}
                       </span>
                     </td>
-                    
                     <td style={styles.tdActions}>
                       <div style={styles.actionButtons}>
-
-                        {/* <button
-                          style={styles.salesTaxBtn}
-                          onClick={() => alert("Sales Tax Invoice - Coming Soon")}
-                        >
-                          Sales Tax
-                        </button> */}
-
                         <button
                           style={styles.invoiceBtn}
                           onClick={() => {
@@ -673,12 +669,11 @@ const newReceiving = {
                           Invoice
                         </button>
 
-
                         <button
                           style={styles.receiptBtn}
                           onClick={() => {
-                            setSelected(null);        
-                            setSelectedReceipt(r);    
+                            setSelected(null);
+                            setSelectedReceipt(r);
                           }}
                         >
                           Receipt
@@ -699,407 +694,304 @@ const newReceiving = {
           </table>
         </div>
       </div>
-{selected && (
-  <div style={styles.card}>
-    <div style={styles.previewHeader}>
-      <h2 style={styles.cardTitle}>Receipt Voucher / Invoice Preview</h2>
-      <button style={styles.closeBtn} onClick={() => setSelected(null)}>✕ Close</button>
-    </div>
-    <Invoice
-      record={selected}
-      companyName={state?.companyName || "Secure Path Solutions"}
-      mode="voucher"   
-    />
-  </div>
-)}
 
-{selectedReceipt && (
-  <div style={styles.card}>
-    <div style={styles.previewHeader}>
-      <h2 style={styles.cardTitle}>Official Payment Receipt</h2>
-      <button style={styles.closeBtn} onClick={() => setSelectedReceipt(null)}>✕ Close</button>
-    </div>
-    <Invoice
-      record={selectedReceipt}
-      companyName={state?.companyName || "Secure Path Solutions"}
-      mode="receipt"
-    />
-  </div>
-)}
+      {selected && (
+        <div style={styles.card}>
+          <div style={styles.previewHeader}>
+            <h2 style={styles.cardTitle}>Invoice / Voucher Preview</h2>
+            <button style={styles.closeBtn} onClick={() => setSelected(null)}>
+              ✕ Close
+            </button>
+          </div>
+          <Invoice
+            record={selected}
+            companyName={state?.companyName || "Secure Path Solutions"}
+            mode="voucher"
+          />
+        </div>
+      )}
 
-
+      {selectedReceipt && (
+        <div style={styles.card}>
+          <div style={styles.previewHeader}>
+            <h2 style={styles.cardTitle}>Official Payment Receipt</h2>
+            <button style={styles.closeBtn} onClick={() => setSelectedReceipt(null)}>
+              ✕ Close
+            </button>
+          </div>
+          <Invoice
+            record={selectedReceipt}
+            companyName={state?.companyName || "Secure Path Solutions"}
+            mode="receipt"
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Styles ───
+// ─── Styles ─── (same as your previous version)
 const styles = {
   container: {
     padding: "clamp(16px, 4vw, 24px)",
     maxWidth: 1400,
     margin: "0 auto",
-    color: "#1e293b", 
-    background: '#f8fafc',
-    width: "100%",
-    boxSizing: "border-box"
+    background: "#f8fafc",
   },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
     flexWrap: "wrap",
-    gap: "clamp(12px, 3vw, 20px)",
-    marginBottom: "clamp(20px, 5vw, 32px)",
+    gap: 20,
+    marginBottom: 32,
   },
-  title: { 
-    fontSize: "clamp(24px, 6vw, 32px)", 
-    fontWeight: 800, 
-    margin: 0, 
-    color: "#0f172a", 
-    letterSpacing: "-1px" 
+  title: {
+    fontSize: "clamp(26px, 5vw, 34px)",
+    fontWeight: 800,
+    margin: 0,
+    color: "#0f172a",
   },
-  summary: { 
-    fontSize: "clamp(13px, 3.5vw, 15px)", 
-    color: "#64748b", 
-    marginTop: 6, 
+  summary: {
+    fontSize: "clamp(14px, 3.5vw, 16px)",
+    color: "#111827",
+    marginTop: 8,
     fontWeight: "500",
-    wordBreak: "break-word"
   },
-  headerActions: { 
-    display: "flex", 
-    gap: "clamp(10px, 2.5vw, 14px)", 
-    alignItems: "center",
+  headerActions: {
+    display: "flex",
+    gap: 12,
     flexWrap: "wrap",
-    width: "100%"
+    alignItems: "center",
   },
   searchInput: {
-    padding: "clamp(8px, 2.5vw, 10px) clamp(12px, 3vw, 18px)",
+    padding: "10px 16px",
     borderRadius: 12,
     border: "1px solid #e2e8f0",
+    minWidth: 280,
+    flex: 1,
+    fontSize: 15,
+    color: "#111827",
     background: "#ffffff",
-    color: "#0f172a",
-    minWidth: "clamp(200px, 100%, 320px)",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
-    fontSize: "clamp(13px, 3.5vw, 14px)",
-    boxSizing: "border-box",
-    flex: 1
   },
   exportBtn: {
-    padding: "clamp(8px, 2.5vw, 10px) clamp(14px, 3vw, 20px)",
+    padding: "10px 20px",
     borderRadius: 12,
-    background: "#ffffff",
-    border: "1px solid #e2e8f0",
-    color: "#475569",
+    background: "#fff",
+    border: "1px solid #cbd5e1",
+    fontWeight: 600,
     cursor: "pointer",
-    fontWeight: "600",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    transition: "0.2s",
-    fontSize: "clamp(12px, 3vw, 14px)",
-    whiteSpace: "nowrap"
   },
   card: {
     background: "#ffffff",
-    border: "1px solid #eef2f6",
-    borderRadius: 20,
-    padding: "clamp(16px, 4vw, 28px)",
-    marginBottom: "clamp(24px, 5vw, 36px)",
-    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.04)",
-    boxSizing: "border-box",
-    width: "100%"
+    borderRadius: 16,
+    border: "1px solid #e2e8f0",
+    padding: "clamp(20px, 4vw, 28px)",
+    marginBottom: 32,
+    boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
   },
-  cardTitle: { 
-    fontSize: "clamp(18px, 5vw, 22px)", 
-    fontWeight: 700, 
-    margin: "0 0 clamp(16px, 4vw, 24px) 0", 
-    color: "#0f172a" 
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    margin: "0 0 24px 0",
+    color: "#0f172a",
   },
   label: {
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "700",
-    color: "black",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1e293b",
     marginBottom: 8,
     display: "block",
     textTransform: "uppercase",
-    letterSpacing: "0.5px"
+    letterSpacing: 0.4,
   },
   input: {
     width: "100%",
-    padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px)",
-    borderRadius: 12,
-    border: "1px solid #e2e8f0",
-    background: "#f8fafc",
-    color: "#0f172a",
-    fontSize: "clamp(13px, 3.5vw, 14px)",
-    transition: "border-color 0.2s",
-    outline: "none",
-    boxSizing: "border-box"
+    padding: "11px 14px",
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
+    fontSize: 15,
+    background: "#fafcff",
+    color: "#111827",
   },
   select: {
     width: "100%",
-    padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px)",
-    paddingRight: "36px",
-    borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    padding: "11px 14px",
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
     background: "#ffffff",
-    color: "#0f172a",
+    fontSize: 15,
+    color: "#111827",
     appearance: "none",
     backgroundImage:
-      'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%2364748b" d="M1 1l5 5 5-5"/></svg>\')',
+      'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'><path fill=\'%23334155\' d=\'M1 1l5 5 5-5\'/></svg>")',
     backgroundRepeat: "no-repeat",
     backgroundPosition: "right 14px center",
-    cursor: "pointer",
-    fontSize: "clamp(13px, 3.5vw, 14px)",
-    boxSizing: "border-box"
   },
-  formGrid2: { 
-    display: "grid", 
-    gridTemplateColumns: "repeat(auto-fit, minmax(clamp(200px, 100%, 280px), 1fr))", 
-    gap: "clamp(16px, 4vw, 24px)" 
+  formGrid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "20px 24px",
+    margin: "20px 0",
   },
   formGrid3: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(clamp(200px, 100%, 260px), 1fr))",
-    gap: "clamp(16px, 4vw, 24px)",
-    margin: "clamp(16px, 4vw, 24px) 0",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "20px 24px",
+    margin: "20px 0",
   },
   trackerCard: {
-    marginTop: "clamp(20px, 5vw, 32px)",
-    padding: "clamp(16px, 4vw, 24px)",
-    background: "#eff6ff", 
-    border: "1px solid #dbeafe",
+    margin: "28px 0",
+    padding: 24,
+    background: "#f0f9ff",
+    border: "1px solid #bae6fd",
     borderRadius: 16,
   },
   trackerTitle: {
-    fontSize: "clamp(16px, 4vw, 18px)",
+    fontSize: 19,
     fontWeight: 700,
     color: "#1e40af",
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  trackerSubtitle: {
-    fontSize: "clamp(12px, 3.2vw, 14px)",
-    color: "#3b82f6",
-    fontWeight: "600",
-    margin: "0 0 20px 0",
+  formActions: {
+    marginTop: 36,
+    textAlign: "right",
   },
-  otherCategory: { margin: "clamp(16px, 4vw, 20px) 0" },
-  formActions: { marginTop: "clamp(24px, 5vw, 36px)", textAlign: "right" },
   submitBtn: {
-    padding: "clamp(10px, 2.5vw, 13px) clamp(24px, 5vw, 40px)",
-    background: "#3b82f6", 
+    padding: "12px 40px",
+    background: "#3b82f6",
     color: "white",
     border: "none",
-    borderRadius: 14,
+    borderRadius: 12,
+    fontSize: 16,
     fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 10px 15px -3px rgba(59, 130, 246, 0.3)",
-    fontSize: "clamp(13px, 3.5vw, 15px)"
   },
-  tableContainer: { 
-    background: "#fff", 
-    borderRadius: "16px", 
-    border: "1px solid #e2e8f0",
-    overflow: "auto",
+  tableContainer: {
+    overflowX: "auto",
+  },
+  table: {
     width: "100%",
-    boxSizing: "border-box"
+    borderCollapse: "collapse",
   },
-  table: { width: "100%", borderCollapse: "collapse", tableLayout: "auto" },
   th: {
     textAlign: "left",
-    padding: "clamp(12px, 3vw, 16px)",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "700",
-    color: "#64748b",
+    padding: "14px 16px",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#111827",
     background: "#f8fafc",
     borderBottom: "1px solid #e2e8f0",
     textTransform: "uppercase",
-    whiteSpace: "nowrap"
-  },
-  thAmount: {
-    textAlign: "right",
-    padding: "clamp(12px, 3vw, 16px)",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "700",
-    color: "#64748b",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
-    textTransform: "uppercase",
-    whiteSpace: "nowrap"
   },
   thActions: {
     textAlign: "right",
-    padding: "clamp(12px, 3vw, 16px)",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "700",
-    color: "#64748b",
+    padding: "14px 16px",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#111827",
     background: "#f8fafc",
     borderBottom: "1px solid #e2e8f0",
-    minWidth: "clamp(150px, 25vw, 220px)",
-    whiteSpace: "nowrap"
   },
   td: {
-    padding: "clamp(12px, 3vw, 16px)",
-    fontSize: "clamp(12px, 3.2vw, 14px)",
-    color: "#334155",
+    padding: "14px 16px",
     borderBottom: "1px solid #f1f5f9",
-  },
-  tdAmount: {
-    padding: "clamp(12px, 3vw, 16px)",
-    fontSize: "clamp(12px, 3.5vw, 15px)",
-    textAlign: "right",
-    fontWeight: "700",
-    color: "#0f172a",
-    borderBottom: "1px solid #f1f5f9",
+    fontSize: 14.5,
+    color: "#111827",
   },
   tdActions: {
-    padding: "clamp(12px, 3vw, 16px)",
+    padding: "14px 16px",
     textAlign: "right",
     borderBottom: "1px solid #f1f5f9",
   },
-  trackerInfo: { 
-    fontSize: "clamp(11px, 2.8vw, 13px)", 
-    color: "#64748b", 
-    marginTop: 6, 
-    lineHeight: 1.5,
-    wordBreak: "break-word"
-  },
-  agentInfo: { 
-    fontSize: "clamp(11px, 3vw, 13px)", 
-    fontWeight: "600", 
-    marginTop: 6, 
-    color: "#3b82f6",
-    wordBreak: "break-word"
+  secondaryText: {
+    fontSize: "12.5px",
+    color: "#111827",
+    marginTop: 4,
+    fontWeight: "500",
   },
   actionButtons: {
     display: "flex",
-    flexWrap: "nowrap",
-    gap: "clamp(6px, 1.5vw, 10px)",
+    gap: 10,
     justifyContent: "flex-end",
-    alignItems: "center",
-    overflow: "auto",
-    minHeight: "clamp(36px, 8vw, 44px)"
+    flexWrap: "wrap",
   },
   invoiceBtn: {
-    padding: "clamp(7px, 2vw, 8px) clamp(10px, 2.5vw, 14px)",
+    padding: "8px 16px",
     background: "#eff6ff",
-    color: "#3b82f6",
+    color: "#2563eb",
     border: "1px solid #bfdbfe",
     borderRadius: 8,
+    fontWeight: 600,
     cursor: "pointer",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-    minHeight: "clamp(32px, 8vw, 36px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease"
-  },
-  salesTaxBtn: {
-    padding: "clamp(7px, 2vw, 8px) clamp(10px, 2.5vw, 14px)",
-    background: "#f5f3ff",
-    color: "#7c3aed",
-    border: "1px solid #ddd6fe",
-    borderRadius: 8,
-    cursor: "pointer",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-    minHeight: "clamp(32px, 8vw, 36px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease"
   },
   receiptBtn: {
-    padding: "clamp(7px, 2vw, 8px) clamp(10px, 2.5vw, 14px)",
+    padding: "8px 16px",
     background: "#f0fdf4",
-    color: "#16a34a",
+    color: "#15803d",
     border: "1px solid #bbf7d0",
     borderRadius: 8,
+    fontWeight: 600,
     cursor: "pointer",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-    minHeight: "clamp(32px, 8vw, 36px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease"
   },
   deleteBtn: {
-    padding: "clamp(7px, 2vw, 8px) clamp(10px, 2.5vw, 14px)",
+    padding: "8px 16px",
     background: "#fef2f2",
-    color: "#ef4444",
+    color: "#dc2626",
     border: "1px solid #fecaca",
     borderRadius: 8,
+    fontWeight: 600,
     cursor: "pointer",
-    fontSize: "clamp(11px, 2.8vw, 13px)",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-    minHeight: "clamp(32px, 8vw, 36px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease"
   },
   previewHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "clamp(12px, 3vw, 20px)",
+    marginBottom: 20,
+    paddingBottom: 16,
     borderBottom: "1px solid #e2e8f0",
-    paddingBottom: "clamp(10px, 3vw, 15px)",
-    flexWrap: "wrap",
-    gap: "clamp(10px, 2.5vw, 15px)"
   },
   closeBtn: {
-    padding: "clamp(7px, 2vw, 9px) clamp(14px, 3vw, 20px)",
+    padding: "8px 18px",
     background: "#f1f5f9",
-    color: "#475569",
-    borderRadius: 12,
+    border: "1px solid #cbd5e1",
+    borderRadius: 10,
     cursor: "pointer",
-    border: "1px solid #e2e8f0",
-    fontWeight: "600",
-    fontSize: "clamp(12px, 3vw, 14px)"
+    fontWeight: 600,
   },
   emptyCell: {
     textAlign: "center",
-    padding: "clamp(30px, 10vw, 60px) clamp(16px, 4vw, 20px)",
-    fontSize: "clamp(14px, 3.5vw, 16px)",
-    color: "#94a3b8",
-    background: "#fff"
+    padding: "60px 20px",
+    color: "#111827",
+    fontSize: 16,
   },
 };
 
 function chipStyle(status) {
-  const isReceived = status === "RECEIVED";
+  const received = status?.toUpperCase() === "RECEIVED";
   return {
-    padding: "5px 12px",
-    borderRadius: 14,
-    fontSize: "11px",
-    fontWeight: 800,
-    background: isReceived ? "#dcfce7" : "#dbeafe",
-    color: isReceived ? "#166534" : "#1e40af",
-    textTransform: "uppercase"
+    padding: "6px 12px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    background: received ? "#dcfce7" : "#dbeafe",
+    color: received ? "#166534" : "#1e40af",
   };
 }
 
 function paymentChipStyle(mode) {
-  const isCash = (mode || "Cash") === "Cash";
-  const isCheck = (mode || "Cash") === "Check";
+  const m = (mode || "Cash").toLowerCase();
+  let bg = "#e0f2fe", color = "#0369a1";
+  if (m === "cash") { bg = "#ffedd5"; color = "#9a3412"; }
+  if (m === "check") { bg = "#f3e8ff"; color = "#6b21a8"; }
+  if (m === "online") { bg = "#dcfce7"; color = "#166534"; }
+
   return {
-    padding: "5px 12px",
-    borderRadius: 14,
-    fontSize: "11px",
-    fontWeight: 800,
-    background: isCash
-      ? "#ffedd5"
-      : isCheck
-        ? "#f3e8ff"
-        : "#dcfce7",
-    color: isCash ? "#9a3412" : isCheck ? "#6b21a8" : "#166534",
-    textTransform: "uppercase"
+    padding: "6px 12px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    background: bg,
+    color,
   };
 }

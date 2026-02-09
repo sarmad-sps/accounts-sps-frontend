@@ -22,9 +22,13 @@ export default function SalaryManager() {
 
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null); // New: Track editing record
+  const [isSaving, setIsSaving] = useState(false); // New: Loading state for save
 
-  const banks = ["HBL", "Islamic Bank", "Other"];
+  const banks = ["HBL", "Islamic Bank"];
   const statusOptions = ["Paid", "Unpaid"];
+  const designations = ["Staff", "Manager", "Store", "Employee", "Accountant"];
+  const paymentModes = ["Cash", "Online", "Cheque", "Bank Transfer"];
 
   useEffect(() => {
     const fetchSalaries = async () => {
@@ -47,8 +51,35 @@ export default function SalaryManager() {
       .reduce((acc, s) => acc + (Number(s.amount) || 0), 0);
   }, [salaries]);
 
-  const addSalary = async (e) => {
+  // New: Load data into form for editing
+  const loadForEdit = (salary) => {
+    setEmpName(salary.employeeName || "");
+    setSalaryAmount((salary.amount || 0).toString());
+    setSalaryMonth(salary.month || new Date().toLocaleString("default", { month: "long" }));
+    setPaymentDate(salary.paymentDate?.slice(0, 10) || new Date().toISOString().slice(0, 10));
+    setDesignation(salary.designation || "Staff");
+    setPaymentMode(salary.paymentMethod || "Cash");
+    setBank(salary.bank || "HBL");
+    setStatus(salary.status || "Paid");
+    setEditingId(salary._id);
+  };
+
+  // New: Reset form to add mode
+  const resetForm = () => {
+    setEmpName("");
+    setSalaryAmount("");
+    setSalaryMonth(new Date().toLocaleString("default", { month: "long" }));
+    setPaymentDate(new Date().toISOString().slice(0, 10));
+    setDesignation("Staff");
+    setPaymentMode("Cash");
+    setBank("HBL");
+    setStatus("Paid");
+    setEditingId(null);
+  };
+
+  const saveSalary = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
 
     if (!empName.trim()) return alert("Enter Employee name");
 
@@ -57,7 +88,7 @@ export default function SalaryManager() {
 
     const amountValue = parseInt(rawAmount, 10);
     if (isNaN(amountValue) || amountValue <= 0) {
-      return alert("Enter Valid positive amount ");
+      return alert("Enter Valid positive amount");
     }
 
     const payload = {
@@ -67,48 +98,62 @@ export default function SalaryManager() {
       month: salaryMonth,
       paymentDate,
       paymentMethod: paymentMode,
-      bank,
+      bank: paymentMode === "Cash" ? null : bank,
       status,
     };
 
     try {
-      const res = await axios.post(API_URL, payload);
-      const newSalary = {
-        _id: res.data._id,
-        employeeName: res.data.employeeName || payload.employeeName,
-        designation: res.data.designation || payload.designation,
-        amount: res.data.amount || payload.amount,
-        month: res.data.month || payload.month,
-        paymentDate: res.data.paymentDate || payload.paymentDate,
-        paymentMethod: res.data.paymentMethod || payload.paymentMethod,
-        bank: res.data.bank || payload.bank,
-        status: res.data.status || payload.status,
-      };
+      let updatedSalaries;
+      let newSalary;
 
-      setSalaries((prev) => [newSalary, ...prev]);
+      if (editingId) {
+        // Update existing record
+        const res = await axios.put(`${API_URL}/${editingId}`, payload);
+        newSalary = res.data.salary;
+        updatedSalaries = salaries.map((s) => (s._id === editingId ? newSalary : s));
+      } else {
+        // Add new record
+        const res = await axios.post(API_URL, payload);
+        newSalary = {
+          _id: res.data.salary._id,
+          employeeName: res.data.salary.employeeName || payload.employeeName,
+          designation: res.data.salary.designation || payload.designation,
+          amount: res.data.salary.amount || payload.amount,
+          month: res.data.salary.month || payload.month,
+          paymentDate: res.data.salary.paymentDate || payload.paymentDate,
+          paymentMethod: res.data.salary.paymentMethod || payload.paymentMethod,
+          bank: res.data.salary.bank || payload.bank,
+          status: res.data.salary.status || payload.status,
+        };
+        updatedSalaries = [newSalary, ...salaries];
+      }
+
+      setSalaries(updatedSalaries);
 
       // Reset form
-      setEmpName("");
-      setSalaryAmount("");
-      setSalaryMonth(new Date().toLocaleString("default", { month: "long" }));
-      setPaymentDate(new Date().toISOString().slice(0, 10));
-      setDesignation("Staff");
-      setPaymentMode("Cash");
-      setBank("HBL");
-      setStatus("Paid");
+      resetForm();
+      alert(editingId ? "Salary updated successfully!" : "Salary added successfully!");
     } catch (err) {
-      console.error("Error adding salary:", err);
-      alert("Salary could not save");
+      console.error("Error saving salary:", err);
+      alert(editingId ? "Failed to update salary" : "Salary could not save");
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  const cancelEdit = () => {
+    resetForm();
+  };
+
   const deleteRecord = async (id) => {
-    if (!window.confirm("Are you sure you want to delete?")) return;
+    if (!window.confirm("Are you sure you want to delete this record?")) return;
 
     try {
       await axios.delete(`${API_URL}/${id}`);
       setSalaries((prev) => prev.filter((s) => s._id !== id));
       if (selectedSlip?._id === id) setSelectedSlip(null);
+      if (editingId === id) resetForm();
+      alert("Record deleted successfully!");
     } catch (err) {
       console.error("Delete error:", err);
       alert("Can't delete record");
@@ -141,7 +186,7 @@ export default function SalaryManager() {
     return map[b] || "#6b7280";
   };
 
-  if (loading) return <div>Loading salary records...</div>;
+  if (loading) return <div className="loading">Loading salary records...</div>;
 
   return (
     <div className="payroll-container">
@@ -205,7 +250,9 @@ export default function SalaryManager() {
                   <p>
                     <strong>Bank:</strong>{" "}
                     <span style={{ color: getBankColor(selectedSlip.bank) }}>
-                      {selectedSlip.bank || "—"}
+                      {selectedSlip.paymentMethod === "Cash" || !selectedSlip.bank || selectedSlip.bank.trim() === "" 
+                        ? "—" 
+                        : selectedSlip.bank}
                     </span>
                   </p>
                 </div>
@@ -303,8 +350,15 @@ export default function SalaryManager() {
           </div>
         </header>
 
-        <form className="add-form" onSubmit={addSalary}>
-          <h3>New Salary Record</h3>
+        <form className="add-form" onSubmit={saveSalary}>
+          <div className="form-header">
+            <h3>{editingId ? "Edit Salary Record" : "New Salary Record"}</h3>
+            {editingId && (
+              <button type="button" className="cancel-btn" onClick={cancelEdit}>
+                Cancel Edit
+              </button>
+            )}
+          </div>
 
           <div className="form-fields">
             <div className="field">
@@ -362,11 +416,9 @@ export default function SalaryManager() {
                 value={designation}
                 onChange={(e) => setDesignation(e.target.value)}
               >
-                <option>Staff</option>
-                <option>Manager</option>
-                <option>Store</option>
-                <option>Employee</option>
-                <option>Accountant</option>
+                {designations.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
               </select>
             </div>
 
@@ -374,24 +426,29 @@ export default function SalaryManager() {
               <label>Payment Mode</label>
               <select
                 value={paymentMode}
-                onChange={(e) => setPaymentMode(e.target.value)}
+                onChange={(e) => {
+                  setPaymentMode(e.target.value);
+                  if (e.target.value === "Cash") setBank("HBL");
+                }}
               >
-                <option value="Cash">Cash</option>
-                <option value="Cheque">Cheque</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-              </select>
-            </div>
-
-            <div className="field">
-              <label>Bank</label>
-              <select value={bank} onChange={(e) => setBank(e.target.value)}>
-                {banks.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
+                {paymentModes.map((mode) => (
+                  <option key={mode} value={mode}>{mode}</option>
                 ))}
               </select>
             </div>
+
+            {paymentMode !== "Cash" && (
+              <div className="field">
+                <label>Bank</label>
+                <select value={bank} onChange={(e) => setBank(e.target.value)}>
+                  {banks.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="field">
               <label>Status</label>
@@ -405,8 +462,8 @@ export default function SalaryManager() {
             </div>
 
             <div className="field button-field">
-              <button type="submit" className="submit-button">
-                Add Record
+              <button type="submit" className="submit-button" disabled={isSaving}>
+                {isSaving ? "Saving..." : (editingId ? "Update Record" : "Add Record")}
               </button>
             </div>
           </div>
@@ -443,10 +500,27 @@ export default function SalaryManager() {
                     </span>
                   </div>
                   <div className="actions">
-                    <button className="view" onClick={() => setSelectedSlip(s)}>
+                    <button 
+                      className="view" 
+                      onClick={() => setSelectedSlip(s)}
+                      title="View Payslip"
+                    >
                       View Slip
                     </button>
-                    <button className="del" onClick={() => deleteRecord(s._id)}>
+                    {!editingId && (
+                      <button 
+                        className="edit" 
+                        onClick={() => loadForEdit(s)}
+                        title="Edit Record"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    <button 
+                      className="del" 
+                      onClick={() => deleteRecord(s._id)}
+                      title="Delete Record"
+                    >
                       Delete
                     </button>
                   </div>
@@ -460,11 +534,12 @@ export default function SalaryManager() {
   );
 }
 
-// --------------------- Style remains same ---------------------
+// --------------------- Updated Styles ---------------------
 const payrollStyle = `
   :root {
     --primary: #3b82f6;
     --success: #059669;
+    --warning: #d97706;
     --danger: #dc2626;
     --bg: #e5e7eb;
     --card: #ffffff;
@@ -479,6 +554,13 @@ const payrollStyle = `
     padding: clamp(16px, 4vw, 24px);
     font-family: Inter, system-ui, sans-serif;
     background: #e5e7eb;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: var(--dim);
   }
 
   .main-card {
@@ -541,11 +623,34 @@ const payrollStyle = `
     margin-bottom: clamp(20px, 5vw, 32px);
   }
 
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: clamp(14px, 3.5vw, 20px);
+  }
+
   .add-form h3 {
-    margin: 0 0 clamp(14px, 3.5vw, 20px) 0;
+    margin: 0;
     color: var(--text);
     font-size: clamp(16px, 4.5vw, 18px);
     font-weight: 700;
+  }
+
+  .cancel-btn {
+    background: var(--warning);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .cancel-btn:hover {
+    background: #b45309;
   }
 
   .form-fields {
@@ -573,6 +678,14 @@ const payrollStyle = `
     border-radius: 8px;
     font-size: clamp(13px, 3.5vw, 14px);
     box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
   }
 
   .submit-button {
@@ -587,6 +700,18 @@ const payrollStyle = `
     font-size: clamp(13px, 3.5vw, 15px);
     margin-top: clamp(18px, 4vw, 28px);
     min-height: clamp(36px, 8vw, 44px);
+    transition: all 0.2s;
+  }
+
+  .submit-button:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  .submit-button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .list-title {
@@ -617,6 +742,7 @@ const payrollStyle = `
 
   .record-row:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
   }
 
   .record-left {
@@ -671,22 +797,25 @@ const payrollStyle = `
 
   .actions {
     display: flex;
-    gap: clamp(8px, 2vw, 12px);
+    gap: clamp(6px, 1.5vw, 8px);
     flex-wrap: wrap;
+    align-items: center;
   }
 
   .view,
+  .edit,
   .del {
     background: none;
     border: none;
     font-size: clamp(11px, 3vw, 13px);
     font-weight: 600;
     cursor: pointer;
-    padding: clamp(5px, 1.2vw, 6px) clamp(8px, 2vw, 12px);
+    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 14px);
     border-radius: 6px;
     min-height: clamp(28px, 6vw, 32px);
     display: flex;
     align-items: center;
+    transition: all 0.2s;
   }
 
   .view {
@@ -694,9 +823,29 @@ const payrollStyle = `
     background: rgba(59,130,246,0.1);
   }
 
+  .view:hover {
+    background: rgba(59,130,246,0.2);
+    transform: translateY(-1px);
+  }
+
+  .edit {
+    color: var(--warning);
+    background: rgba(234,179,8,0.1);
+  }
+
+  .edit:hover {
+    background: rgba(234,179,8,0.2);
+    transform: translateY(-1px);
+  }
+
   .del {
     color: var(--danger);
     background: rgba(220,38,38,0.1);
+  }
+
+  .del:hover {
+    background: rgba(220,38,38,0.2);
+    transform: translateY(-1px);
   }
 
   .empty {
@@ -706,7 +855,7 @@ const payrollStyle = `
     font-size: clamp(13px, 3.5vw, 15px);
   }
 
-  /* MODAL & PAYSLIP - Light Theme */
+  /* MODAL & PAYSLIP - Light Theme (unchanged) */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -951,6 +1100,22 @@ const payrollStyle = `
     @page {
       size: A4;
       margin: 12mm;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+    
+    .record-right {
+      width: 100%;
+      align-items: stretch;
+    }
+    
+    .form-fields {
+      grid-template-columns: 1fr;
     }
   }
 `;

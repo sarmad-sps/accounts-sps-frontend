@@ -67,14 +67,15 @@ export default function UserReqForm({ role = "user" }) {
   const handleReceiptSave = async (id) => {
     try {
       const { invoiceNo, receivedQty, paymentMethod, bank, paymentStatus, amount } = receiptData;
-      if (!invoiceNo.trim() || !receivedQty || Number(receivedQty) < 1 || !paymentMethod) {
-        alert("Invoice number, received quantity and payment method required!");
-        return;
-      }
-      if ((paymentMethod === "Bank Transfer" || paymentMethod === "Check") && !bank) {
-        alert("Please select a bank for Bank Transfer or Check");
-        return;
-      }
+
+    if (!invoiceNo.trim() || !receivedQty || Number(receivedQty) < 1 || !paymentMethod) {
+      alert("Invoice number, received quantity and payment method required!");
+      return;
+    }
+    if ((paymentMethod === "Bank Transfer" || paymentMethod === "Check") && !bank) {
+      alert("Please select a bank for Bank Transfer or Check");
+      return;
+    }
       await axios.patch(`${BASE_URL}/${id}`, {
         status: "stock_received",
         invoiceNo: invoiceNo.trim(),
@@ -263,6 +264,7 @@ export default function UserReqForm({ role = "user" }) {
       </div>
 
      {/* Receipt Modal */}
+{/* Receipt Modal */}
 {receiptModal && (
   <div style={modalStyles.overlay}>
     <div style={modalStyles.card}>
@@ -286,7 +288,7 @@ export default function UserReqForm({ role = "user" }) {
           />
         </div>
 
-        {/* Row 1: Payment Method & Bank */}
+        {/* Row 1: Payment Method & Bank (conditional) */}
         <div style={modalStyles.grid}>
           <div style={modalStyles.inputGroup}>
             <label style={modalStyles.label}>Payment Method</label>
@@ -301,18 +303,23 @@ export default function UserReqForm({ role = "user" }) {
             </select>
           </div>
 
-          <div style={modalStyles.inputGroup}>
-            <label style={modalStyles.label}>Select Bank</label>
-            <select
-              style={modalStyles.select}
-              value={receiptData.bank}
-              onChange={(e) => setReceiptData({ ...receiptData, bank: e.target.value })}
-            >
-              {BANKS.map((b) => (
-                <option key={b.key} value={b.key}>{b.label}</option>
-              ))}
-            </select>
-          </div>
+          {/* Bank field sirf tab dikhao jab Cash na ho */}
+          {(receiptData.paymentMethod === "Bank Transfer" || receiptData.paymentMethod === "Check") && (
+            <div style={modalStyles.inputGroup}>
+              <label style={modalStyles.label}>Select Bank</label>
+              <select
+                style={modalStyles.select}
+                value={receiptData.bank}
+                onChange={(e) => setReceiptData({ ...receiptData, bank: e.target.value })}
+              >
+                {BANKS.map((b) => (
+                  <option key={b.key} value={b.key}>
+                    {b.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Row 2: Status & Quantity */}
@@ -322,7 +329,7 @@ export default function UserReqForm({ role = "user" }) {
             <select
               style={{
                 ...modalStyles.select,
-                color: receiptData.paymentStatus === "Paid" ? "#4ade80" : "#fbbf24"
+                color: receiptData.paymentStatus === "Paid" ? "#4ade80" : "#fbbf24",
               }}
               value={receiptData.paymentStatus}
               onChange={(e) => setReceiptData({ ...receiptData, paymentStatus: e.target.value })}

@@ -50,6 +50,7 @@ const FinanceStatementApp = () => {
               amount: Number(r.amount),
               month: d.toLocaleString("default", { month: "long" }),
               year: String(d.getFullYear()),
+               paymentMode: r.paymentMode || "Cash", // added
             });
           }
         });
@@ -70,6 +71,7 @@ const FinanceStatementApp = () => {
               amount: Number(p.amount),
               month: d.toLocaleString("default", { month: "long" }),
               year: String(d.getFullYear()),
+               paymentMode: p.paymentMode || "Cash", // added
             });
           }
         });
@@ -90,6 +92,7 @@ const FinanceStatementApp = () => {
               amount: Number(s.amount),
               month: d.toLocaleString("default", { month: "long" }),
               year: String(d.getFullYear()),
+               paymentMode: s.paymentMethod || "Cash", // added
             });
           }
         });
@@ -149,25 +152,30 @@ inventory.forEach(r => {
     doc.text(`Financial Ledger | ${month.toUpperCase()} ${year}`, 45, 28);
 
     // 2. Main Transaction Table
-    autoTable(doc, {
-      startY: 50,
-      head: [["Date", "Entity Name", "Description", "Credit (PKR)", "Debit (PKR)"]],
-      body: filtered.map(t => [
-        t.date, t.name, t.desc, 
-        t.type === "credit" ? t.amount.toLocaleString() : "-", 
-        t.type === "debit" ? t.amount.toLocaleString() : "-"
-      ]),
-      headStyles: { fillColor: [30, 58, 138], halign: 'center' },
-      columnStyles: {
-        0: { halign: 'center', cellWidth: 35 },
-        1: { fontStyle: 'bold' },
-        3: { halign: 'right', textColor: [21, 128, 61] },
-        4: { halign: 'right', textColor: [185, 28, 28] }
-      },
-      styles: { fontSize: 8, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [250, 250, 250] },
-      margin: { bottom: 60 } // Table ko summary ke liye jagah chorne par majboor karta hai
-    });
+   autoTable(doc, {
+  startY: 50,
+  head: [["Date", "Entity Name", "Description", "Mode", "Credit (PKR)", "Debit (PKR)"]],
+  body: filtered.map(t => [
+    t.date,
+    t.name,
+    t.desc,
+    t.paymentMode || '—', // NEW
+    t.type === "credit" ? t.amount.toLocaleString() : "-",
+    t.type === "debit" ? t.amount.toLocaleString() : "-"
+  ]),
+  headStyles: { fillColor: [30, 58, 138], halign: 'center' },
+  columnStyles: {
+    0: { halign: 'center', cellWidth: 30 },
+    1: { fontStyle: 'bold', cellWidth: 40 },
+    3: { halign: 'center', cellWidth: 30 }, // Mode column
+    4: { halign: 'right', textColor: [21, 128, 61] },
+    5: { halign: 'right', textColor: [185, 28, 28] }
+  },
+  styles: { fontSize: 8, cellPadding: 3 },
+  alternateRowStyles: { fillColor: [250, 250, 250] },
+  margin: { bottom: 60 }
+});
+
 
     // 3. FIXED BOTTOM SUMMARY BLOCK (Bottom Right)
     const summaryWidth = 85;
@@ -189,7 +197,7 @@ inventory.forEach(r => {
       body: [
         ["Total Credits", { content: `Rs. ${totalCredit.toLocaleString()}`, styles: { halign: 'right', textColor: [21, 128, 61] } }],
         ["Total Debits", { content: `Rs. ${totalDebit.toLocaleString()}`, styles: { halign: 'right', textColor: [185, 28, 28] } }],
-        ["Net Balance", { content: `Rs. ${net.toLocaleString()}`, styles: { halign: 'right', fontStyle: 'bold', fillColor: [30, 58, 138], textColor: [255, 255, 255] } }]
+    
       ],
       theme: 'grid',
       styles: { fontSize: 9, cellPadding: 2.5 }
@@ -234,15 +242,7 @@ inventory.forEach(r => {
               <span style={{ fontSize: 'clamp(11px, 2.5vw, 13px)', color: '#64748b' }}>Ledger Management System</span>
             </div>
           </div>
-          {/* <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 10px)', width: window.innerWidth < 640 ? '100%' : 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <select value={month} onChange={(e) => setMonth(e.target.value)} style={{ padding: 'clamp(8px, 2vw, 10px) clamp(12px, 3vw, 14px)', borderRadius: 'clamp(6px, 1.5vw, 8px)', border: '2px solid #e2e8f0', outline: 'none', fontSize: 'clamp(11px, 2.5vw, 13px)', minWidth: 'clamp(90px, 20vw, 120px)', background: '#ffffff', color: '#1e293b', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.08)', transition: 'all 0.2s ease', appearance: 'none', backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%221e293b%22 stroke-width=%222%22%3e%3cpath d=%22M6 9l6 6 6-6%22/%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right clamp(6px, 1.5vw, 10px) center', backgroundSize: 'clamp(14px, 3vw, 18px)', paddingRight: 'clamp(28px, 7vw, 32px)' }} onFocus={(e) => { e.target.style.borderColor = '#1e3a8a'; e.target.style.boxShadow = '0 0 0 3px rgba(30, 58, 138, 0.1)'; }} onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'; }}>
-              {["January","February","March","April","May","June","July","August","September","October","November","December"].map(m => <option key={m}>{m}</option>)}
-            </select>
-            <select value={year} onChange={(e) => setYear(e.target.value)} style={{ padding: 'clamp(8px, 2vw, 10px) clamp(12px, 3vw, 14px)', borderRadius: 'clamp(6px, 1.5vw, 8px)', border: '2px solid #e2e8f0', outline: 'none', fontSize: 'clamp(11px, 2.5vw, 13px)', minWidth: 'clamp(70px, 15vw, 90px)', background: '#ffffff', color: '#1e293b', fontWeight: '500', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.08)', transition: 'all 0.2s ease', appearance: 'none', backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%221e293b%22 stroke-width=%222%22%3e%3cpath d=%22M6 9l6 6 6-6%22/%3e%3c/svg%3e")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right clamp(6px, 1.5vw, 10px) center', backgroundSize: 'clamp(14px, 3vw, 18px)', paddingRight: 'clamp(28px, 7vw, 32px)' }} onFocus={(e) => { e.target.style.borderColor = '#1e3a8a'; e.target.style.boxShadow = '0 0 0 3px rgba(30, 58, 138, 0.1)'; }} onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'; }}>
-              {["2024","2025","2026"].map(y => <option key={y}>{y}</option>)}
-            </select>
-            <button onClick={downloadPDF} style={{ background: '#1e3a8a', color: 'white', padding: 'clamp(8px, 2vw, 10px) clamp(16px, 5vw, 24px)', borderRadius: 'clamp(6px, 1.5vw, 8px)', border: 'none', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: 'clamp(11px, 2.5vw, 14px)', minHeight: 'clamp(32px, 7vw, 36px)', boxShadow: '0 2px 8px rgba(30, 58, 138, 0.25)' }} onMouseEnter={(e) => { e.target.style.background = '#1e3a8a'; e.target.style.boxShadow = '0 4px 12px rgba(30, 58, 138, 0.35)'; e.target.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.target.style.background = '#1e3a8a'; e.target.style.boxShadow = '0 2px 8px rgba(30, 58, 138, 0.25)'; e.target.style.transform = 'translateY(0)'; }}>Download Statement</button>
-          </div> */}
+          
           <div style={{ 
   display: 'flex', 
   gap: '12px', 
@@ -343,10 +343,10 @@ inventory.forEach(r => {
             <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>TOTAL DEBITS</span>
             <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#dc2626', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {totalDebit.toLocaleString()}</div>
           </div>
-          <div style={S.tile('#1e3a8a')}>
+          {/* <div style={S.tile('#1e3a8a')}>
             <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>NET BALANCE</span>
             <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#1e3a8a', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {net.toLocaleString()}</div>
-          </div>
+          </div> */}
         </div>
 
         {/* MAIN LEDGER TABLE */}
@@ -361,6 +361,7 @@ inventory.forEach(r => {
                 <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Date</th>
                 <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Entity/Name</th>
                 <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Description</th>
+                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Mode</th>
                 <th style={{ ...S.th, textAlign: 'right', padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Credit</th>
                 <th style={{ ...S.th, textAlign: 'right', padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Debit</th>
               </tr>
@@ -371,6 +372,7 @@ inventory.forEach(r => {
                   <td style={{ ...S.td, textAlign: 'center', fontSize: 'clamp(10px, 2.5vw, 12px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.date}</td>
                   <td style={{ ...S.td, textAlign: 'center', fontWeight: '600', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.name}</td>
                   <td style={{ ...S.td, textAlign: 'center', color: '#64748b', fontSize: 'clamp(10px, 2.5vw, 13px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.desc}</td>
+                  <td style={{ ...S.td, textAlign: 'center', color: '#64748b', fontSize: 'clamp(10px, 2.5vw, 13px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.paymentMode || '—'}</td>
                   <td style={{ ...S.td, textAlign: 'right', color: '#059669', fontWeight: 'bold', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.type === 'credit' ? t.amount.toLocaleString() : '—'}</td>
                   <td style={{ ...S.td, textAlign: 'right', color: '#dc2626', fontWeight: 'bold', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.type === 'debit' ? t.amount.toLocaleString() : '—'}</td>
                 </tr>
