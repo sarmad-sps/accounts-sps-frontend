@@ -4,7 +4,7 @@ import { api } from "./api";
 export const BANKS = [
   { key: "BANK_ISLAMI", label: "Bank Islami" },
   { key: "HBL", label: "HBL" },
- { key: "CASH", label: "Cash in Hand", isCash: true },
+ { key: "CASH", label: "Cash in Hand" } ,
 ];
 
 function uid() {
@@ -13,7 +13,7 @@ function uid() {
 
 const initialState = {
   companyName: "Secure Path Solutions",
-  openingBalances: { BANK_ISLAMI: 0, HBL: 0 },
+  openingBalances: { BANK_ISLAMI: 0, HBL: 0, CASH: 0 },
   receivings: [], // {id, party, amount, date, notes, status, bank}  status: PENDING|RECEIVED
   payments: []    // {id, party, category, amount, date, notes, bank}
 };
