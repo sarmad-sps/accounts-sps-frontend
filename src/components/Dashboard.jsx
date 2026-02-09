@@ -598,163 +598,30 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // useEffect(() => {
-  //   async function fetchState() {
-  //     try {
-  //       // Main state (receivings)
-  //       const resState = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state");
-  //       if (!resState.ok) throw new Error("Failed to fetch state");
-  //       const stateData = await resState.json();
-
-  //       //  Payments / Expenses
-  //       const resPayments = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments");
-  //       if (!resPayments.ok) throw new Error("Failed to fetch payments");
-  //       const payments = await resPayments.json();
-
-  //       //  Salaries
-  //       const resSalaries = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries");
-  //       if (!resSalaries.ok) throw new Error("Failed to fetch salaries");
-  //       const salaries = await resSalaries.json();
-
-  //       //  Inventory Requests (Accountant Receipts)
-  //       const resInventory = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests");
-  //       if (!resInventory.ok) throw new Error("Failed to fetch inventory requests");
-  //       const inventoryRequests = await resInventory.json();
-
-  //       //  Normalize bank keys
-  //       const normalizeBankKey = (bankName) => {
-  //         if (!bankName) return "";
-  //         const b = bankName.trim().toLowerCase();
-  //         if (b === "bank islami" || b === "islamic bank") return "BANK_ISLAMI";
-  //         if (b === "hbl") return "HBL";
-  //         return bankName.toUpperCase().replace(/\s+/g, "_");
-  //       };
-
-  //       // Initial values
-  //       const openingBalances = stateData.openingBalances || {};
-  //       let bankBalanceByBank = { ...openingBalances };
-  //       let receivedByBank = {};
-  //       let pendingByBank = {};
-  //       let paidByBank = {};
-
-  //       let totalReceived = 0;
-  //       let totalPending = 0;
-  //       let totalPaid = 0;
-
-  //       // ─── RECEIVINGS ─────────────────────────────
-  //       (stateData.receivings || []).forEach((r) => {
-  //         const bank = normalizeBankKey(r.bank);
-  //         const amount = Number(r.amount) || 0;
-  //         const status = r.status?.toLowerCase();
-
-  //         if (status === "received") {
-  //           totalReceived += amount;
-  //           receivedByBank[bank] = (receivedByBank[bank] || 0) + amount;
-  //           bankBalanceByBank[bank] = (bankBalanceByBank[bank] || 0) + amount;
-  //         }
-
-  //         if (status === "pending") {
-  //           totalPending += amount;
-  //           pendingByBank[bank] = (pendingByBank[bank] || 0) + amount;
-  //         }
-          
-  //       });
-
-  //       // ─── PAYMENTS / EXPENSES ───────────────────
-  //       (payments || []).forEach((p) => {
-  //         const bank = normalizeBankKey(p.bank);
-  //         const amount = Number(p.amount) || 0;
-  //         const status = p.status?.toLowerCase();
-
-  //         if (status === "paid") {
-  //           totalPaid += amount;
-  //           paidByBank[bank] = (paidByBank[bank] || 0) + amount;
-  //           bankBalanceByBank[bank] = (bankBalanceByBank[bank] || 0) - amount;
-  //         }
-  //       });
-
-  //       // ─── SALARIES ──────────────────────────────
-  //       (salaries || []).forEach((s) => {
-  //         const bank = normalizeBankKey(s.bank);
-  //         const amount = Number(s.amount) || 0;
-  //         const status = s.status?.toLowerCase();
-
-  //         if (status === "paid") {
-  //           totalPaid += amount;
-  //           paidByBank[bank] = (paidByBank[bank] || 0) + amount;
-  //           bankBalanceByBank[bank] = (bankBalanceByBank[bank] || 0) - amount;
-  //         }
-  //       });
-
-  //       // ─── INVENTORY RECEIPTS (ACCOUNTANT) ───────
-  //       (inventoryRequests || []).forEach((r) => {
-  //         if (!r.receipt) return;
-
-  //         const bank = normalizeBankKey(r.receipt.bank);
-  //         const amount = Number(r.receipt.amount) || 0;
-  //         const status = r.receipt.paymentStatus?.toLowerCase();
-
-  //         if (status === "paid") {
-  //           totalPaid += amount;
-  //           paidByBank[bank] = (paidByBank[bank] || 0) + amount;
-  //           bankBalanceByBank[bank] = (bankBalanceByBank[bank] || 0) - amount;
-  //         }
-  //       });
-
-  //       // ─── TOTAL BANK BALANCE ────────────────────
-  //       const totalBankBalance = Object.values(bankBalanceByBank).reduce(
-  //         (a, b) => a + b,
-  //         0,
-  //       );
-
-  //       // ─── SET STATE ─────────────────────────────
-  //       setSummary({
-  //         totalBankBalance,
-  //         totalReceived,
-  //         totalPending,
-  //         totalPaid,
-  //         bankBalanceByBank,
-  //         receivedByBank,
-  //         pendingByBank,
-         
-  //         paidByBank,
-  //       });
-
-  //       setLoading(false);
-  //     } catch (err) {
-  //       console.error(err);
-  //       setError(err.message || "Dashboard fetch error");
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   fetchState();
-  // }, []);
-    useEffect(() => {
+  useEffect(() => {
     async function fetchState() {
       try {
-        // 1️⃣ Main state (receivings)
-        const resState = await fetch("/api/state");
+        // Main state (receivings)
+        const resState = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state");
         if (!resState.ok) throw new Error("Failed to fetch state");
         const stateData = await resState.json();
 
-        // 2️⃣ Payments / Expenses
-        const resPayments = await fetch("/api/payments");
+        //  Payments / Expenses
+        const resPayments = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments");
         if (!resPayments.ok) throw new Error("Failed to fetch payments");
         const payments = await resPayments.json();
 
-        // 3️⃣ Salaries
-        const resSalaries = await fetch("/api/salaries");
+        //  Salaries
+        const resSalaries = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries");
         if (!resSalaries.ok) throw new Error("Failed to fetch salaries");
         const salaries = await resSalaries.json();
 
-        // 4️⃣ Inventory Requests (Accountant Receipts)
-        const resInventory = await fetch("/api/inventory-requests");
-        if (!resInventory.ok)
-          throw new Error("Failed to fetch inventory requests");
+        //  Inventory Requests (Accountant Receipts)
+        const resInventory = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests");
+        if (!resInventory.ok) throw new Error("Failed to fetch inventory requests");
         const inventoryRequests = await resInventory.json();
 
-        // 🔑 Normalize bank keys
+        //  Normalize bank keys
         const normalizeBankKey = (bankName) => {
           if (!bankName) return "";
           const b = bankName.trim().toLowerCase();
@@ -790,6 +657,7 @@ export default function Dashboard() {
             totalPending += amount;
             pendingByBank[bank] = (pendingByBank[bank] || 0) + amount;
           }
+          
         });
 
         // ─── PAYMENTS / EXPENSES ───────────────────
@@ -848,6 +716,7 @@ export default function Dashboard() {
           bankBalanceByBank,
           receivedByBank,
           pendingByBank,
+         
           paidByBank,
         });
 
@@ -861,6 +730,7 @@ export default function Dashboard() {
 
     fetchState();
   }, []);
+
   if (loading) return <div style={{ padding: "40px", textAlign: "center" }}>Loading...</div>;
   if (error) return <div style={{ padding: "40px", color: "red", textAlign: "center" }}>Error: {error}</div>;
 
