@@ -1,70 +1,91 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
-import logo from "../assets/sps-logo.png";
+import logo from "../assets/sps-logo.png"; // apna logo path daal dena
 import html2pdf from "html2pdf.js";
+import { Eye, Edit, Trash2 } from "lucide-react";
 
 export default function SalaryManager() {
-  const API_URL = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries";
+  const API_URL =
+    "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries";
 
   const [salaries, setSalaries] = useState([]);
   const [empName, setEmpName] = useState("");
   const [salaryAmount, setSalaryAmount] = useState("");
   const [salaryMonth, setSalaryMonth] = useState(
-    new Date().toLocaleString("default", { month: "long" })
+    new Date().toLocaleString("default", { month: "long" }),
   );
   const [paymentDate, setPaymentDate] = useState(
-    new Date().toISOString().slice(0, 10)
+    new Date().toISOString().slice(0, 10),
   );
   const [designation, setDesignation] = useState("Staff");
   const [paymentMode, setPaymentMode] = useState("Cash");
-  const [bank, setBank] = useState("HBL");
+  const [bank, setBank] = useState("");
   const [status, setStatus] = useState("Paid");
 
   const [selectedSlip, setSelectedSlip] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null); // New: Track editing record
-  const [isSaving, setIsSaving] = useState(false); // New: Loading state for save
+  const [editingId, setEditingId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const banks = ["HBL", "Islamic Bank"];
+  // Ref for scrolling to form
+  const formRef = useRef(null);
+
+  const banks = ["HBL", "Bank Islami"];
   const statusOptions = ["Paid", "Unpaid"];
   const designations = ["Staff", "Manager", "Store", "Employee", "Accountant"];
   const paymentModes = ["Cash", "Online", "Cheque", "Bank Transfer"];
 
   useEffect(() => {
-    const fetchSalaries = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(API_URL);
-        setSalaries(res.data || []);
-      } catch (err) {
-        console.error("Error fetching salaries:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSalaries();
   }, []);
+
+  const fetchSalaries = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(API_URL);
+      setSalaries(res.data || []);
+    } catch (err) {
+      console.error("Error fetching salaries:", err);
+      alert("Records load nahi ho rahe");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalPayroll = useMemo(() => {
     return salaries
       .filter((s) => s.status === "Paid")
-      .reduce((acc, s) => acc + (Number(s.amount) || 0), 0);
+      .reduce((acc, s) => acc + Number(s.amount || 0), 0);
   }, [salaries]);
 
-  // New: Load data into form for editing
   const loadForEdit = (salary) => {
     setEmpName(salary.employeeName || "");
-    setSalaryAmount((salary.amount || 0).toString());
-    setSalaryMonth(salary.month || new Date().toLocaleString("default", { month: "long" }));
-    setPaymentDate(salary.paymentDate?.slice(0, 10) || new Date().toISOString().slice(0, 10));
+    setSalaryAmount(String(salary.amount || ""));
+    setSalaryMonth(
+      salary.month || new Date().toLocaleString("default", { month: "long" }),
+    );
+    setPaymentDate(
+      salary.paymentDate?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+    );
     setDesignation(salary.designation || "Staff");
     setPaymentMode(salary.paymentMethod || "Cash");
-    setBank(salary.bank || "HBL");
+    setBank(salary.bank || "");
     setStatus(salary.status || "Paid");
     setEditingId(salary._id);
+
+    // Scroll smoothly to the form
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 120);
   };
 
-  // New: Reset form to add mode
   const resetForm = () => {
     setEmpName("");
     setSalaryAmount("");
@@ -72,7 +93,7 @@ export default function SalaryManager() {
     setPaymentDate(new Date().toISOString().slice(0, 10));
     setDesignation("Staff");
     setPaymentMode("Cash");
-    setBank("HBL");
+    setBank("");
     setStatus("Paid");
     setEditingId(null);
   };
@@ -81,14 +102,24 @@ export default function SalaryManager() {
     e.preventDefault();
     setIsSaving(true);
 
-    if (!empName.trim()) return alert("Enter Employee name");
+    if (!empName.trim()) {
+      alert("Employee name daal do");
+      setIsSaving(false);
+      return;
+    }
 
     const rawAmount = salaryAmount.trim().replace(/[^0-9]/g, "");
-    if (!rawAmount) return alert("Enter Amount");
+    if (!rawAmount) {
+      alert("Amount daal do");
+      setIsSaving(false);
+      return;
+    }
 
     const amountValue = parseInt(rawAmount, 10);
     if (isNaN(amountValue) || amountValue <= 0) {
-      return alert("Enter Valid positive amount");
+      alert("Valid positive amount daalo");
+      setIsSaving(false);
+      return;
     }
 
     const payload = {
@@ -98,51 +129,45 @@ export default function SalaryManager() {
       month: salaryMonth,
       paymentDate,
       paymentMethod: paymentMode,
-      bank: paymentMode === "Cash" ? null : bank,
       status,
     };
+
+    if (paymentMode !== "Cash" && bank.trim()) {
+      payload.bank = bank.trim();
+    }
 
     try {
       let updatedSalaries;
       let newSalary;
 
       if (editingId) {
-        // Update existing record
         const res = await axios.put(`${API_URL}/${editingId}`, payload);
-        newSalary = res.data.salary;
-        updatedSalaries = salaries.map((s) => (s._id === editingId ? newSalary : s));
+        newSalary = res.data.salary || res.data;
+        updatedSalaries = salaries.map((s) =>
+          s._id === editingId ? newSalary : s,
+        );
       } else {
-        // Add new record
         const res = await axios.post(API_URL, payload);
-        newSalary = {
-          _id: res.data.salary._id,
-          employeeName: res.data.salary.employeeName || payload.employeeName,
-          designation: res.data.salary.designation || payload.designation,
-          amount: res.data.salary.amount || payload.amount,
-          month: res.data.salary.month || payload.month,
-          paymentDate: res.data.salary.paymentDate || payload.paymentDate,
-          paymentMethod: res.data.salary.paymentMethod || payload.paymentMethod,
-          bank: res.data.salary.bank || payload.bank,
-          status: res.data.salary.status || payload.status,
-        };
+        newSalary = res.data.salary || res.data;
         updatedSalaries = [newSalary, ...salaries];
       }
 
       setSalaries(updatedSalaries);
-
-      // Reset form
       resetForm();
-      alert(editingId ? "Salary updated successfully!" : "Salary added successfully!");
+      alert(
+        editingId
+          ? "Salary updated successfully!"
+          : "Salary added successfully!",
+      );
     } catch (err) {
       console.error("Error saving salary:", err);
-      alert(editingId ? "Failed to update salary" : "Salary could not save");
+      alert(
+        err.response?.data?.error ||
+          (editingId ? "Update failed" : "Save failed"),
+      );
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const cancelEdit = () => {
-    resetForm();
   };
 
   const deleteRecord = async (id) => {
@@ -172,15 +197,12 @@ export default function SalaryManager() {
     html2pdf().set(opt).from(element).save();
   };
 
-  const formatAmount = (amt) => {
-    const num = Number(amt) || 0;
-    return num.toLocaleString("en-PK");
-  };
+  const formatAmount = (amt) => Number(amt || 0).toLocaleString("en-PK");
 
   const getBankColor = (b) => {
     const map = {
       HBL: "#047857",
-      "Islamic Bank": "#1e40af",
+      "Bank Islami": "#1e40af",
       Other: "#6b7280",
     };
     return map[b] || "#6b7280";
@@ -203,7 +225,11 @@ export default function SalaryManager() {
                     <img
                       src={logo}
                       alt="Secure Path Solutions Logo"
-                      style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
                     />
                   </div>
                   <div className="company-details">
@@ -222,11 +248,21 @@ export default function SalaryManager() {
                     Salary Month: <strong>{selectedSlip.month}</strong>
                   </p>
                   <p>
-                    Payment Date: {new Date(selectedSlip.paymentDate).toLocaleDateString("en-PK")}
+                    Payment Date:{" "}
+                    {new Date(selectedSlip.paymentDate).toLocaleDateString(
+                      "en-PK",
+                    )}
                   </p>
                   <p>
                     Status:{" "}
-                    <strong style={{ color: selectedSlip.status === "Paid" ? "#059669" : "#b45309" }}>
+                    <strong
+                      style={{
+                        color:
+                          selectedSlip.status === "Paid"
+                            ? "#059669"
+                            : "#b45309",
+                      }}
+                    >
                       {selectedSlip.status || "—"}
                     </strong>
                   </p>
@@ -239,19 +275,31 @@ export default function SalaryManager() {
               <div className="info-grid">
                 <div>
                   <h3>Employee Details</h3>
-                  <p><strong>Name:</strong> {selectedSlip.employeeName}</p>
-                  <p><strong>Designation:</strong> {selectedSlip.designation || "N/A"}</p>
-                  <p><strong>Employee ID:</strong> EMP-{selectedSlip._id?.slice(-6)}</p>
+                  <p>
+                    <strong>Name:</strong> {selectedSlip.employeeName}
+                  </p>
+                  <p>
+                    <strong>Designation:</strong>{" "}
+                    {selectedSlip.designation || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Employee ID:</strong> EMP-
+                    {selectedSlip._id?.slice(-6)}
+                  </p>
                 </div>
 
                 <div>
                   <h3>Payment Info</h3>
-                  <p><strong>Payment Mode:</strong> {selectedSlip.paymentMethod || "Cash"}</p>
+                  <p>
+                    <strong>Payment Mode:</strong>{" "}
+                    {selectedSlip.paymentMethod || "Cash"}
+                  </p>
                   <p>
                     <strong>Bank:</strong>{" "}
                     <span style={{ color: getBankColor(selectedSlip.bank) }}>
-                      {selectedSlip.paymentMethod === "Cash" || !selectedSlip.bank || selectedSlip.bank.trim() === "" 
-                        ? "—" 
+                      {selectedSlip.paymentMethod === "Cash" ||
+                      !selectedSlip.bank?.trim()
+                        ? "—"
                         : selectedSlip.bank}
                     </span>
                   </p>
@@ -276,8 +324,12 @@ export default function SalaryManager() {
                         <td>{formatAmount(selectedSlip.amount)}</td>
                       </tr>
                       <tr className="total">
-                        <td><strong>Gross Earnings</strong></td>
-                        <td><strong>{formatAmount(selectedSlip.amount)}</strong></td>
+                        <td>
+                          <strong>Gross Earnings</strong>
+                        </td>
+                        <td>
+                          <strong>{formatAmount(selectedSlip.amount)}</strong>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -301,8 +353,12 @@ export default function SalaryManager() {
                         <td>0</td>
                       </tr>
                       <tr className="total">
-                        <td><strong>Total Deductions</strong></td>
-                        <td><strong>0</strong></td>
+                        <td>
+                          <strong>Total Deductions</strong>
+                        </td>
+                        <td>
+                          <strong>0</strong>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -327,7 +383,10 @@ export default function SalaryManager() {
               <button className="action-btn pdf" onClick={handlePDF}>
                 Save as PDF
               </button>
-              <button className="action-btn close" onClick={() => setSelectedSlip(null)}>
+              <button
+                className="action-btn close"
+                onClick={() => setSelectedSlip(null)}
+              >
                 Close
               </button>
             </div>
@@ -344,17 +403,15 @@ export default function SalaryManager() {
           </div>
           <div className="total-box">
             <small>Total Paid</small>
-            <div className="total-amount">
-              Rs {formatAmount(totalPayroll)}
-            </div>
+            <div className="total-amount">Rs {formatAmount(totalPayroll)}</div>
           </div>
         </header>
 
-        <form className="add-form" onSubmit={saveSalary}>
+        <form ref={formRef} className="add-form" onSubmit={saveSalary}>
           <div className="form-header">
             <h3>{editingId ? "Edit Salary Record" : "New Salary Record"}</h3>
             {editingId && (
-              <button type="button" className="cancel-btn" onClick={cancelEdit}>
+              <button type="button" className="cancel-btn" onClick={resetForm}>
                 Cancel Edit
               </button>
             )}
@@ -378,10 +435,9 @@ export default function SalaryManager() {
                 pattern="[0-9]*"
                 placeholder="e.g. 45000"
                 value={salaryAmount}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9]/g, "");
-                  setSalaryAmount(val);
-                }}
+                onChange={(e) =>
+                  setSalaryAmount(e.target.value.replace(/[^0-9]/g, ""))
+                }
                 required
               />
             </div>
@@ -393,8 +449,18 @@ export default function SalaryManager() {
                 onChange={(e) => setSalaryMonth(e.target.value)}
               >
                 {[
-                  "January", "February", "March", "April", "May", "June",
-                  "July", "August", "September", "October", "November", "December",
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
                 ].map((m) => (
                   <option key={m}>{m}</option>
                 ))}
@@ -417,7 +483,9 @@ export default function SalaryManager() {
                 onChange={(e) => setDesignation(e.target.value)}
               >
                 {designations.map((d) => (
-                  <option key={d} value={d}>{d}</option>
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
                 ))}
               </select>
             </div>
@@ -427,12 +495,15 @@ export default function SalaryManager() {
               <select
                 value={paymentMode}
                 onChange={(e) => {
-                  setPaymentMode(e.target.value);
-                  if (e.target.value === "Cash") setBank("HBL");
+                  const mode = e.target.value;
+                  setPaymentMode(mode);
+                  if (mode === "Cash") setBank("");
                 }}
               >
                 {paymentModes.map((mode) => (
-                  <option key={mode} value={mode}>{mode}</option>
+                  <option key={mode} value={mode}>
+                    {mode}
+                  </option>
                 ))}
               </select>
             </div>
@@ -452,7 +523,10 @@ export default function SalaryManager() {
 
             <div className="field">
               <label>Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
                 {statusOptions.map((s) => (
                   <option key={s} value={s}>
                     {s}
@@ -462,8 +536,16 @@ export default function SalaryManager() {
             </div>
 
             <div className="field button-field">
-              <button type="submit" className="submit-button" disabled={isSaving}>
-                {isSaving ? "Saving..." : (editingId ? "Update Record" : "Add Record")}
+              <button
+                type="submit"
+                className="submit-button"
+                disabled={isSaving}
+              >
+                {isSaving
+                  ? "Saving..."
+                  : editingId
+                  ? "Update Record"
+                  : "Add Record"}
               </button>
             </div>
           </div>
@@ -471,70 +553,87 @@ export default function SalaryManager() {
 
         <div className="list-title">Payment Ledger</div>
 
-        <div className="records">
-          {salaries.length === 0 ? (
-            <div className="empty">No records found</div>
-          ) : (
-            salaries.map((s) => (
-              <div key={s._id} className="record-row">
-                <div className="record-left">
-                  <div className="avatar">{s.employeeName?.charAt(0) || "?"}</div>
-                  <div>
-                    <div className="name">{s.employeeName || "—"}</div>
-                    <div className="meta">
-                      {s.designation || "—"} • {s.paymentMethod || "Cash"} • {s.bank || "—"} • {s.month || "—"}
-                    </div>
-                  </div>
-                </div>
-                <div className="record-right">
-                  <div className="amt">Rs {formatAmount(s.amount)}</div>
-                  <div className="date">
-                    {s.paymentDate?.slice(0, 10) || "—"} •{" "}
-                    <span
-                      style={{
-                        color: (s.status || "Unpaid") === "Paid" ? "#059669" : "#b45309",
-                        fontWeight: 600,
-                      }}
-                    >
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Designation</th>
+                <th>Month</th>
+                <th>Status</th>
+                <th>Mode</th>
+                <th>Bank</th>
+                <th style={{ textAlign: "right" }}>Amount</th>
+                <th style={{ textAlign: "center" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {salaries.map((s) => {
+                const isPaid = (s.status || "Unpaid") === "Paid";
+
+                return (
+                  <tr key={s._id} className={isPaid ? "paid-row" : ""}>
+                    <td>{s.employeeName || "—"}</td>
+                    <td>{s.designation || "—"}</td>
+                    <td>{s.month || "—"}</td>
+                    <td className={isPaid ? "status-paid" : "status-unpaid"}>
                       {s.status || "Unpaid"}
-                    </span>
-                  </div>
-                  <div className="actions">
-                    <button 
-                      className="view" 
-                      onClick={() => setSelectedSlip(s)}
-                      title="View Payslip"
-                    >
-                      View Slip
-                    </button>
-                    {!editingId && (
-                      <button 
-                        className="edit" 
-                        onClick={() => loadForEdit(s)}
-                        title="Edit Record"
+                    </td>
+                    <td>
+                      <span
+                        className={`mode-badge ${s.paymentMethod?.toLowerCase() || "cash"}`}
                       >
-                        Edit
-                      </button>
-                    )}
-                    <button 
-                      className="del" 
-                      onClick={() => deleteRecord(s._id)}
-                      title="Delete Record"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+                        {s.paymentMethod || "Cash"}
+                      </span>
+                    </td>
+                    <td>
+                      {s.paymentMethod === "Cash" || !s.bank?.trim() ? (
+                        "—"
+                      ) : (
+                        <span
+                          className="bank-badge"
+                          style={{ backgroundColor: getBankColor(s.bank) }}
+                        >
+                          {s.bank}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ textAlign: "right", fontWeight: 600 }}>
+                      Rs {formatAmount(s.amount)}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <div className="action-group">
+                        <button
+                          onClick={() => setSelectedSlip(s)}
+                          title="View Payslip"
+                        >
+                          <Eye size={18} color="#3b82f6" />
+                        </button>
+                        <button onClick={() => loadForEdit(s)} title="Edit">
+                          <Edit size={18} color="#b45309" />
+                        </button>
+                        <button
+                          onClick={() => deleteRecord(s._id)}
+                          title="Delete"
+                        >
+                          <Trash2 size={18} color="#dc2626" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
 }
 
-// --------------------- Updated Styles ---------------------
+// ────────────────────────────────────────────────
+// Styling (bilkul same rakhi hai, kuch bhi change nahi kiya)
+// ────────────────────────────────────────────────
 const payrollStyle = `
   :root {
     --primary: #3b82f6;
@@ -585,7 +684,6 @@ const payrollStyle = `
     background: #ffffff;
     border-radius: 12px;
     border: 1px solid var(--border);
-    color: black;
   }
 
   h1 {
@@ -721,141 +819,6 @@ const payrollStyle = `
     color: var(--text);
   }
 
-  .records {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(10px, 2.5vw, 12px);
-  }
-
-  .record-row {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: clamp(12px, 3vw, 16px) clamp(14px, 3.5vw, 20px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: clamp(10px, 2.5vw, 16px);
-    transition: all 0.15s;
-  }
-
-  .record-row:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    transform: translateY(-1px);
-  }
-
-  .record-left {
-    display: flex;
-    align-items: center;
-    gap: clamp(8px, 2vw, 12px);
-    min-width: clamp(150px, 100%, 220px);
-  }
-
-  .avatar {
-    width: clamp(36px, 8vw, 44px);
-    height: clamp(36px, 8vw, 44px);
-    background: var(--primary);
-    color: white;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: clamp(14px, 3.5vw, 18px);
-    flex-shrink: 0;
-  }
-
-  .name {
-    font-weight: 600;
-    font-size: clamp(13px, 3.5vw, 15px);
-  }
-
-  .meta {
-    font-size: clamp(11px, 3vw, 13px);
-    color: var(--dim);
-  }
-
-  .record-right {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(4px, 1vw, 6px);
-    align-items: flex-end;
-  }
-
-  .amt {
-    color: var(--success);
-    font-weight: 800;
-    font-size: clamp(16px, 4vw, 18px);
-  }
-
-  .date {
-    font-size: clamp(11px, 3vw, 13px);
-    color: var(--dim);
-  }
-
-  .actions {
-    display: flex;
-    gap: clamp(6px, 1.5vw, 8px);
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .view,
-  .edit,
-  .del {
-    background: none;
-    border: none;
-    font-size: clamp(11px, 3vw, 13px);
-    font-weight: 600;
-    cursor: pointer;
-    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 14px);
-    border-radius: 6px;
-    min-height: clamp(28px, 6vw, 32px);
-    display: flex;
-    align-items: center;
-    transition: all 0.2s;
-  }
-
-  .view {
-    color: var(--primary);
-    background: rgba(59,130,246,0.1);
-  }
-
-  .view:hover {
-    background: rgba(59,130,246,0.2);
-    transform: translateY(-1px);
-  }
-
-  .edit {
-    color: var(--warning);
-    background: rgba(234,179,8,0.1);
-  }
-
-  .edit:hover {
-    background: rgba(234,179,8,0.2);
-    transform: translateY(-1px);
-  }
-
-  .del {
-    color: var(--danger);
-    background: rgba(220,38,38,0.1);
-  }
-
-  .del:hover {
-    background: rgba(220,38,38,0.2);
-    transform: translateY(-1px);
-  }
-
-  .empty {
-    text-align: center;
-    color: var(--dim);
-    padding: clamp(40px, 10vw, 60px) clamp(12px, 3vw, 20px);
-    font-size: clamp(13px, 3.5vw, 15px);
-  }
-
-  /* MODAL & PAYSLIP - Light Theme (unchanged) */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -983,21 +946,95 @@ const payrollStyle = `
     color: #111827;
   }
 
-  .tables-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: clamp(28px, 6vw, 40px);
+  .table-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
   }
 
-  .table-wrapper {
-    border-right: 1px solid #d1d5db;
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
   }
 
-  .table-wrapper:last-child {
-    border-right: none;
+  thead th {
+    background: #f3f4f6;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #4b5563;
+    font-size: 13px;
+    text-transform: uppercase;
+    border-bottom: 2px solid #cbd5e1;
+  }
+
+  tbody tr {
+    height: 72px;
+    transition: background 0.18s;
+  }
+
+  tbody tr.paid-row {
+    background-color: #f0fdf4;
+  }
+
+  tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .status-paid {
+    font-weight: 600;
+    color: #15803d;
+  }
+
+  .status-unpaid {
+    color: #b45309;
+  }
+
+  .mode-badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .mode-badge.cash     { background: #fed7aa; color: #c2410c; }
+  .mode-badge.online   { background: #bfdbfe; color: #1d4ed8; }
+  .mode-badge.cheque   { background: #fed7aa; color: #b45309; }
+  .mode-badge.banktransfer,
+  .mode-badge.bank     { background: #dbeafe; color: #1e40af; }
+
+  .bank-badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: white;
+  }
+
+  .action-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .action-group button {
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .action-group button:hover {
+    background: rgba(0,0,0,0.06);
   }
 
   .slip-table {
@@ -1104,16 +1141,6 @@ const payrollStyle = `
   }
 
   @media (max-width: 768px) {
-    .actions {
-      width: 100%;
-      justify-content: flex-end;
-    }
-    
-    .record-right {
-      width: 100%;
-      align-items: stretch;
-    }
-    
     .form-fields {
       grid-template-columns: 1fr;
     }

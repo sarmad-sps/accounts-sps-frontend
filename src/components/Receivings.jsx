@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BANKS } from "../store";
 import Invoice from "./Invoice";
+import { Search, Download, Edit, Trash2, Eye, FileText, Receipt as ReceiptIcon } from "lucide-react";
 
 const CATEGORIES = ["Tracker", "Insurance", "IT Software", "Other"];
 
@@ -44,8 +45,6 @@ export default function Receivings({ state, actions }) {
   const [customCategory, setCustomCategory] = useState("");
   const [q, setQ] = useState("");
   const [insuranceCover, setInsuranceCover] = useState("");
-
-  // Tracker fields
   const [trackerCompany, setTrackerCompany] = useState("");
   const [trackerType, setTrackerType] = useState("");
   const [addonService, setAddonService] = useState("");
@@ -55,17 +54,17 @@ export default function Receivings({ state, actions }) {
   const [chassisNumber, setChassisNumber] = useState("");
   const [engineno, setEngineNo] = useState("");
   const [agentName, setAgentName] = useState("");
-
   const [paymentMode, setPaymentMode] = useState("Cash");
-
   const [selected, setSelected] = useState(null);
   const [editingId, setEditingId] = useState(null);
+
+  const formRef = useRef(null);
+  const previewRef = useRef(null);
 
   const receivings = state?.receivings || [];
 
   const handleCategoryChange = (val) => {
     setCategory(val);
-
     if (val !== "Tracker") {
       setTrackerCompany("");
       setTrackerType("");
@@ -77,7 +76,6 @@ export default function Receivings({ state, actions }) {
       setEngineNo("");
       setAgentName("");
     }
-
     if (val !== "Insurance") {
       setInsuranceCover("");
     }
@@ -167,7 +165,6 @@ export default function Receivings({ state, actions }) {
     setPaymentMode(record.paymentMode || "Cash");
     setInsuranceCover(record.insuranceCover || "");
 
-    // Category handling
     const knownCategories = ["Tracker", "Insurance", "IT Software"];
     if (knownCategories.includes(record.category)) {
       setCategory(record.category);
@@ -177,7 +174,6 @@ export default function Receivings({ state, actions }) {
       setCustomCategory(record.category || "");
     }
 
-    // Tracker fields
     setTrackerCompany(record.trackerCompany || "");
     setTrackerType(record.trackerType || "");
     setAddonService(record.addonService || "");
@@ -188,56 +184,77 @@ export default function Receivings({ state, actions }) {
     setEngineNo(record.engineNumber || "");
     setAgentName(record.agentName || "");
 
-    // Scroll to form
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Scroll to form (top)
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 120);
+  };
+
+  const handleViewInvoice = (record) => {
+    setSelectedReceipt(null);
+    setSelected(record);
+    setTimeout(() => {
+      if (previewRef.current) {
+        previewRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 150);
+  };
+
+  const handleViewReceipt = (record) => {
+    setSelected(null);
+    setSelectedReceipt(record);
+    setTimeout(() => {
+      if (previewRef.current) {
+        previewRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 150);
   };
 
   const onAdd = (e) => {
     e.preventDefault();
     const cat = category === "Other" ? customCategory.trim() : category;
 
-    if (!clientName.trim()) return alert("Client Name daalain");
-    if (!clientAddress.trim()) return alert("Client Address daalain");
+    if (!clientName.trim()) return alert("Enter Client Name");
+    if (!clientAddress.trim()) return alert("Enter Client Address");
     if (!clientPhone.trim() || !/^\d{10,13}$/.test(clientPhone.trim())) {
-      return alert("Client Phone Number sahi daalain (10-13 digits)");
+      return alert("Enter Correct Phone Number");
     }
-    if (!party.trim()) return alert("Company / Party name daalain");
-    if (!amount || Number(amount) <= 0) return alert("Amount daalain");
-    if (!dateObj) return alert("Date select karain");
-    if (!cat) return alert("Category select karain");
-
+    if (!party.trim()) return alert("Enter Company / Party name");
+    if (!amount || Number(amount) <= 0) return alert("Enter Amount");
+    if (!dateObj) return alert("select Date");
+    if (!cat) return alert("Category select");
     if (paymentMode !== "Cash" && !bank) {
-      return alert("Online ya Check select kiya hai, Bank select karain");
+      return alert("Select Bank");
     }
-
     if (category === "Tracker") {
-      if (!trackerCompany) return alert("Tracker Company select karain");
-      if (!trackerType) return alert("Tracker Type select karain");
-      if (!vehicleType) return alert("Vehicle Type select karain");
-      if (!registrationNo.trim()) return alert("Registration Number daalain");
-      if (!vehicleBrand.trim()) return alert("Vehicle Brand daalain");
-      if (!chassisNumber.trim()) return alert("Chassis Number daalain");
-      if (!engineno.trim()) return alert("Engine Number daalain");
-      if (!agentName.trim()) return alert("Agent / Installer Name daalain");
+      if (!trackerCompany) return alert("Select Tracker Company");
+      if (!trackerType) return alert("Select Tracker Type");
+      if (!vehicleType) return alert("Select Vehicle Type");
+      if (!registrationNo.trim()) return alert("Enter Registration Number");
+      if (!vehicleBrand.trim()) return alert("Enter Vehicle Brand");
+      if (!chassisNumber.trim()) return alert("Enter Chassis Number");
+      if (!engineno.trim()) return alert("Enter Engine Number");
+      if (!agentName.trim()) return alert("Enter Agent / Installer Name");
     }
-
     if (category === "Insurance") {
-      if (!insuranceCover) return alert("Insurance cover type select karain");
+      if (!insuranceCover) return alert("Select Insurance cover type");
     }
 
-    const extra = category === "Tracker"
-      ? {
-          trackerCompany,
-          trackerType,
-          addonService: addonService.trim() || null,
-          vehicleType,
-          registrationNo: registrationNo.trim().toUpperCase(),
-          vehicleBrand: vehicleBrand.trim(),
-          chassisNumber: chassisNumber.trim().toUpperCase(),
-          engineNumber: engineno.trim().toUpperCase(),
-          agentName: agentName.trim(),
-        }
-      : {};
+    const extra = category === "Tracker" ? {
+      trackerCompany,
+      trackerType,
+      addonService: addonService.trim() || null,
+      vehicleType,
+      registrationNo: registrationNo.trim().toUpperCase(),
+      vehicleBrand: vehicleBrand.trim(),
+      chassisNumber: chassisNumber.trim().toUpperCase(),
+      engineNumber: engineno.trim().toUpperCase(),
+      agentName: agentName.trim(),
+    } : {};
 
     const receivingData = {
       clientName: clientName.trim(),
@@ -256,14 +273,9 @@ export default function Receivings({ state, actions }) {
     };
 
     if (editingId) {
-      // Update existing
       actions.updateReceiving(editingId, receivingData);
     } else {
-      // Add new
-      const newReceiving = {
-        id: Date.now().toString(),
-        ...receivingData,
-      };
+      const newReceiving = { id: Date.now().toString(), ...receivingData };
       actions.addReceiving(newReceiving);
     }
 
@@ -272,15 +284,14 @@ export default function Receivings({ state, actions }) {
 
   const onExportCSV = () => {
     const headers = [
-      "Date","Client Name","Client Address","Client Phone",
-      "Party","Category",
-      "Tracker Company","Tracker Type","Add-on Service",
-      "Vehicle Type","Registration No","Vehicle Brand",
-      "Chassis Number","Engine Number","Agent Name",
-      "Status","Bank","Payment Mode","Amount","Notes",
+      "Date", "Client Name", "Client Address", "Client Phone", "Party",
+      "Category", "Tracker Company", "Tracker Type", "Add-on Service",
+      "Vehicle Type", "Registration No", "Vehicle Brand", "Chassis Number",
+      "Engine Number", "Agent Name", "Status", "Bank", "Payment Mode",
+      "Amount", "Notes"
     ];
 
-    const rows = filtered.map((r) => [
+    const rows = filtered.map(r => [
       r.date || "",
       `"${(r.clientName || "").replace(/"/g, '""')}"`,
       `"${(r.clientAddress || "").replace(/"/g, '""')}"`,
@@ -300,10 +311,10 @@ export default function Receivings({ state, actions }) {
       r.bank || "",
       r.paymentMode || "Cash",
       r.amount || "",
-      `"${(r.notes || "").replace(/"/g, '""').replace(/\n/g, " ")}"`,
+      `"${(r.notes || "").replace(/"/g, '""').replace(/\n/g, " ")}"`
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -313,15 +324,29 @@ export default function Receivings({ state, actions }) {
     URL.revokeObjectURL(url);
   };
 
+  const getCategoryColor = (cat) => {
+    const map = { Tracker: "#7c3aed", Insurance: "#dc2626", "IT Software": "#2563eb", Other: "#4b5563" };
+    return map[cat] || "#4b5563";
+  };
+
+  const getStatusStyle = (stat) => {
+    return stat?.toUpperCase() === "RECEIVED"
+      ? { color: "#059669", bg: "#ecfdf5" }
+      : { color: "#b45309", bg: "#fffbeb" };
+  };
+
+  const getPaymentModeColor = (mode) => {
+    const map = { Cash: "#ea580c", Online: "#2563eb", Check: "#d97706" };
+    return map[mode] || "#6b7280";
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>Receivings</h1>
           <div style={styles.summary}>
-            Total: <strong>{fmt(totals.total)}</strong> • Received:{" "}
-            <strong>{fmt(totals.received)}</strong> • Pending:{" "}
-            <strong>{fmt(totals.pending)}</strong>
+            Total: <strong>{fmt(totals.total)}</strong> • Received: <strong>{fmt(totals.received)}</strong> • Pending: <strong>{fmt(totals.pending)}</strong>
           </div>
         </div>
         <div style={styles.headerActions}>
@@ -341,6 +366,7 @@ export default function Receivings({ state, actions }) {
         <h2 style={styles.cardTitle}>
           {editingId ? "Edit Receiving" : "Add New Receiving"}
         </h2>
+
         {editingId && (
           <div style={styles.editBanner}>
             <span>Editing record...</span>
@@ -349,30 +375,18 @@ export default function Receivings({ state, actions }) {
             </button>
           </div>
         )}
-        <form onSubmit={onAdd}>
-          {/* Client Information */}
+
+        <form ref={formRef} onSubmit={onAdd}>
           <div style={styles.formGrid3}>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Client Name *</label>
-              <input
-                style={styles.input}
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="Client name"
-                required
-              />
+              <input style={styles.input} value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client name" required />
             </div>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Client Address *</label>
-              <input
-                style={styles.input}
-                value={clientAddress}
-                onChange={(e) => setClientAddress(e.target.value)}
-                placeholder="Full address"
-                required
-              />
+              <input style={styles.input} value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder="Full address" required />
             </div>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Client Phone *</label>
               <input
                 style={styles.input}
@@ -386,19 +400,12 @@ export default function Receivings({ state, actions }) {
             </div>
           </div>
 
-          {/* Party & Amount */}
           <div style={styles.formGrid2}>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Company / Party *</label>
-              <input
-                style={styles.input}
-                value={party}
-                onChange={(e) => setParty(e.target.value)}
-                placeholder="ABC Traders"
-                required
-              />
+              <input style={styles.input} value={party} onChange={(e) => setParty(e.target.value)} placeholder="ABC Traders" required />
             </div>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Amount (PKR) *</label>
               <input
                 style={styles.input}
@@ -411,39 +418,33 @@ export default function Receivings({ state, actions }) {
             </div>
           </div>
 
-          {/* Date & Status */}
-          <div style={styles.formGrid3}>
-            <div>
+          <div style={styles.formGrid2}>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Date *</label>
               <DatePicker
                 selected={dateObj}
                 onChange={(d) => setDateObj(d || new Date())}
                 dateFormat="MM/dd/yyyy"
-                className="date-picker"
+                customInput={<input style={styles.input} />}
                 required
               />
             </div>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Status</label>
               <select style={styles.select} value={status} onChange={(e) => setStatus(e.target.value)}>
                 <option value="PENDING">Pending</option>
                 <option value="RECEIVED">Received</option>
               </select>
             </div>
-            <div></div>
           </div>
 
-          {/* Payment Mode */}
           <div style={styles.formGrid2}>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Payment Mode *</label>
               <select
                 style={{
                   ...styles.select,
-                  background:
-                    paymentMode === "Cash" ? "rgba(251,146,60,0.12)" :
-                    paymentMode === "Check" ? "rgba(139,92,246,0.12)" :
-                    "rgba(52,211,153,0.12)",
+                  background: paymentMode === "Cash" ? "rgba(251,146,60,0.12)" : paymentMode === "Check" ? "rgba(139,92,246,0.12)" : "rgba(52,211,153,0.12)",
                   color: "#111827",
                 }}
                 value={paymentMode}
@@ -455,100 +456,62 @@ export default function Receivings({ state, actions }) {
                 <option value="Check">Check</option>
               </select>
             </div>
-            <div></div>
+            <div style={styles.fieldWrapper}></div>
           </div>
 
-          {/* Bank - conditionally show only if not Cash */}
           {paymentMode !== "Cash" && (
             <div style={styles.formGrid2}>
-              <div>
+              <div style={styles.fieldWrapper}>
                 <label style={styles.label}>Bank *</label>
-                <select
-                  style={styles.select}
-                  value={bank}
-                  onChange={(e) => setBank(e.target.value)}
-                  required
-                >
+                <select style={styles.select} value={bank} onChange={(e) => setBank(e.target.value)} required>
                   {BANKS.map((b) => (
-                    <option key={b.key} value={b.key}>
-                      {b.label}
-                    </option>
+                    <option key={b.key} value={b.key}>{b.label}</option>
                   ))}
                 </select>
               </div>
-              <div></div>
+              <div style={styles.fieldWrapper}></div>
             </div>
           )}
 
-          {/* Category & Notes */}
           <div style={styles.formGrid2}>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Category / Purpose *</label>
-              <select
-                style={styles.select}
-                value={category}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                required
-              >
+              <select style={styles.select} value={category} onChange={(e) => handleCategoryChange(e.target.value)} required>
                 <option value="">Select type</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div>
+            <div style={styles.fieldWrapper}>
               <label style={styles.label}>Notes</label>
-              <input
-                style={styles.input}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional notes..."
-              />
+              <input style={styles.input} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
             </div>
           </div>
 
           {category === "Other" && (
-            <div style={{ margin: "20px 0" }}>
-              <label style={styles.label}>Custom Category Name *</label>
-              <input
-                style={styles.input}
-                value={customCategory}
-                onChange={(e) => setCustomCategory(e.target.value)}
-                placeholder="e.g. Health Insurance, Event Expense..."
-                required
-              />
+            <div style={styles.formGrid2}>
+              <div style={styles.fieldWrapper}>
+                <label style={styles.label}>Custom Category Name *</label>
+                <input style={styles.input} value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} placeholder="e.g. Health Insurance..." required />
+              </div>
+              <div style={styles.fieldWrapper}></div>
             </div>
           )}
 
           {category === "Tracker" && (
             <div style={styles.trackerCard}>
               <div style={styles.trackerTitle}>Tracker Installation Details</div>
-
               <div style={styles.formGrid2}>
-                <div>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Tracker Company *</label>
-                  <select
-                    style={styles.select}
-                    value={trackerCompany}
-                    onChange={(e) => setTrackerCompany(e.target.value)}
-                    required
-                  >
+                  <select style={styles.select} value={trackerCompany} onChange={(e) => setTrackerCompany(e.target.value)} required>
                     <option value="">Select Company</option>
                     <option value="TPL">TPL</option>
                     <option value="Promaset">Promaset</option>
                   </select>
                 </div>
-
-                <div>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Tracker Type *</label>
-                  <select
-                    style={styles.select}
-                    value={trackerType}
-                    onChange={(e) => setTrackerType(e.target.value)}
-                    required
-                  >
+                  <select style={styles.select} value={trackerType} onChange={(e) => setTrackerType(e.target.value)} required>
                     <option value="">Select type</option>
                     <option value="Simple Tracker (Rental)">Simple Tracker (Rental)</option>
                     <option value="Simple Tracker (Cash)">Simple Tracker (Cash)</option>
@@ -562,29 +525,19 @@ export default function Receivings({ state, actions }) {
                 </div>
               </div>
 
-              <div style={{ ...styles.formGrid2, marginTop: 20 }}>
-                <div>
+              <div style={styles.formGrid2}>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Add-on Services</label>
-                  <select
-                    style={styles.select}
-                    value={addonService}
-                    onChange={(e) => setAddonService(e.target.value)}
-                  >
+                  <select style={styles.select} value={addonService} onChange={(e) => setAddonService(e.target.value)}>
                     <option value="">None</option>
                     <option value="SMS">SMS</option>
                     <option value="System Transfer">System Transfer</option>
                     <option value="Ownership Change">Ownership Change</option>
                   </select>
                 </div>
-
-                <div>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Vehicle Type *</label>
-                  <select
-                    style={styles.select}
-                    value={vehicleType}
-                    onChange={(e) => setVehicleType(e.target.value)}
-                    required
-                  >
+                  <select style={styles.select} value={vehicleType} onChange={(e) => setVehicleType(e.target.value)} required>
                     <option value="">Select vehicle type</option>
                     <option value="Car">Car</option>
                     <option value="Bike">Bike / Motorcycle</option>
@@ -594,90 +547,50 @@ export default function Receivings({ state, actions }) {
                 </div>
               </div>
 
-              <div style={{ ...styles.formGrid2, marginTop: 20 }}>
-                <div>
+              <div style={styles.formGrid2}>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Registration Number *</label>
-                  <input
-                    style={styles.input}
-                    value={registrationNo}
-                    onChange={(e) => setRegistrationNo(e.target.value.toUpperCase())}
-                    placeholder="LEB-19-1234 or ABC-567"
-                    required
-                  />
+                  <input style={styles.input} value={registrationNo} onChange={(e) => setRegistrationNo(e.target.value.toUpperCase())} placeholder="LEB-19-1234 or ABC-567" required />
                 </div>
-
-                <div>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Vehicle Brand *</label>
-                  <input
-                    style={styles.input}
-                    value={vehicleBrand}
-                    onChange={(e) => setVehicleBrand(e.target.value)}
-                    placeholder="Toyota, Honda, Suzuki..."
-                    required
-                  />
+                  <input style={styles.input} value={vehicleBrand} onChange={(e) => setVehicleBrand(e.target.value)} placeholder="Toyota, Honda, Suzuki..." required />
                 </div>
               </div>
 
-              <div style={{ ...styles.formGrid3, marginTop: 20 }}>
-                <div>
+              <div style={styles.formGrid3}>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Chassis Number *</label>
-                  <input
-                    style={styles.input}
-                    value={chassisNumber}
-                    onChange={(e) => setChassisNumber(e.target.value.toUpperCase())}
-                    placeholder="JF53K-..."
-                    required
-                  />
+                  <input style={styles.input} value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value.toUpperCase())} placeholder="JF53K-..." required />
                 </div>
-
-                <div>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Engine No *</label>
-                  <input
-                    style={styles.input}
-                    value={engineno}
-                    onChange={(e) => setEngineNo(e.target.value.toUpperCase())}
-                    placeholder="1NZ-FXE-..."
-                    required
-                  />
+                  <input style={styles.input} value={engineno} onChange={(e) => setEngineNo(e.target.value.toUpperCase())} placeholder="1NZ-FXE-..." required />
                 </div>
-
-                <div>
+                <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Agent / Installer Name *</label>
-                  <input
-                    style={styles.input}
-                    value={agentName}
-                    onChange={(e) => setAgentName(e.target.value)}
-                    placeholder="Ali Ahmed, Usman Installers..."
-                    required
-                  />
+                  <input style={styles.input} value={agentName} onChange={(e) => setAgentName(e.target.value)} placeholder="Ali Ahmed, Usman Installers..." required />
                 </div>
               </div>
             </div>
           )}
 
           {category === "Insurance" && (
-            <div style={{ margin: "24px 0" }}>
-              <div style={styles.formGrid2}>
-                <div>
-                  <label style={styles.label}>Insurance Cover Type *</label>
-                  <select
-                    style={styles.select}
-                    value={insuranceCover}
-                    onChange={(e) => setInsuranceCover(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Cover Type</option>
-                    <option value="Motor">Motor</option>
-                    <option value="Travel">Travel</option>
-                    <option value="Fire">Fire</option>
-                    <option value="Marine">Marine</option>
-                    <option value="Health">Health</option>
-                    <option value="Life">Life</option>
-                    <option value="Misc">Misc</option>
-                  </select>
-                </div>
-                <div></div>
+            <div style={styles.formGrid2}>
+              <div style={styles.fieldWrapper}>
+                <label style={styles.label}>Insurance Cover Type *</label>
+                <select style={styles.select} value={insuranceCover} onChange={(e) => setInsuranceCover(e.target.value)} required>
+                  <option value="">Select Cover Type</option>
+                  <option value="Motor">Motor</option>
+                  <option value="Travel">Travel</option>
+                  <option value="Fire">Fire</option>
+                  <option value="Marine">Marine</option>
+                  <option value="Health">Health</option>
+                  <option value="Life">Life</option>
+                  <option value="Misc">Misc</option>
+                </select>
               </div>
+              <div style={styles.fieldWrapper}></div>
             </div>
           )}
 
@@ -689,118 +602,120 @@ export default function Receivings({ state, actions }) {
         </form>
       </div>
 
-      {/* List */}
-      <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Receivings List</h2>
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Client Name</th>
-                <th style={styles.th}>Phone</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Mode</th>
-                <th style={styles.thActions}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={styles.emptyCell}>
-                    No records found
-                  </td>
+      <section style={styles.tableSection}>
+        <div style={styles.tableSectionHeader}>
+          <div style={{ position: "relative", flex: 1, minWidth: "280px" }}>
+            <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+            <input
+              placeholder="Search client, phone, party, category..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              style={styles.searchInputTable}
+            />
+          </div>
+          <button onClick={onExportCSV} disabled={!receivings.length} style={styles.exportBtnTable}>
+            <Download size={16} /> Export CSV
+          </button>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={styles.emptyState}>
+            <FileText size={48} style={{ opacity: 0.4, marginBottom: 16 }} />
+            <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>No records found</h3>
+            <p style={{ marginTop: 8, fontSize: "clamp(12px, 3.5vw, 14px)" }}>
+              {q ? "Try different search terms" : "Add your first receiving above"}
+            </p>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={styles.table}>
+              <thead>
+                <tr style={{ background: "#f9fafb" }}>
+                  <th style={styles.th}>Date</th>
+                  <th style={styles.th}>Client</th>
+                  <th style={styles.th}>Category</th>
+                  <th style={styles.th}>Status</th>
+                  <th style={styles.th}>Mode</th>
+                  <th style={styles.th}>Bank</th>
+                  <th style={{ ...styles.th, textAlign: "right" }}>Amount</th>
+                  <th style={{ ...styles.th, textAlign: "center" }}>Actions</th>
                 </tr>
-              ) : (
-                filtered.map((r) => (
-                  <tr key={r.id} style={styles.row}>
-                    <td style={styles.td}>
-                      <strong>{r.clientName || "-"}</strong>
-                      <div style={styles.secondaryText}>
-                        {r.date} • {r.category}
-                      </div>
+              </thead>
+              <tbody>
+                {filtered.map((r) => (
+                  <tr
+                    key={r.id}
+                    style={{
+                      background: r.status?.toUpperCase() === "RECEIVED" ? "#ecfdf5" : "#ffffff",
+                      transition: "background 0.15s",
+                    }}
+                  >
+                    <td style={styles.td}>{r.date}</td>
+                    <td style={{ ...styles.td, fontWeight: 600 }}>
+                      {r.clientName}
+                      <div style={styles.secondaryText}>{r.clientPhone}</div>
                     </td>
-                    <td style={styles.td}>{r.clientPhone || "-"}</td>
                     <td style={styles.td}>
-                      <span style={chipStyle(r.status)}>{r.status}</span>
+                      <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getCategoryColor(r.category) }}>
+                        {r.category}
+                      </span>
                     </td>
                     <td style={styles.td}>
-                      <span style={paymentChipStyle(r.paymentMode)}>
+                      <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, backgroundColor: getStatusStyle(r.status).bg, color: getStatusStyle(r.status).color }}>
+                        {r.status}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getPaymentModeColor(r.paymentMode) }}>
                         {r.paymentMode || "Cash"}
                       </span>
                     </td>
-                    <td style={styles.tdActions}>
-                      <div style={styles.actionButtons}>
-                        <button
-                          style={styles.editBtn}
-                          onClick={() => loadRecordForEdit(r)}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          style={styles.invoiceBtn}
-                          onClick={() => {
-                            setSelectedReceipt(null);
-                            setSelected(r);
-                          }}
-                        >
-                          Invoice
-                        </button>
-
-                        <button
-                          style={styles.receiptBtn}
-                          onClick={() => {
-                            setSelected(null);
-                            setSelectedReceipt(r);
-                          }}
-                        >
-                          Receipt
-                        </button>
-
-                        <button
-                          style={styles.deleteBtn}
-                          onClick={() => actions.deleteReceiving(r.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                    <td style={styles.td}>
+                      {r.paymentMode === "Cash" || !r.bank ? "—" : (
+                        <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: "#047857" }}>
+                          {r.bank}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ ...styles.td, textAlign: "right", fontWeight: 700, color: r.status?.toUpperCase() === "RECEIVED" ? "#374151" : "#7c3aed", textDecoration: r.status?.toUpperCase() === "RECEIVED" ? "line-through" : "none" }}>
+                      Rs. {fmt(r.amount)}
+                    </td>
+                    <td style={{ ...styles.td, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                      <button onClick={() => handleViewInvoice(r)} style={styles.actionBtn} title="View Invoice">
+                        <Eye size={18} />
+                      </button>
+                      <button onClick={() => loadRecordForEdit(r)} style={{ ...styles.actionBtn, background: "rgba(180,83,9,0.1)", color: "#b45309" }} title="Edit">
+                        <Edit size={18} />
+                      </button>
+                      <button onClick={() => handleViewReceipt(r)} style={{ ...styles.actionBtn, background: "rgba(5,150,105,0.1)", color: "#059669" }} title="View Receipt">
+                        <ReceiptIcon size={18} />
+                      </button>
+                      <button onClick={() => actions.deleteReceiving(r.id)} style={{ ...styles.actionBtn, background: "rgba(220,38,38,0.1)", color: "#dc2626" }} title="Delete">
+                        <Trash2 size={18} />
+                      </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-      {selected && (
-        <div style={styles.card}>
+      {(selected || selectedReceipt) && (
+        <div ref={previewRef} style={styles.card}>
           <div style={styles.previewHeader}>
-            <h2 style={styles.cardTitle}>Invoice / Voucher Preview</h2>
-            <button style={styles.closeBtn} onClick={() => setSelected(null)}>
+            <h2 style={styles.cardTitle}>
+              {selected ? "Invoice / Voucher Preview" : "Official Payment Receipt"}
+            </h2>
+            <button style={styles.closeBtn} onClick={() => { setSelected(null); setSelectedReceipt(null); }}>
               ✕ Close
             </button>
           </div>
           <Invoice
-            record={selected}
+            record={selected || selectedReceipt}
             companyName={state?.companyName || "Secure Path Solutions"}
-            mode="voucher"
-          />
-        </div>
-      )}
-
-      {selectedReceipt && (
-        <div style={styles.card}>
-          <div style={styles.previewHeader}>
-            <h2 style={styles.cardTitle}>Official Payment Receipt</h2>
-            <button style={styles.closeBtn} onClick={() => setSelectedReceipt(null)}>
-              ✕ Close
-            </button>
-          </div>
-          <Invoice
-            record={selectedReceipt}
-            companyName={state?.companyName || "Secure Path Solutions"}
-            mode="receipt"
+            mode={selected ? "voucher" : "receipt"}
           />
         </div>
       )}
@@ -808,13 +723,16 @@ export default function Receivings({ state, actions }) {
   );
 }
 
+
 // ─── Styles ───
 const styles = {
   container: {
     padding: "clamp(16px, 4vw, 24px)",
     maxWidth: 1400,
     margin: "0 auto",
-    background: "#f8fafc",
+    background: "#e5e7eb",
+    minHeight: "100vh",
+    fontFamily: "Inter, system-ui, sans-serif",
   },
   header: {
     display: "flex",
@@ -828,11 +746,12 @@ const styles = {
     fontSize: "clamp(26px, 5vw, 34px)",
     fontWeight: 800,
     margin: 0,
-    color: "#0f172a",
+    color: "#111827",
+    letterSpacing: "-0.02em",
   },
   summary: {
     fontSize: "clamp(14px, 3.5vw, 16px)",
-    color: "#111827",
+    color: "#4b5563",
     marginTop: 8,
     fontWeight: "500",
   },
@@ -845,34 +764,38 @@ const styles = {
   searchInput: {
     padding: "10px 16px",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #d1d5db",
     minWidth: 280,
     flex: 1,
     fontSize: 15,
     color: "#111827",
     background: "#ffffff",
+    boxSizing: "border-box",
   },
   exportBtn: {
     padding: "10px 20px",
     borderRadius: 12,
     background: "#fff",
-    border: "1px solid #cbd5e1",
+    border: "1px solid #d1d5db",
     fontWeight: 600,
     cursor: "pointer",
+    fontSize: 14,
+    color: "#374151",
   },
   card: {
     background: "#ffffff",
     borderRadius: 16,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #d1d5db",
     padding: "clamp(20px, 4vw, 28px)",
     marginBottom: 32,
-    boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+    boxSizing: "border-box",
   },
   cardTitle: {
     fontSize: 22,
     fontWeight: 700,
     margin: "0 0 24px 0",
-    color: "#0f172a",
+    color: "#111827",
   },
   editBanner: {
     background: "#fef3c7",
@@ -895,52 +818,60 @@ const styles = {
     fontWeight: 600,
     color: "#92400e",
   },
+  fieldWrapper: {
+    display: "flex",
+    flexDirection: "column",
+  },
   label: {
-    fontSize: 13,
+    fontSize: "clamp(10px, 2.5vw, 12px)",
     fontWeight: 700,
-    color: "#1e293b",
+    color: "#4b5563",
     marginBottom: 8,
     display: "block",
     textTransform: "uppercase",
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
+    marginLeft: 4,
   },
   input: {
     width: "100%",
     padding: "11px 14px",
     borderRadius: 10,
-    border: "1px solid #cbd5e1",
+    border: "1px solid #d1d5db",
     fontSize: 15,
-    background: "#fafcff",
+    background: "#f9fafb",
     color: "#111827",
+    boxSizing: "border-box",
   },
   select: {
     width: "100%",
     padding: "11px 14px",
     borderRadius: 10,
-    border: "1px solid #cbd5e1",
-    background: "#ffffff",
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
     fontSize: 15,
     color: "#111827",
     appearance: "none",
+    boxSizing: "border-box",
     backgroundImage:
-      'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'><path fill=\'%23334155\' d=\'M1 1l5 5 5-5\'/></svg>")',
+      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23334155' d='M1 1l5 5 5-5'/></svg>\")",
     backgroundRepeat: "no-repeat",
     backgroundPosition: "right 14px center",
+    cursor: "pointer",
   },
   formGrid2: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "20px 24px",
-    margin: "20px 0",
+    marginTop: 20,
   },
   formGrid3: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "20px 24px",
-    margin: "20px 0",
+    marginTop: 20,
   },
   trackerCard: {
-    margin: "28px 0",
+    marginTop: 28,
     padding: 24,
     background: "#f0f9ff",
     border: "1px solid #bae6fd",
@@ -958,7 +889,7 @@ const styles = {
   },
   submitBtn: {
     padding: "12px 40px",
-    background: "#3b82f6",
+    background: "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
     color: "white",
     border: "none",
     borderRadius: 12,
@@ -966,90 +897,89 @@ const styles = {
     fontWeight: 700,
     cursor: "pointer",
   },
-  tableContainer: {
+  tableSection: {
+    background: "#ffffff",
+    borderRadius: 16,
+    border: "1px solid #d1d5db",
+    padding: "clamp(16px, 4vw, 24px)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+    boxSizing: "border-box",
     overflowX: "auto",
+  },
+  tableSectionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "clamp(16px, 4vw, 24px)",
+    gap: "clamp(10px, 2.5vw, 16px)",
+    flexWrap: "wrap",
+  },
+  searchInputTable: {
+    width: "100%",
+    padding: "clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px) clamp(8px, 2vw, 10px) clamp(38px, 8vw, 44px)",
+    background: "#f9fafb",
+    border: "1px solid #d1d5db",
+    borderRadius: 10,
+    color: "#111827",
+    fontSize: "clamp(13px, 3.5vw, 16px)",
+    boxSizing: "border-box",
+  },
+  exportBtnTable: {
+    background: "#f3f4f6",
+    border: "1px solid #d1d5db",
+    color: "#374151",
+    padding: "clamp(8px, 2vw, 10px) clamp(14px, 3.5vw, 20px)",
+    borderRadius: 10,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "clamp(6px, 1.5vw, 8px)",
+    fontWeight: 500,
+    fontSize: "clamp(12px, 3.2vw, 14px)",
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "clamp(40px, 10vw, 80px) clamp(12px, 3vw, 20px)",
+    color: "#6b7280",
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
+    tableLayout: "auto",
+    minWidth: "clamp(300px, 100%, 1100px)",
   },
   th: {
-    textAlign: "left",
-    padding: "14px 16px",
-    fontSize: 13,
-    fontWeight: 700,
-    color: "#111827",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
+    padding: "clamp(10px, 2.5vw, 16px)",
+    color: "#4b5563",
+    fontSize: "clamp(10px, 2.5vw, 12px)",
     textTransform: "uppercase",
-  },
-  thActions: {
-    textAlign: "right",
-    padding: "14px 16px",
-    fontSize: 13,
+    textAlign: "left",
+    borderBottom: "1px solid #e5e7eb",
     fontWeight: 700,
-    color: "#111827",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
   },
   td: {
-    padding: "14px 16px",
-    borderBottom: "1px solid #f1f5f9",
-    fontSize: 14.5,
+    padding: "clamp(10px, 2.5vw, 16px)",
+    borderBottom: "1px solid #e5e7eb",
+    fontSize: "clamp(12px, 3.2vw, 14px)",
     color: "#111827",
-  },
-  tdActions: {
-    padding: "14px 16px",
-    textAlign: "right",
-    borderBottom: "1px solid #f1f5f9",
   },
   secondaryText: {
-    fontSize: "12.5px",
-    color: "#111827",
+    fontSize: "12px",
+    color: "#6b7280",
     marginTop: 4,
-    fontWeight: "500",
+    fontWeight: 400,
   },
-  actionButtons: {
-    display: "flex",
-    gap: 10,
-    justifyContent: "flex-end",
-    flexWrap: "wrap",
-  },
-  editBtn: {
-    padding: "8px 16px",
-    background: "#fef3c7",
-    color: "#92400e",
-    border: "1px solid #fbbf24",
-    borderRadius: 8,
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  invoiceBtn: {
-    padding: "8px 16px",
-    background: "#eff6ff",
+  actionBtn: {
+    background: "rgba(37,99,235,0.1)",
     color: "#2563eb",
-    border: "1px solid #bfdbfe",
+    border: "none",
+    padding: "clamp(6px, 1.5vw, 8px)",
     borderRadius: 8,
-    fontWeight: 600,
     cursor: "pointer",
-  },
-  receiptBtn: {
-    padding: "8px 16px",
-    background: "#f0fdf4",
-    color: "#15803d",
-    border: "1px solid #bbf7d0",
-    borderRadius: 8,
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  deleteBtn: {
-    padding: "8px 16px",
-    background: "#fef2f2",
-    color: "#dc2626",
-    border: "1px solid #fecaca",
-    borderRadius: 8,
-    fontWeight: 600,
-    cursor: "pointer",
+    minHeight: "clamp(32px, 7vw, 36px)",
+    minWidth: "clamp(32px, 7vw, 36px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   previewHeader: {
     display: "flex",
@@ -1067,39 +997,4 @@ const styles = {
     cursor: "pointer",
     fontWeight: 600,
   },
-  emptyCell: {
-    textAlign: "center",
-    padding: "60px 20px",
-    color: "#111827",
-    fontSize: 16,
-  },
 };
-
-function chipStyle(status) {
-  const received = status?.toUpperCase() === "RECEIVED";
-  return {
-    padding: "6px 12px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: received ? "#dcfce7" : "#dbeafe",
-    color: received ? "#166534" : "#1e40af",
-  };
-}
-
-function paymentChipStyle(mode) {
-  const m = (mode || "Cash").toLowerCase();
-  let bg = "#e0f2fe", color = "#0369a1";
-  if (m === "cash") { bg = "#ffedd5"; color = "#9a3412"; }
-  if (m === "check") { bg = "#f3e8ff"; color = "#6b21a8"; }
-  if (m === "online") { bg = "#dcfce7"; color = "#166534"; }
-
-  return {
-    padding: "6px 12px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: bg,
-    color,
-  };
-}
