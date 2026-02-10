@@ -73,7 +73,7 @@
 //         description: item.description || "—",
 //         status: item.status || "Unpaid",
 //         paymentMode: item.paymentMode || "Online",
-//         bank: item.bank || "HBL",
+//         bank: item.bank || "",
 //       }));
 //       setPayments(data);
 //     } catch (err) {
@@ -94,6 +94,12 @@
 //       return;
 //     }
 
+//     // Validation: Sirf non-Cash modes ke liye bank check karo
+//     if (paymentMode !== "Cash" && (!bank || bank.trim() === "")) {
+//       alert("Online, Bank Transfer ya Check select kiya hai, Bank select karain");
+//       return;
+//     }
+
 //     const payload = {
 //       payee: payee.trim(),
 //       category,
@@ -101,7 +107,7 @@
 //       description: description.trim() || "—",
 //       status,
 //       paymentMode,
-//       bank,
+//       bank: paymentMode === "Cash" ? "" : bank.trim(),   // Cash ke liye empty string
 //     };
 
 //     try {
@@ -118,7 +124,7 @@
 //                   description: res.data.description || "—",
 //                   status: res.data.status,
 //                   paymentMode: res.data.paymentMode || "Online",
-//                   bank: res.data.bank || "HBL",
+//                   bank: res.data.bank || "",
 //                 }
 //               : p
 //           )
@@ -136,7 +142,7 @@
 //             description: res.data.description || "—",
 //             status: res.data.status,
 //             paymentMode: res.data.paymentMode || "Online",
-//             bank: res.data.bank || "HBL",
+//             bank: res.data.bank || "",
 //           },
 //           ...prev,
 //         ]);
@@ -145,7 +151,11 @@
 //       setSelectedPayment(null);
 //     } catch (err) {
 //       console.error("Error saving payment:", err);
-//       alert("Failed to save payment. Check console for details.");
+//       if (err.response?.data?.error) {
+//         alert(`Backend Error: ${err.response.data.error}`);
+//       } else {
+//         alert("Failed to save payment. Check console for details.");
+//       }
 //     }
 //   };
 
@@ -243,7 +253,7 @@
 //         p.description.toLowerCase().includes(term) ||
 //         p.status.toLowerCase().includes(term) ||
 //         p.paymentMode.toLowerCase().includes(term) ||
-//         p.bank.toLowerCase().includes(term)
+//         (p.bank && p.bank.toLowerCase().includes(term))
 //     );
 //   }, [payments, searchTerm]);
 
@@ -311,7 +321,7 @@
 //       p.category,
 //       p.status,
 //       p.paymentMode,
-//       p.bank,
+//       p.bank || "",
 //       p.amount,
 //       `"${p.description.replace(/"/g, '""')}"`,
 //     ]);
@@ -417,6 +427,7 @@
 //             alignItems: "end",
 //           }}
 //         >
+//           {/* Payee */}
 //           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 //             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
 //               Payee
@@ -442,6 +453,7 @@
 //             </div>
 //           </div>
 
+//           {/* Category */}
 //           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 //             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
 //               Category
@@ -472,6 +484,7 @@
 //             </div>
 //           </div>
 
+//           {/* Amount */}
 //           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 //             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
 //               Amount (PKR)
@@ -501,6 +514,7 @@
 //             </div>
 //           </div>
 
+//           {/* Status */}
 //           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 //             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
 //               Status
@@ -531,6 +545,7 @@
 //             </div>
 //           </div>
 
+//           {/* Payment Mode */}
 //           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 //             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
 //               Payment Mode
@@ -561,36 +576,41 @@
 //             </div>
 //           </div>
 
-//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
-//               Bank
-//             </label>
-//             <div style={{ position: "relative" }}>
-//               <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
-//               <select
-//                 value={bank}
-//                 onChange={(e) => setBank(e.target.value)}
-//                 style={{
-//                   width: "100%",
-//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
-//                   background: "#f9fafb",
-//                   border: "1px solid #d1d5db",
-//                   borderRadius: "10px",
-//                   color: "#111827",
-//                   appearance: "none",
-//                   cursor: "pointer",
-//                   fontSize: "clamp(13px, 3.5vw, 16px)",
-//                   boxSizing: "border-box",
-//                 }}
-//               >
-//                 {banks.map((b) => (
-//                   <option key={b} value={b}>{b}</option>
-//                 ))}
-//               </select>
-//               <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+//           {/* Bank - sirf jab Cash nahi ho */}
+//           {paymentMode !== "Cash" && (
+//             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//               <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+//                 Bank
+//               </label>
+//               <div style={{ position: "relative" }}>
+//                 <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//                 <select
+//                   value={bank}
+//                   onChange={(e) => setBank(e.target.value)}
+//                   required
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     appearance: "none",
+//                     cursor: "pointer",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 >
+//                   {banks.map((b) => (
+//                     <option key={b} value={b}>{b}</option>
+//                   ))}
+//                 </select>
+//                 <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+//               </div>
 //             </div>
-//           </div>
+//           )}
 
+//           {/* Remarks */}
 //           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 //             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
 //               Remarks
@@ -615,6 +635,7 @@
 //             </div>
 //           </div>
 
+//           {/* Submit Buttons */}
 //           <div style={{ display: "flex", gap: "clamp(8px, 2vw, 12px)", alignItems: "center", flexWrap: "wrap" }}>
 //             <button
 //               type="submit"
@@ -664,6 +685,7 @@
 //         </form>
 //       </section>
 
+//       {/* Search & Export */}
 //       <section
 //         style={{
 //           background: "#ffffff",
@@ -835,20 +857,24 @@
 //                       </span>
 //                     </td>
 //                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>
-//                       <span
-//                         style={{
-//                           padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)",
-//                           borderRadius: "20px",
-//                           fontSize: "clamp(10px, 2.5vw, 12px)",
-//                           fontWeight: 600,
-//                           color: "white",
-//                           backgroundColor: getBankColor(item.bank),
-//                           whiteSpace: "nowrap",
-//                           display: "inline-block",
-//                         }}
-//                       >
-//                         {item.bank}
-//                       </span>
+//                       {item.paymentMode === "Cash" || !item.bank || item.bank.trim() === "" ? (
+//                         "—"
+//                       ) : (
+//                         <span
+//                           style={{
+//                             padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)",
+//                             borderRadius: "20px",
+//                             fontSize: "clamp(10px, 2.5vw, 12px)",
+//                             fontWeight: 600,
+//                             color: "white",
+//                             backgroundColor: getBankColor(item.bank),
+//                             whiteSpace: "nowrap",
+//                             display: "inline-block",
+//                           }}
+//                         >
+//                           {item.bank}
+//                         </span>
+//                       )}
 //                     </td>
 //                     <td
 //                       style={{
@@ -903,112 +929,113 @@
 //         )}
 //       </section>
 
-//      {selectedPayment && (
-//   <div id="voucher-preview" style={{ marginTop: "clamp(20px, 5vw, 40px)", display: "flex", flexDirection: "column", alignItems: "center", padding: "clamp(12px, 3vw, 20px)" }}>
-//     {/* Main Voucher Container */}
-//     <div
-//       ref={voucherRef}
-//       style={{
-//         width: "100%",
-//         maxWidth: "210mm",
-//         minHeight: "297mm",
-//         background: "#ffffff",
-//         padding: "clamp(20px, 5vw, 40px) clamp(24px, 5vw, 50px)",
-//         boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-//         display: "flex",
-//         flexDirection: "column",
-//         position: "relative",
-//         fontFamily: "'Helvetica', 'Arial', sans-serif",
-//         color: "#1a1a1a",
-//         boxSizing: "border-box"
-//       }}
-//     >
-//       {/* Header Section */}
-//       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(24px, 5vw, 40px)", gap: "clamp(12px, 3vw, 20px)", flexWrap: "wrap" }}>
-//         <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2.5vw, 15px)" }}>
-//           <img src={logo} alt="Logo" style={{ height: "clamp(44px, 10vw, 60px)" }} />
-//           <div>
-//             <h2 style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 22px)", fontWeight: "bold", color: "#000" }}>Secure Path Solutions</h2>
-//             <p style={{ margin: 0, fontSize: "clamp(10px, 2.5vw, 12px)", color: "#666" }}>Premium Vehicle Tracking & Security</p>
+//       {selectedPayment && (
+//         <div id="voucher-preview" style={{ marginTop: "clamp(20px, 5vw, 40px)", display: "flex", flexDirection: "column", alignItems: "center", padding: "clamp(12px, 3vw, 20px)" }}>
+//           {/* Main Voucher Container */}
+//           <div
+//             ref={voucherRef}
+//             style={{
+//               width: "100%",
+//               maxWidth: "210mm",
+//               minHeight: "297mm",
+//               background: "#ffffff",
+//               padding: "clamp(20px, 5vw, 40px) clamp(24px, 5vw, 50px)",
+//               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+//               display: "flex",
+//               flexDirection: "column",
+//               position: "relative",
+//               fontFamily: "'Helvetica', 'Arial', sans-serif",
+//               color: "#1a1a1a",
+//               boxSizing: "border-box"
+//             }}
+//           >
+//             {/* Header Section */}
+//             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(24px, 5vw, 40px)", gap: "clamp(12px, 3vw, 20px)", flexWrap: "wrap" }}>
+//               <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2.5vw, 15px)" }}>
+//                 <img src={logo} alt="Logo" style={{ height: "clamp(44px, 10vw, 60px)" }} />
+//                 <div>
+//                   <h2 style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 22px)", fontWeight: "bold", color: "#000" }}>Secure Path Solutions</h2>
+//                   <p style={{ margin: 0, fontSize: "clamp(10px, 2.5vw, 12px)", color: "#666" }}>Premium Vehicle Tracking & Security</p>
+//                 </div>
+//               </div>
+//               <div style={{ textAlign: "right" }}>
+//                 <div style={{ 
+//                   background: "#eef2ff", 
+//                   color: "#3b82f6", 
+//                   padding: "clamp(4px, 1vw, 6px) clamp(14px, 3vw, 20px)", 
+//                   borderRadius: "5px", 
+//                   fontSize: "clamp(12px, 3.2vw, 14px)", 
+//                   fontWeight: "bold",
+//                   display: "inline-block",
+//                   marginBottom: "10px",
+//                   border: "1px solid #dbeafe"
+//                 }}>
+//                   OFFICIAL RECEIPT
+//                 </div>
+//                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>No: <span style={{ fontWeight: "normal" }}>REC-{selectedPayment.id.slice(-8).toUpperCase()}</span></p>
+//                 <p style={{ margin: "2px 0 0 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Date: <span style={{ fontWeight: "normal" }}>{selectedPayment.date}</span></p>
+//               </div>
+//             </div>
+
+//             {/* Address Boxes Section */}
+//             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(16px, 4vw, 25px)", marginBottom: "clamp(20px, 5vw, 30px)" }}>
+//               <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+//                 <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
+//                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
+//                 <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563", lineHeight: "1.4" }}>
+//                   House 1-A, Upper Mall, Lahore<br />
+//                   Tel: 042-111-000-320
+//                 </p>
+//               </div>
+//               <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+//                 <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Received From / Client</h4>
+//                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>{selectedPayment.payee}</p>
+//                 <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563" }}>
+//                   Category: {selectedPayment.category}<br />
+//                   Payment Mode: {selectedPayment.paymentMode}
+//                   {selectedPayment.bank && selectedPayment.bank.trim() !== "" && ` (${selectedPayment.bank})`}
+//                 </p>
+//               </div>
+//             </div>
+
+//             {/* Amount Highlight Box */}
+//             <div style={{ 
+//               background: "#f9fafb", 
+//               borderLeft: "6px solid #2563eb", 
+//               padding: "clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 25px)", 
+//               borderRadius: "4px",
+//               marginBottom: "clamp(24px, 5vw, 40px)"
+//             }}>
+//               <p style={{ margin: "0 0 5px 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold", color: "#4b5563" }}>Total Amount</p>
+//               <h2 style={{ margin: 0, fontSize: "clamp(20px, 6vw, 28px)", fontWeight: "800", color: "#111827" }}>PKR Rs. {formatCurrency(selectedPayment.amount)}.00</h2>
+//             </div>
+
+//             {/* Remarks Section */}
+//             <div style={{ flexGrow: 1 }}>
+//               <h4 style={{ fontSize: "clamp(11px, 3vw, 13px)", color: "#111827", borderBottom: "1px solid #e5e7eb", paddingBottom: "8px", marginBottom: "10px" }}>Description / Remarks</h4>
+//               <p style={{ fontSize: "clamp(12px, 3.2vw, 14px)", color: "#4b5563", lineHeight: "1.6" }}>{selectedPayment.description}</p>
+//             </div>
+
+//             {/* Footer */}
+//             <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "clamp(12px, 3vw, 20px)", textAlign: "center" }}>
+//               <p style={{ margin: 0, fontSize: "clamp(9px, 2.2vw, 11px)", color: "#4b5563", fontWeight: "bold" }}>
+//                 Phone: <span style={{ fontWeight: "normal" }}>03006492075</span> | Email: <span style={{ fontWeight: "normal" }}>contact@securepathsolution.com</span>
+//               </p>
+//               <p style={{ margin: "4px 0 0 0", fontSize: "clamp(8px, 2vw, 10px)", color: "#9ca3af" }}>This is a computer-generated document.</p>
+//             </div>
+//           </div>
+
+//           {/* Buttons */}
+//           <div style={{ margin: "clamp(20px, 5vw, 30px) 0", display: "flex", gap: "clamp(10px, 2.5vw, 15px)", flexWrap: "wrap", justifyContent: "center" }}>
+//             <button onClick={downloadAsPDF} style={{ background: "#2563eb", color: "white", padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", borderRadius: "6px", fontWeight: "bold", border: "none", cursor: "pointer", fontSize: "clamp(12px, 3.2vw, 14px)", minHeight: "clamp(36px, 8vw, 44px)" }}>
+//               Download PDF
+//             </button>
+//             <button onClick={() => setSelectedPayment(null)} style={{ background: "#f3f4f6", color: "#4b5563", padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", borderRadius: "6px", fontWeight: "bold", border: "1px solid #d1d5db", cursor: "pointer", fontSize: "clamp(12px, 3.2vw, 14px)", minHeight: "clamp(36px, 8vw, 44px)" }}>
+//               Close
+//             </button>
 //           </div>
 //         </div>
-//         <div style={{ textAlign: "right" }}>
-//           <div style={{ 
-//             background: "#eef2ff", 
-//             color: "#3b82f6", 
-//             padding: "clamp(4px, 1vw, 6px) clamp(14px, 3vw, 20px)", 
-//             borderRadius: "5px", 
-//             fontSize: "clamp(12px, 3.2vw, 14px)", 
-//             fontWeight: "bold",
-//             display: "inline-block",
-//             marginBottom: "10px",
-//             border: "1px solid #dbeafe"
-//           }}>
-//             OFFICIAL RECEIPT
-//           </div>
-//           <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>No: <span style={{ fontWeight: "normal" }}>REC-{selectedPayment.id.slice(-8).toUpperCase()}</span></p>
-//           <p style={{ margin: "2px 0 0 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Date: <span style={{ fontWeight: "normal" }}>{selectedPayment.date}</span></p>
-//         </div>
-//       </div>
-
-//       {/* Address Boxes Section */}
-//       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(16px, 4vw, 25px)", marginBottom: "clamp(20px, 5vw, 30px)" }}>
-//         <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
-//           <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
-//           <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
-//           <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563", lineHeight: "1.4" }}>
-//             House 1-A, Upper Mall, Lahore<br />
-//             Tel: 042-111-000-320
-//           </p>
-//         </div>
-//         <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
-//           <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Received From / Client</h4>
-//           <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>{selectedPayment.payee}</p>
-//           <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563" }}>
-//             Category: {selectedPayment.category}<br />
-//             Payment Mode: {selectedPayment.paymentMode} ({selectedPayment.bank})
-//           </p>
-//         </div>
-//       </div>
-
-//       {/* Amount Highlight Box */}
-//       <div style={{ 
-//         background: "#f9fafb", 
-//         borderLeft: "6px solid #2563eb", 
-//         padding: "clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 25px)", 
-//         borderRadius: "4px",
-//         marginBottom: "clamp(24px, 5vw, 40px)"
-//       }}>
-//         <p style={{ margin: "0 0 5px 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold", color: "#4b5563" }}>Total Amount</p>
-//         <h2 style={{ margin: 0, fontSize: "clamp(20px, 6vw, 28px)", fontWeight: "800", color: "#111827" }}>PKR Rs. {formatCurrency(selectedPayment.amount)}.00</h2>
-//       </div>
-
-//       {/* Remarks Section */}
-//       <div style={{ flexGrow: 1 }}>
-//         <h4 style={{ fontSize: "clamp(11px, 3vw, 13px)", color: "#111827", borderBottom: "1px solid #e5e7eb", paddingBottom: "8px", marginBottom: "10px" }}>Description / Remarks</h4>
-//         <p style={{ fontSize: "clamp(12px, 3.2vw, 14px)", color: "#4b5563", lineHeight: "1.6" }}>{selectedPayment.description}</p>
-//       </div>
-
-//       {/* Footer (Sticks to bottom) */}
-//       <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "clamp(12px, 3vw, 20px)", textAlign: "center" }}>
-//         <p style={{ margin: 0, fontSize: "clamp(9px, 2.2vw, 11px)", color: "#4b5563", fontWeight: "bold" }}>
-//           Phone: <span style={{ fontWeight: "normal" }}>03006492075</span> | Email: <span style={{ fontWeight: "normal" }}>contact@securepathsolution.com</span>
-//         </p>
-//         <p style={{ margin: "4px 0 0 0", fontSize: "clamp(8px, 2vw, 10px)", color: "#9ca3af" }}>This is a computer-generated document.</p>
-//       </div>
-//     </div>
-
-//     {/* Buttons Container */}
-//     <div style={{ margin: "clamp(20px, 5vw, 30px) 0", display: "flex", gap: "clamp(10px, 2.5vw, 15px)", flexWrap: "wrap", justifyContent: "center" }}>
-//       <button onClick={downloadAsPDF} style={{ background: "#2563eb", color: "white", padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", borderRadius: "6px", fontWeight: "bold", border: "none", cursor: "pointer", fontSize: "clamp(12px, 3.2vw, 14px)", minHeight: "clamp(36px, 8vw, 44px)" }}>
-//         Download PDF
-//       </button>
-//       <button onClick={() => setSelectedPayment(null)} style={{ background: "#f3f4f6", color: "#4b5563", padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", borderRadius: "6px", fontWeight: "bold", border: "1px solid #d1d5db", cursor: "pointer", fontSize: "clamp(12px, 3.2vw, 14px)", minHeight: "clamp(36px, 8vw, 44px)" }}>
-//         Close
-//       </button>
-//     </div>
-//   </div>
-// )}
+//       )}
 //     </div>
 //   );
 // }
@@ -1437,11 +1464,28 @@ export default function PaymentLedger() {
           onSubmit={handleSubmit}
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(clamp(160px, 100%, 220px), 1fr))",
+            gridTemplateColumns: "repeat(4, 1fr)",
             gap: "clamp(14px, 3.5vw, 24px)",
             alignItems: "end",
           }}
         >
+          <style>{`
+            @media (max-width: 1200px) {
+              form {
+                grid-template-columns: repeat(3, 1fr) !important;
+              }
+            }
+            @media (max-width: 900px) {
+              form {
+                grid-template-columns: repeat(2, 1fr) !important;
+              }
+            }
+            @media (max-width: 600px) {
+              form {
+                grid-template-columns: 1fr !important;
+              }
+            }
+          `}</style>
           {/* Payee */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
@@ -1591,39 +1635,40 @@ export default function PaymentLedger() {
             </div>
           </div>
 
-          {/* Bank - sirf jab Cash nahi ho */}
-          {paymentMode !== "Cash" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
-                Bank
-              </label>
-              <div style={{ position: "relative" }}>
-                <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
-                <select
-                  value={bank}
-                  onChange={(e) => setBank(e.target.value)}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
-                    background: "#f9fafb",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "10px",
-                    color: "#111827",
-                    appearance: "none",
-                    cursor: "pointer",
-                    fontSize: "clamp(13px, 3.5vw, 16px)",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  {banks.map((b) => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
-                <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
-              </div>
+          {/* Bank - Always visible, disabled for Cash */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+              Bank {paymentMode === "Cash" && <span style={{ color: "#9ca3af", fontWeight: 400, fontSize: "clamp(9px, 2.2vw, 10px)" }}>(N/A for Cash)</span>}
+            </label>
+            <div style={{ position: "relative" }}>
+              <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: paymentMode === "Cash" ? "#d1d5db" : "#6b7280" }} />
+              <select
+                value={paymentMode === "Cash" ? "" : bank}
+                onChange={(e) => setBank(e.target.value)}
+                required={paymentMode !== "Cash"}
+                disabled={paymentMode === "Cash"}
+                style={{
+                  width: "100%",
+                  padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+                  background: paymentMode === "Cash" ? "#f3f4f6" : "#f9fafb",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "10px",
+                  color: paymentMode === "Cash" ? "#9ca3af" : "#111827",
+                  appearance: "none",
+                  cursor: paymentMode === "Cash" ? "not-allowed" : "pointer",
+                  fontSize: "clamp(13px, 3.5vw, 16px)",
+                  boxSizing: "border-box",
+                  opacity: paymentMode === "Cash" ? 0.6 : 1,
+                }}
+              >
+                <option value="">Select Bank</option>
+                {banks.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+              <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: paymentMode === "Cash" ? "#d1d5db" : "#6b7280", pointerEvents: "none" }} />
             </div>
-          )}
+          </div>
 
           {/* Remarks */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1651,7 +1696,7 @@ export default function PaymentLedger() {
           </div>
 
           {/* Submit Buttons */}
-          <div style={{ display: "flex", gap: "clamp(8px, 2vw, 12px)", alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "clamp(8px, 2vw, 12px)", alignItems: "center", flexWrap: "wrap", gridColumn: "1 / -1" }}>
             <button
               type="submit"
               style={{
@@ -1994,7 +2039,7 @@ export default function PaymentLedger() {
 
             {/* Address Boxes Section */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(16px, 4vw, 25px)", marginBottom: "clamp(20px, 5vw, 30px)" }}>
-              <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+              <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
                 <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
                 <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563", lineHeight: "1.4" }}>
@@ -2002,7 +2047,7 @@ export default function PaymentLedger() {
                   Tel: 042-111-000-320
                 </p>
               </div>
-              <div style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+              <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
                 <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Received From / Client</h4>
                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>{selectedPayment.payee}</p>
                 <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563" }}>

@@ -144,7 +144,7 @@ export default function Invoice({ record, companyName, mode = "invoice" }) {
               <div style={paperStyles.partyContent}>
                 <div style={paperStyles.partyName}>Secure Path Solutions Pvt Ltd.</div>
                 <div style={paperStyles.partyDetail}>House 1-A, Upper Mall, Lahore</div>
-                <div style={paperStyles.partyDetail}>Tel: 042-111-000-320</div>
+                <div style={paperStyles.partyDetail}>03008492075</div>
               </div>
             </div>
 
@@ -210,17 +210,33 @@ export default function Invoice({ record, companyName, mode = "invoice" }) {
               <div style={paperStyles.summaryLabel}>{isReceipt ? "Amount Received" : "Total Amount"}</div>
               <div style={paperStyles.summaryValue}>PKR {toMoney(record.amount)}</div>
             </div>
-            <div style={paperStyles.summaryMode}>
-              {isReceipt && (
-                <>
-                  <div style={paperStyles.modeLabel}>Payment Mode</div>
-                  <div style={paperStyles.modeValue}>{record.paymentMode || "Cash"}</div>
-                  <div style={{ marginTop: "12px", fontSize: "18px", fontWeight: "800", color: normalizedStatus === "RECEIVED" ? "#15803d" : "#b45309" }}>
-                    {normalizedStatus}
-                  </div>
-                </>
-              )}
-            </div>
+           <div style={paperStyles.summaryMode}>
+  {isReceipt && (
+    <>
+      <div style={{ ...paperStyles.modeLabel, color: "#000000" }}>
+        Payment Mode
+      </div>
+      <div style={{ ...paperStyles.modeValue, color: "#000000" }}>
+        {record.paymentMode || "Cash"}
+      </div>
+
+      <div
+        style={{
+          marginTop: "12px",
+          fontSize: "18px",
+          fontWeight: "800",
+          color:
+            normalizedStatus === "RECEIVED"
+              ? "#15803d"
+              : "#b45309",
+        }}
+      >
+        {normalizedStatus}
+      </div>
+    </>
+  )}
+</div>
+
           </div>
 
           {/* Signatures */}
@@ -249,7 +265,6 @@ export default function Invoice({ record, companyName, mode = "invoice" }) {
   );
 }
 
-// --- Styles Updated for Visibility ---
 const previewStyles = {
   container: { 
     padding: "clamp(12px, 3vw, 20px)", 
@@ -297,7 +312,7 @@ const previewStyles = {
   },
   idSubtitle: { 
     fontSize: "clamp(11px, 3vw, 13px)", 
-    color: "#64748b",
+    color: "black",
     wordBreak: "break-word"
   },
   buttonGroup: { 
@@ -320,6 +335,18 @@ const previewStyles = {
     justifyContent: "center",
     transition: "all 0.2s ease"
   },
+  modeLabel: {
+  fontSize: "clamp(10px, 2.5vw, 12px)",
+  fontWeight: "600",
+  color: "#000000",
+},
+
+modeValue: {
+  fontSize: "clamp(12px, 3.2vw, 14px)",
+  fontWeight: "700",
+  color: "#000000",
+},
+
   secondaryBtn: { 
     padding: "clamp(8px, 2vw, 10px) clamp(14px, 3vw, 20px)", 
     borderRadius: "8px", 
@@ -347,7 +374,8 @@ const paperStyles = {
     display: "flex", 
     flexDirection: "column", 
     boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    color:'black'
   },
   innerPadding: { 
     padding: "clamp(30px, 5vw, 50px) clamp(20px, 4vw, 60px)", 
@@ -395,7 +423,8 @@ const paperStyles = {
   metaRow: { 
     fontSize: "clamp(11px, 3vw, 13px)", 
     marginBottom: "2px",
-    wordBreak: "break-word"
+    wordBreak: "break-word",
+    color: "#000000"
   },
   partiesGrid: { 
     display: "grid", 
@@ -404,7 +433,7 @@ const paperStyles = {
     marginBottom: "clamp(20px, 4vw, 30px)" 
   },
   partyBox: { 
-    border: "1px solid #e2e8f0", 
+    border: "1px solid black", 
     borderRadius: "8px", 
     padding: "clamp(12px, 3vw, 15px)", 
     background: "#fcfcfc",
@@ -426,7 +455,7 @@ const paperStyles = {
     wordBreak: "break-word"
   },
   tableWrapper: { 
-    border: "1px solid #e2e8f0", 
+    border: "1px solid black", 
     borderRadius: "8px", 
     overflow: "hidden", 
     marginBottom: "clamp(16px, 4vw, 25px)",
@@ -450,7 +479,7 @@ const paperStyles = {
   },
   gridLabel: { 
     fontSize: "clamp(10px, 2.5vw, 12px)", 
-    color: "#64748b" 
+    color: "black" 
   },
   gridValue: { 
     fontSize: "clamp(11px, 3vw, 13px)", 
@@ -502,7 +531,9 @@ const paperStyles = {
   },
   sigText: { 
     fontSize: "clamp(10px, 2.5vw, 12px)", 
-    fontWeight: "700" 
+    fontWeight: "700" ,
+    color:'black'
+
   },
   footerBar: { 
     padding: "clamp(12px, 3vw, 20px)", 
