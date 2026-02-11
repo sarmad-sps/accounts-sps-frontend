@@ -76,7 +76,7 @@ function StatCard({ title, value, hint, variant = "default" }) {
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({
-    totalAssets: 0, // Total Balance = Banks + Cash in Hand (net)
+    totalAssets: 0, 
     totalReceived: 0,
     totalPending: 0,
     totalPaid: 0,
@@ -138,7 +138,6 @@ export default function Dashboard() {
 
         const openingBalances = stateData.openingBalances || {};
 
-        // Start with opening balances for all (including CASH)
         let bankBalanceByBank = { ...openingBalances };
 
         let receivedByBank = {};
@@ -231,8 +230,7 @@ export default function Dashboard() {
         const netCashEffect = cashInHand.received - cashInHand.paid;
 
         const totalAssets = totalBankBalances + netCashEffect;
-        // ──────────────────────────────────────────────
-
+       
         setSummary({
           totalAssets,
           totalReceived,
