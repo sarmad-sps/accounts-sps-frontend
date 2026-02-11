@@ -288,7 +288,7 @@ const styles = {
     maxWidth: "1200px",
     margin: "0 auto",
     color: "#111827",
-    background: "#e5e7eb",
+ 
     minHeight: "100vh",
     fontFamily: "Inter, system-ui, sans-serif",
   },

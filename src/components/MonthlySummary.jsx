@@ -1,17 +1,368 @@
-import React, { useState, useEffect } from "react";
+// import React, { useState, useEffect, useMemo } from "react";
+// import jsPDF from "jspdf";
+// import autoTable from "jspdf-autotable";
+// import splogo from "../assets/sps-logo.png";
+
+// const FinanceStatementApp = () => {
+//   const [allTransactions, setAllTransactions] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [base64Logo, setBase64Logo] = useState("");
+
+//   const [viewType, setViewType] = useState("monthly"); 
+//   const [month, setMonth] = useState(new Date().toLocaleString("default", { month: "long" }));
+//   const [year, setYear] = useState(String(new Date().getFullYear()));
+//   const [startDate, setStartDate] = useState("");
+//   const [endDate, setEndDate] = useState("");
+
+  
+//   useEffect(() => {
+//     const convertLogoToBase64 = async () => {
+//       try {
+//         const response = await fetch(splogo);
+//         const blob = await response.blob();
+//         const reader = new FileReader();
+//         reader.onloadend = () => setBase64Logo(reader.result);
+//         reader.readAsDataURL(blob);
+//       } catch (error) {
+//         console.error("Logo conversion error:", error);
+//       }
+//     };
+//     convertLogoToBase64();
+//   }, []);
+
+//   // 2. Fetch Data
+//   useEffect(() => {
+//     async function buildLedger() {
+//       try {
+//         setLoading(true);
+//         const ledger = [];
+//         const baseUrl = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api";
+
+//         const [stateRes, payRes, salRes, invRes] = await Promise.all([
+//           fetch(`${baseUrl}/state`),
+//           fetch(`${baseUrl}/payments`),
+//           fetch(`${baseUrl}/salaries`),
+//           fetch(`${baseUrl}/inventory-requests`),
+//         ]);
+
+//         const stateData = await stateRes.json();
+//         const payments = await payRes.json();
+//         const salaries = await salRes.json();
+//         const inventory = await invRes.json();
+
+//         (stateData.receivings || []).forEach((r) => {
+//           if (r.status?.toLowerCase() === "received") {
+//             const d = new Date(r.createdAt || r.date);
+//             ledger.push({ id: `rec-${r._id}`, rawDate: d, date: d.toDateString(), name: r.clientName || "Receiving", desc: r.notes || "Amount Received", type: "credit", amount: Number(r.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: r.paymentMode || "Cash" });
+//           }
+//         });
+
+//         payments.forEach((p) => {
+//           if (p.status?.toLowerCase() === "paid") {
+//             const d = new Date(p.paymentDate || p.date);
+//             ledger.push({ id: `pay-${p._id}`, rawDate: d, date: d.toDateString(), name: p.payee || "Payment", desc: p.description || p.category || "Expense", type: "debit", amount: Number(p.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: p.paymentMode || "Cash" });
+//           }
+//         });
+
+//         salaries.forEach((s) => {
+//           if (s.status?.toLowerCase() === "paid") {
+//             const d = new Date(s.paymentDate || s.date);
+//             ledger.push({ id: `sal-${s._id}`, rawDate: d, date: d.toDateString(), name: s.employeeName || "Salary", desc: `Salary – ${s.month}`, type: "debit", amount: Number(s.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: s.paymentMethod || "Cash" });
+//           }
+//         });
+
+//         inventory.forEach((r) => {
+//           if (r.receipt?.paymentStatus === "Paid") {
+//             const d = new Date(r.receipt.receivedAt);
+//             ledger.push({ id: `inv-${r._id}`, rawDate: d, date: d.toDateString(), name: r.store || "Store", desc: r.item || "Inventory Item", type: "debit", amount: Number(r.receipt.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: r.receipt?.paymentMethod || "Cash" });
+//           }
+//         });
+
+//         setAllTransactions(ledger.sort((a, b) => b.rawDate - a.rawDate));
+//       } catch (err) { console.error(err); } finally { setLoading(false); }
+//     }
+//     buildLedger();
+//   }, []);
+
+//   // 3. Filtering
+//   const filtered = useMemo(() => {
+//     return allTransactions.filter((t) => {
+//       if (viewType === "monthly") return t.month === month && t.year === year;
+//       if (viewType === "yearly") return t.year === year;
+//       if (viewType === "custom") {
+//         if (!startDate || !endDate) return true;
+//         const start = new Date(startDate);
+//         const end = new Date(endDate);
+//         end.setHours(23, 59, 59);
+//         return t.rawDate >= start && t.rawDate <= end;
+//       }
+//       return true;
+//     });
+//   }, [allTransactions, viewType, month, year, startDate, endDate]);
+
+//   const totalCredit = filtered.filter(t => t.type === "credit").reduce((sum, t) => sum + t.amount, 0);
+//   const totalDebit = filtered.filter(t => t.type === "debit").reduce((sum, t) => sum + t.amount, 0);
+
+//   // 0. Inject Spinner Animation
+// useEffect(() => {
+//   const style = document.createElement('style');
+//   style.innerHTML = `
+//     @keyframes spin {
+//       to { transform: rotate(360deg); }
+//     }
+//   `;
+//   document.head.appendChild(style);
+//   return () => document.head.removeChild(style); // Cleanup on unmount
+// }, []);
+//   // 4. PDF
+//   const downloadPDF = () => {
+//     if (filtered.length === 0) return alert("No data available for the selected range.");
+//     const doc = new jsPDF();
+//     let reportTitle = viewType === "monthly" ? `${month} ${year}` : viewType === "yearly" ? `Year ${year}` : `${startDate} to ${endDate}`;
+    
+//     if (base64Logo) doc.addImage(base64Logo, "PNG", 15, 10, 22, 22);
+//     doc.setFontSize(18).setFont("helvetica", "bold").text("SECURE PATH SOLUTIONS PVT LTD", 42, 20);
+//     doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(100).text(`Financial Ledger Report | ${reportTitle}`, 42, 27);
+
+//     autoTable(doc, {
+//       startY: 40,
+//       head: [["Date", "Entity Name", "Description", "Mode", "Credit (PKR)", "Debit (PKR)"]],
+//       body: filtered.map(t => [t.date, t.name, t.desc, t.paymentMode || "—", t.type === "credit" ? t.amount.toLocaleString() : "-", t.type === "debit" ? t.amount.toLocaleString() : "-"]),
+//       headStyles: { fillColor: [30, 58, 138] },
+//       columnStyles: { 4: { halign: "right" }, 5: { halign: "right" } },
+//       styles: { fontSize: 8 },
+//     });
+
+//     const finalY = doc.lastAutoTable.finalY + 10;
+//     doc.setFontSize(11).setTextColor(0).text(`Total Credit: Rs. ${totalCredit.toLocaleString()}`, 195, finalY, { align: "right" });
+//     doc.text(`Total Debit: Rs. ${totalDebit.toLocaleString()}`, 195, finalY + 7, { align: "right" });
+//     doc.setFont("helvetica", "bold").text(`Net Balance: Rs. ${(totalCredit - totalDebit).toLocaleString()}`, 195, finalY + 14, { align: "right" });
+
+//     doc.save(`SPS_Ledger_${viewType}.pdf`);
+//   };
+
+//   const getPaymentModeColor = (mode) => {
+//     const map = { Cash: "#f59e0b", Online: "#3b82f6", Check: "#8b5cf6", "Bank Transfer": "#10b981" };
+//     return map[mode] || "#64748b";
+//   };
+
+//  if (loading) return (
+//   <div style={loaderWrapper}> 
+//     <div style={spinner}></div> 
+//     <p style={{ color: "#000000", fontWeight: "600", marginTop: "10px" }}>
+//       Fetching Financial Data...
+//     </p> 
+//   </div>
+// );
+//   return (
+//     <div style={containerStyle}>
+//       {/* HEADER SECTION */}
+//       <header style={headerCard}>
+//         <div style={brandBox}>
+//           <img src={splogo} alt="Logo" style={{ height: "48px" }} />
+//           <div>
+//             <h1 style={titleStyle}>Financial Ledger</h1>
+//             <p style={subtitleStyle}>Secure Path Solutions Dashboard</p>
+//           </div>
+//         </div>
+
+//         <div style={filterActionBox}>
+//           <div style={inputGroup}>
+//             <label style={labelMini}>VIEW TYPE</label>
+//             <select value={viewType} onChange={(e) => setViewType(e.target.value)} style={selectStyled}>
+//               <option value="monthly">Monthly</option>
+//               <option value="yearly">Yearly</option>
+//               <option value="custom">Date Range</option>
+//             </select>
+//           </div>
+
+//           {viewType === "monthly" && (
+//             <div style={inputGroup}>
+//               <label style={labelMini}>SELECT MONTH & YEAR</label>
+//               <div style={{ display: "flex", gap: "8px" }}>
+//                 <select value={month} onChange={(e) => setMonth(e.target.value)} style={selectStyled}>
+//                   {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => <option key={m} value={m}>{m}</option>)}
+//                 </select>
+//                 <select value={year} onChange={(e) => setYear(e.target.value)} style={selectStyled}>
+//                   {["2024", "2025", "2026","2027","2028"].map(y => <option key={y} value={y}>{y}</option>)}
+//                 </select>
+//               </div>
+//             </div>
+//           )}
+
+//           {viewType === "yearly" && (
+//             <div style={inputGroup}>
+//               <label style={labelMini}>SELECT YEAR</label>
+//               <select value={year} onChange={(e) => setYear(e.target.value)} style={selectStyled}>
+//                 {["2024", "2025", "2026","2027","2028"].map(y => <option key={y} value={y}>{y}</option>)}
+//               </select>
+//             </div>
+//           )}
+
+//           {viewType === "custom" && (
+//             <div style={inputGroup}>
+//               <label style={labelMini}>SELECT DATE RANGE</label>
+//               <div style={{ display: "flex", gap: "8px" }}>
+//                 <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={selectStyled} />
+//                 <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={selectStyled} />
+//               </div>
+//             </div>
+//           )}
+
+//           <button onClick={downloadPDF} style={btnDownload}>
+//             <svg width="16" height="16" fill="white" viewBox="0 0 16 16" style={{ marginRight: "8px" }}>
+//               <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+//               <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+//             </svg>
+//             Export PDF
+//           </button>
+//         </div>
+//       </header>
+
+//       {/* SUMMARY DASHBOARD */}
+//       <div style={statsGrid}>
+//         <div style={{ ...statCard, borderTop: "4px solid #10b981" }}>
+//           <span style={statLabel}>Total Credits</span>
+//           <div style={statValue}>Rs. {totalCredit.toLocaleString()}</div>
+//         </div>
+//         <div style={{ ...statCard, borderTop: "4px solid #ef4444" }}>
+//           <span style={statLabel}>Total Debits</span>
+//           <div style={statValue}>Rs. {totalDebit.toLocaleString()}</div>
+//         </div>
+//         <div style={{ ...statCard, borderTop: "4px solid #3b82f6" }}>
+//           <span style={statLabel}>Net Balance</span>
+//           <div style={{ ...statValue, color: totalCredit - totalDebit >= 0 ? "#1e40af" : "#b91c1c" }}>
+//             Rs. {(totalCredit - totalDebit).toLocaleString()}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* TABLE SECTION */}
+//       <div style={tableWrapper}>
+//         <div style={tableHeader}>
+//             <h3 style={{ margin: 0, fontSize: "16px" ,color:"black"}}>Transaction Records</h3>
+//             <span style={badgeCount}>{filtered.length} entries</span>
+//         </div>
+//         <div style={{ overflowX: "auto" }}>
+//           <table style={mainTable}>
+//             <thead>
+//               <tr style={theadRow}>
+//                 <th style={thCol}>DATE</th>
+//                 <th style={thCol}>ENTITY / NAME</th>
+//                 <th style={thCol}>DESCRIPTION</th>
+//                 <th style={thCol}>PAYMENT MODE</th>
+//                 <th style={{ ...thCol, textAlign: "right" }}>CREDIT</th>
+//                 <th style={{ ...thCol, textAlign: "right" }}>DEBIT</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filtered.length > 0 ? (
+//                 filtered.map((t) => (
+//                   <tr key={t.id} style={tbodyRow}>
+//                     <td style={tdCol}>{t.date}</td>
+//                     <td style={{ ...tdCol, fontWeight: "600", color: "#1e293b" }}>{t.name}</td>
+//                     <td style={tdCol}>{t.desc}</td>
+//                     <td style={tdCol}>
+//                       <span style={{ ...modeBadge, backgroundColor: getPaymentModeColor(t.paymentMode) }}>{t.paymentMode}</span>
+//                     </td>
+//                     <td style={{ ...tdCol, textAlign: "right", color: "#059669", fontWeight: "700" }}>
+//                       {t.type === "credit" ? `Rs ${t.amount.toLocaleString()}` : "—"}
+//                     </td>
+//                     <td style={{ ...tdCol, textAlign: "right", color: "#dc2626", fontWeight: "700" }}>
+//                       {t.type === "debit" ? `Rs ${t.amount.toLocaleString()}` : "—"}
+//                     </td>
+//                   </tr>
+//                 ))
+//               ) : (
+//                 <tr><td colSpan="6" style={noDataStyle}>No transactions found for the selected criteria.</td></tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // --- STYLING (Modern Dashboard) ---
+// const containerStyle = { backgroundColor: "#f1f5f9", minHeight: "100vh", padding: "30px", fontFamily: "'Inter', sans-serif" };
+// const headerCard = { backgroundColor: "white", padding: "24px", borderRadius: "16px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px", marginBottom: "30px", border: "1px solid #e2e8f0" };
+// const brandBox = { display: "flex", alignItems: "center", gap: "15px" };
+// const titleStyle = { margin: 0, fontSize: "24px", fontWeight: "800", color: "#1e3a8a" };
+// const subtitleStyle = { margin: 0, fontSize: "13px", color: "#64748b" };
+// const filterActionBox = { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-end" };
+// const inputGroup = { display: "flex", flexDirection: "column", gap: "6px" };
+// const labelMini = { fontSize: "10px", fontWeight: "bold", color: "#94a3b8", letterSpacing: "1px" };
+// const selectStyled = { 
+//   padding: "10px 14px", 
+//   borderRadius: "10px", 
+//   border: "1px solid #cbd5e1", 
+//   fontSize: "14px", 
+//   outline: "none", 
+//   backgroundColor: "#ffffff", 
+//   color: "#000000",          
+//   fontWeight: "500",
+//   cursor: "pointer" 
+// };
+// const btnDownload = { backgroundColor: "#1e3a8a", color: "white", border: "none", padding: "12px 20px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", transition: "0.2s" };
+// const statsGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px", marginBottom: "30px" };
+// const statCard = { backgroundColor: "white", padding: "24px", borderRadius: "16px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", border: "1px solid #e2e8f0" };
+// const statLabel = { color: "#64748b", fontSize: "13px", fontWeight: "600", textTransform: "uppercase" };
+// const statValue = { fontSize: "28px", fontWeight: "800", marginTop: "10px", color: "#1e293b" };
+// const tableWrapper = { backgroundColor: "white", borderRadius: "16px", overflow: "hidden", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" };
+// const tableHeader = { padding: "20px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" };
+// const badgeCount = { backgroundColor: "#eff6ff", color: "#2563eb", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" };
+// const mainTable = { width: "100%", borderCollapse: "collapse" };
+// const theadRow = { backgroundColor: "#f8fafc" };
+// const thCol = { padding: "16px 24px", textAlign: "left", fontSize: "11px", fontWeight: "bold", color: "#64748b", letterSpacing: "0.5px" };
+// const tbodyRow = { borderBottom: "1px solid #f1f5f9", transition: "0.2s" };
+// const tdCol = { padding: "16px 24px", fontSize: "14px", color: "#475569" };
+// const modeBadge = { padding: "4px 10px", borderRadius: "8px", color: "white", fontSize: "11px", fontWeight: "bold" };
+// const noDataStyle = { padding: "60px", textAlign: "center", color: "#94a3b8" };
+// const loaderWrapper = { 
+//   height: "100vh", 
+//   display: "flex", 
+//   flexDirection: "column", 
+//   justifyContent: "center", 
+//   alignItems: "center", 
+//   backgroundColor: "#f8fafc",
+//   fontFamily: "'Inter', sans-serif"
+// };
+
+// const spinner = { 
+//   width: "50px", 
+//   height: "50px", 
+//   border: "5px solid #e2e8f0", 
+//   borderTop: "5px solid #1e3a8a", 
+//   borderRadius: "50%", 
+//   animation: "spin 0.8s linear infinite", 
+//   marginBottom: "15px"
+// };
+// export default FinanceStatementApp;
+import React, { useState, useEffect, useMemo } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import splogo from "../assets/sps-logo.png"; 
+import splogo from "../assets/sps-logo.png";
 
 const FinanceStatementApp = () => {
   const [allTransactions, setAllTransactions] = useState([]);
-  const [month, setMonth] = useState(new Date().toLocaleString("default", { month: "long" }));
-  const [year, setYear] = useState(String(new Date().getFullYear()));
   const [loading, setLoading] = useState(true);
   const [base64Logo, setBase64Logo] = useState("");
 
-  
+  // --- Filter States ---
+  const [viewType, setViewType] = useState("monthly");
+  const [month, setMonth] = useState(new Date().toLocaleString("default", { month: "long" }));
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // 1. Inject Spinner Animation & Logo Conversion
   useEffect(() => {
+    // Inject CSS for spinner
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
+    document.head.appendChild(style);
+
     const convertLogoToBase64 = async () => {
       try {
         const response = await fetch(splogo);
@@ -24,370 +375,309 @@ const FinanceStatementApp = () => {
       }
     };
     convertLogoToBase64();
+
+    return () => document.head.removeChild(style);
   }, []);
 
-  // Fetch and Build Ledger
- useEffect(() => {
+  // 2. Fetch Data
+  useEffect(() => {
     async function buildLedger() {
       try {
         setLoading(true);
-
         const ledger = [];
+        const baseUrl = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api";
 
-        // ===== RECEIVINGS =====
-        const stateRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state");
+        const [stateRes, payRes, salRes, invRes] = await Promise.all([
+          fetch(`${baseUrl}/state`),
+          fetch(`${baseUrl}/payments`),
+          fetch(`${baseUrl}/salaries`),
+          fetch(`${baseUrl}/inventory-requests`),
+        ]);
+
         const stateData = await stateRes.json();
+        const payments = await payRes.json();
+        const salaries = await salRes.json();
+        const inventory = await invRes.json();
 
         (stateData.receivings || []).forEach((r) => {
           if (r.status?.toLowerCase() === "received") {
             const d = new Date(r.createdAt || r.date);
-            ledger.push({
-              id: `rec-${r._id}`,
-              date: d.toDateString(),
-              name: r.clientName || "Receiving",
-              desc: r.notes || "Amount Received",
-              type: "credit",
-              amount: Number(r.amount),
-              month: d.toLocaleString("default", { month: "long" }),
-              year: String(d.getFullYear()),
-               paymentMode: r.paymentMode || "Cash", // added
-            });
+            ledger.push({ id: `rec-${r._id}`, rawDate: d, date: d.toDateString(), name: r.clientName || "Receiving", desc: r.notes || "Amount Received", type: "credit", amount: Number(r.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: r.paymentMode || "Cash" });
           }
         });
-
-        // ===== PAYMENTS =====
-        const payRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments");
-        const payments = await payRes.json();
 
         payments.forEach((p) => {
           if (p.status?.toLowerCase() === "paid") {
             const d = new Date(p.paymentDate || p.date);
-            ledger.push({
-              id: `pay-${p._id}`,
-              date: d.toDateString(),
-              name: p.payee || "Payment",
-              desc: p.description || p.category || "Expense",
-              type: "debit",
-              amount: Number(p.amount),
-              month: d.toLocaleString("default", { month: "long" }),
-              year: String(d.getFullYear()),
-               paymentMode: p.paymentMode || "Cash", // added
-            });
+            ledger.push({ id: `pay-${p._id}`, rawDate: d, date: d.toDateString(), name: p.payee || "Payment", desc: p.description || p.category || "Expense", type: "debit", amount: Number(p.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: p.paymentMode || "Cash" });
           }
         });
-
-        // ===== SALARIES =====
-        const salRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries");
-        const salaries = await salRes.json();
 
         salaries.forEach((s) => {
           if (s.status?.toLowerCase() === "paid") {
             const d = new Date(s.paymentDate || s.date);
-            ledger.push({
-              id: `sal-${s._id}`,
-              date: d.toDateString(),
-              name: s.employeeName || "Salary",
-              desc: `Salary – ${s.month}`,
-              type: "debit",
-              amount: Number(s.amount),
-              month: d.toLocaleString("default", { month: "long" }),
-              year: String(d.getFullYear()),
-               paymentMode: s.paymentMethod || "Cash", // added
-            });
+            ledger.push({ id: `sal-${s._id}`, rawDate: d, date: d.toDateString(), name: s.employeeName || "Salary", desc: `Salary – ${s.month}`, type: "debit", amount: Number(s.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: s.paymentMethod || "Cash" });
           }
         });
 
-const invRes = await fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests");
-const inventory = await invRes.json();
+        inventory.forEach((r) => {
+          if (r.receipt?.paymentStatus === "Paid") {
+            const d = new Date(r.receipt.receivedAt);
+            ledger.push({ id: `inv-${r._id}`, rawDate: d, date: d.toDateString(), name: r.store || "Store", desc: r.item || "Inventory Item", type: "debit", amount: Number(r.receipt.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: r.receipt?.paymentMethod || "Cash" });
+          }
+        });
 
-inventory.forEach(r => {
-  if (r.receipt?.paymentStatus === "Paid") {
-    const d = new Date(r.receipt.receivedAt);
-    const storeName = r.store || "Store"; 
-    const itemName = r.item || "Inventory Item"; 
-    ledger.push({
-      id: `inv-${r._id}`,
-      date: d.toDateString(),
-      name: storeName, 
-      desc: `${itemName} (${storeName})`, 
-      type: "debit",
-      amount: Number(r.receipt.amount),
-      month: d.toLocaleString("default", { month: "long" }),
-      year: String(d.getFullYear())
-    });
-  }
-});
-
-        setAllTransactions(ledger);
-      } catch (err) {
-        console.error("Ledger error:", err);
-      } finally {
-        setLoading(false); 
-      }
+        setAllTransactions(ledger.sort((a, b) => b.rawDate - a.rawDate));
+      } catch (err) { console.error(err); } finally { setLoading(false); }
     }
-
     buildLedger();
   }, []);
-  const filtered = allTransactions.filter(t => t.month === month && t.year === year);
+
+  // 3. Filtering logic
+  const filtered = useMemo(() => {
+    return allTransactions.filter((t) => {
+      if (viewType === "monthly") return t.month === month && t.year === year;
+      if (viewType === "yearly") return t.year === year;
+      if (viewType === "custom") {
+        if (!startDate || !endDate) return true;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59);
+        return t.rawDate >= start && t.rawDate <= end;
+      }
+      return true;
+    });
+  }, [allTransactions, viewType, month, year, startDate, endDate]);
+
   const totalCredit = filtered.filter(t => t.type === "credit").reduce((sum, t) => sum + t.amount, 0);
   const totalDebit = filtered.filter(t => t.type === "debit").reduce((sum, t) => sum + t.amount, 0);
-  const net = totalCredit - totalDebit;
+  const netBalance = totalCredit - totalDebit;
 
-  // --- PDF GENERATION WITH INTEGRATED TOTALS ---
+  // 4. PDF Generation
   const downloadPDF = () => {
-    if (filtered.length === 0) return alert("Selected month has no data.");
+    if (filtered.length === 0) return alert("No data available for the selected range.");
     const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    // 1. Header
-    doc.setFillColor(30, 58, 138); 
-    doc.rect(0, 0, pageWidth, 40, "F");
-    if (base64Logo) doc.addImage(base64Logo, 'PNG', 15, 8, 25, 25);
+    let reportTitle = viewType === "monthly" ? `${month} ${year}` : viewType === "yearly" ? `Year ${year}` : `${startDate} to ${endDate}`;
     
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18); doc.setFont("helvetica", "bold");
-    doc.text("SECURE PATH SOLUTIONS PVT LTD", 45, 20);
-    doc.setFontSize(10); doc.setFont("helvetica", "normal");
-    doc.text(`Financial Ledger | ${month.toUpperCase()} ${year}`, 45, 28);
-
-    // 2. Main Transaction Table
-   autoTable(doc, {
-  startY: 50,
-  head: [["Date", "Entity Name", "Description", "Mode", "Credit (PKR)", "Debit (PKR)"]],
-  body: filtered.map(t => [
-    t.date,
-    t.name,
-    t.desc,
-    t.paymentMode || '—', // NEW
-    t.type === "credit" ? t.amount.toLocaleString() : "-",
-    t.type === "debit" ? t.amount.toLocaleString() : "-"
-  ]),
-  headStyles: { fillColor: [30, 58, 138], halign: 'center' },
-  columnStyles: {
-    0: { halign: 'center', cellWidth: 30 },
-    1: { fontStyle: 'bold', cellWidth: 40 },
-    3: { halign: 'center', cellWidth: 30 }, // Mode column
-    4: { halign: 'right', textColor: [21, 128, 61] },
-    5: { halign: 'right', textColor: [185, 28, 28] }
-  },
-  styles: { fontSize: 8, cellPadding: 3 },
-  alternateRowStyles: { fillColor: [250, 250, 250] },
-  margin: { bottom: 60 }
-});
-
-
-    // 3. FIXED BOTTOM SUMMARY BLOCK (Bottom Right)
-    const summaryWidth = 85;
-    const summaryHeight = 25;
-    const margin = 15;
-    const startX = pageWidth - summaryWidth - margin;
-    const startY = pageHeight - summaryHeight - 25; // Page ke bottom se 25 units upar
-
-    // Summary Heading
-    doc.setTextColor(30, 58, 138);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("FINAL ACCOUNT SUMMARY", startX, startY - 2);
+    if (base64Logo) doc.addImage(base64Logo, "PNG", 15, 10, 22, 22);
+    doc.setFontSize(18).setFont("helvetica", "bold").setTextColor(30, 58, 138).text("SECURE PATH SOLUTIONS PVT LTD", 42, 20);
+    doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(100).text(`Financial Ledger Report | ${reportTitle}`, 42, 27);
 
     autoTable(doc, {
-      startY: startY,
-      margin: { left: startX },
-      tableWidth: summaryWidth,
-      body: [
-        ["Total Credits", { content: `Rs. ${totalCredit.toLocaleString()}`, styles: { halign: 'right', textColor: [21, 128, 61] } }],
-        ["Total Debits", { content: `Rs. ${totalDebit.toLocaleString()}`, styles: { halign: 'right', textColor: [185, 28, 28] } }],
-    
-      ],
-      theme: 'grid',
-      styles: { fontSize: 9, cellPadding: 2.5 }
+      startY: 40,
+      head: [["Date", "Entity Name", "Description", "Mode", "Credit (PKR)", "Debit (PKR)"]],
+      body: filtered.map(t => [t.date, t.name, t.desc, t.paymentMode || "—", t.type === "credit" ? t.amount.toLocaleString() : "-", t.type === "debit" ? t.amount.toLocaleString() : "-"]),
+      headStyles: { fillColor: [30, 58, 138] },
+      columnStyles: { 4: { halign: "right" }, 5: { halign: "right" } },
+      styles: { fontSize: 8 },
     });
 
-    // 4. Footer (Page Numbers)
-    const totalPages = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8); doc.setTextColor(150);
-        doc.text(`Secure Path Solutions - System Generated Report`, 15, pageHeight - 10);
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth - 30, pageHeight - 10);
-    }
+    // --- Styled Summary Section ---
+    const finalY = doc.lastAutoTable.finalY + 15;
+    const rightEdge = 195;
 
-    doc.save(`SPS_Ledger_${month}_${year}.pdf`);
+    doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(100);
+    doc.text("Total Credit:", rightEdge - 45, finalY);
+    doc.setTextColor(0).setFont("helvetica", "bold").text(`Rs. ${totalCredit.toLocaleString()}`, rightEdge, finalY, { align: "right" });
+
+    doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(100);
+    doc.text("Total Debit:", rightEdge - 45, finalY + 7);
+    doc.setTextColor(0).setFont("helvetica", "bold").text(`Rs. ${totalDebit.toLocaleString()}`, rightEdge, finalY + 7, { align: "right" });
+
+    doc.setDrawColor(200);
+    doc.line(rightEdge - 55, finalY + 10, rightEdge, finalY + 10);
+
+    doc.setFontSize(12).setFont("helvetica", "bold");
+    doc.setTextColor(netBalance >= 0 ? 30 : 185, netBalance >= 0 ? 58 : 28, netBalance >= 0 ? 138 : 28);
+    doc.text("Net Balance:", rightEdge - 45, finalY + 17);
+    doc.text(`Rs. ${netBalance.toLocaleString()}`, rightEdge, finalY + 17, { align: "right" });
+
+    doc.save(`SPS_Ledger_${viewType}.pdf`);
   };
-  const S = {
-    card: { background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', overflow: 'hidden' },
-    tile: (color) => ({ background: 'white', padding: '20px', borderRadius: '12px', borderTop: `4px solid ${color}`, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }),
-    th: { padding: '15px', background: '#f8fafc', color: '#475569', fontSize: '11px', fontWeight: 'bold', textAlign: 'center', borderBottom: '2px solid #e2e8f0' },
-    td: { padding: '14px', fontSize: '14px', borderBottom: '1px solid #f1f5f9', color: '#1e293b' }
+
+  const getPaymentModeColor = (mode) => {
+    const map = { Cash: "#f59e0b", Online: "#3b82f6", Check: "#8b5cf6", "Bank Transfer": "#10b981" };
+    return map[mode] || "#64748b";
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', background: '#f8fafc', flexDirection: 'column', gap: '15px' }}>
-      <div style={{ width: '40px', height: '40px', border: '4px solid #ddd', borderTopColor: '#1e3a8a', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-      <p style={{ fontFamily: 'sans-serif', color: '#64748b' }}>Preparing Financial Data...</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={loaderWrapper}> 
+      <div style={spinner}></div> 
+      <p style={{ color: "#000000", fontWeight: "600", marginTop: "15px", fontSize: "16px" }}>
+        Fetching Financial Data...
+      </p> 
     </div>
   );
 
   return (
-    <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", padding: "clamp(20px, 5vw, 40px)", fontFamily: "sans-serif", boxSizing: "border-box" }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        
-        {/* HEADER BAR */}
-        <div style={{ display: 'flex', flexDirection: window.innerWidth < 640 ? 'column' : 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'clamp(20px, 5vw, 30px)', gap: 'clamp(12px, 3vw, 20px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 12px)' }}>
-            <img src={splogo} alt="Logo" style={{ height: 'clamp(32px, 8vw, 40px)' }} />
-            <div>
-              <h1 style={{ fontSize: 'clamp(18px, 5vw, 22px)', fontWeight: '800', color: '#1e293b', margin: 0 }}>Secure Path Solutions</h1>
-              <span style={{ fontSize: 'clamp(11px, 2.5vw, 13px)', color: '#64748b' }}>Ledger Management System</span>
+    <div style={containerStyle}>
+      <header style={headerCard}>
+        <div style={brandBox}>
+          <img src={splogo} alt="Logo" style={{ height: "48px" }} />
+          <div>
+            <h1 style={titleStyle}>Financial Ledger</h1>
+            <p style={subtitleStyle}>Secure Path Solutions Dashboard</p>
+          </div>
+        </div>
+
+        <div style={filterActionBox}>
+          <div style={inputGroup}>
+            <label style={labelMini}>VIEW TYPE</label>
+            <select value={viewType} onChange={(e) => setViewType(e.target.value)} style={selectStyled}>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="custom">Date Range</option>
+            </select>
+          </div>
+
+          {viewType === "monthly" && (
+            <div style={inputGroup}>
+              <label style={labelMini}>SELECT MONTH & YEAR</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <select value={month} onChange={(e) => setMonth(e.target.value)} style={selectStyled}>
+                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <select value={year} onChange={(e) => setYear(e.target.value)} style={selectStyled}>
+                  {["2024", "2025", "2026","2027","2028"].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
             </div>
+          )}
+
+          {viewType === "yearly" && (
+            <div style={inputGroup}>
+              <label style={labelMini}>SELECT YEAR</label>
+              <select value={year} onChange={(e) => setYear(e.target.value)} style={selectStyled}>
+                {["2024", "2025", "2026","2027","2028"].map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          )}
+
+          {viewType === "custom" && (
+            <div style={inputGroup}>
+              <label style={labelMini}>SELECT DATE RANGE</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={selectStyled} />
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={selectStyled} />
+              </div>
+            </div>
+          )}
+
+          <button onClick={downloadPDF} style={btnDownload}>
+            <svg width="16" height="16" fill="white" viewBox="0 0 16 16" style={{ marginRight: "8px" }}>
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            Export PDF
+          </button>
+        </div>
+      </header>
+
+      <div style={statsGrid}>
+        <div style={{ ...statCard, borderTop: "4px solid #10b981" }}>
+          <span style={statLabel}>Total Credits</span>
+          <div style={statValue}>Rs. {totalCredit.toLocaleString()}</div>
+        </div>
+        <div style={{ ...statCard, borderTop: "4px solid #ef4444" }}>
+          <span style={statLabel}>Total Debits</span>
+          <div style={statValue}>Rs. {totalDebit.toLocaleString()}</div>
+        </div>
+        <div style={{ ...statCard, borderTop: "4px solid #3b82f6" }}>
+          <span style={statLabel}>Net Balance</span>
+          <div style={{ ...statValue, color: netBalance >= 0 ? "#1e40af" : "#b91c1c" }}>
+            Rs. {netBalance.toLocaleString()}
           </div>
-          
-          <div style={{ 
-  display: 'flex', 
-  gap: '12px', 
-  width: '100%', 
-  maxWidth: '650px', 
-  flexWrap: 'wrap', 
-  justifyContent: 'flex-end',
-  alignItems: 'center',
-  padding: '8px'
-}}>
-  {/* Selector Container for Mobile Side-by-Side */}
-  <div style={{ 
-    display: 'flex', 
-    gap: '10px', 
-    flex: window.innerWidth < 640 ? '1 1 100%' : 'none' 
-  }}>
-    {[ 
-      { value: month, setter: setMonth, options: ["January","February","March","April","May","June","July","August","September","October","November","December"] },
-      { value: year, setter: setYear, options: ["2024","2025","2026"] }
-    ].map((select, idx) => (
-      <div key={idx} style={{ position: 'relative', flex: 1 }}>
-        <select 
-          value={select.value} 
-          onChange={(e) => select.setter(e.target.value)} 
-          style={{ 
-            width: '100%',
-            padding: '10px 32px 10px 14px', 
-            borderRadius: '10px', 
-            border: '1px solid #cbd5e1', 
-            outline: 'none', 
-            fontSize: '14px', 
-            background: '#f8fafc', 
-            color: '#334155', 
-            fontWeight: '500', 
-            cursor: 'pointer', 
-            appearance: 'none',
-            transition: 'all 0.2s ease',
-            backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3e%3cpath d=%22M6 9l6 6 6-6%22/%3e%3c/svg%3e")',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 10px center',
-            backgroundSize: '14px'
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = '#3b82f6';
-            e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = '#cbd5e1';
-            e.target.style.boxShadow = 'none';
-          }}
-        >
-          {select.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-        </select>
+        </div>
       </div>
-    ))}
-  </div>
 
-  {/* Professional Download Button */}
-  <button 
-    onClick={downloadPDF} 
-    style={{ 
-      flex: window.innerWidth < 640 ? '1 1 100%' : 'none',
-      background: '#0f172a', 
-      color: 'white', 
-      padding: '11px 24px', 
-      borderRadius: '10px', 
-      border: 'none', 
-      fontWeight: '600', 
-      cursor: 'pointer', 
-      fontSize: '14px', 
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      transition: 'transform 0.1s active, background 0.2s'
-    }}
-    onMouseEnter={(e) => e.target.style.background = '#334155'}
-    onMouseLeave={(e) => e.target.style.background = '#0f172a'}
-    onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
-    onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
-  >
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-    </svg>
-    Download Statement
-  </button>
-</div>
+      <div style={tableWrapper}>
+        <div style={tableHeader}>
+            <h3 style={{ margin: 0, fontSize: "16px" ,color:"black"}}>Transaction Records</h3>
+            <span style={badgeCount}>{filtered.length} entries</span>
         </div>
-
-        {/* SUMMARY TILES */}
-        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(3, 1fr)', gap: 'clamp(16px, 4vw, 20px)', marginBottom: 'clamp(20px, 5vw, 30px)' }}>
-          <div style={S.tile('#10b981')}>
-            <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>TOTAL CREDITS</span>
-            <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#059669', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {totalCredit.toLocaleString()}</div>
-          </div>
-          <div style={S.tile('#ef4444')}>
-            <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>TOTAL DEBITS</span>
-            <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#dc2626', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {totalDebit.toLocaleString()}</div>
-          </div>
-          {/* <div style={S.tile('#1e3a8a')}>
-            <span style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.5px' }}>NET BALANCE</span>
-            <div style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: '800', color: '#1e3a8a', marginTop: 'clamp(4px, 1vw, 5px)', wordBreak: 'break-word' }}>Rs. {net.toLocaleString()}</div>
-          </div> */}
-        </div>
-
-        {/* MAIN LEDGER TABLE */}
-        <div style={S.card}>
-          <div style={{ padding: 'clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px)', background: '#fff', borderBottom: '1px solid #f1f5f9', overflowX: 'auto' }}>
-            <h2 style={{ fontSize: 'clamp(13px, 3.5vw, 16px)', margin: 0, color: '#334155' }}>Transaction History for {month} {year}</h2>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+        <div style={{ overflowX: "auto" }}>
+          <table style={mainTable}>
             <thead>
-              <tr>
-                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Date</th>
-                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Entity/Name</th>
-                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Description</th>
-                <th style={{ ...S.th, padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Mode</th>
-                <th style={{ ...S.th, textAlign: 'right', padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Credit</th>
-                <th style={{ ...S.th, textAlign: 'right', padding: 'clamp(10px, 2.5vw, 15px)', fontSize: 'clamp(9px, 2vw, 11px)' }}>Debit</th>
+              <tr style={theadRow}>
+                <th style={thCol}>DATE</th>
+                <th style={thCol}>ENTITY / NAME</th>
+                <th style={thCol}>DESCRIPTION</th>
+                <th style={thCol}>PAYMENT MODE</th>
+                <th style={{ ...thCol, textAlign: "right" }}>CREDIT</th>
+                <th style={{ ...thCol, textAlign: "right" }}>DEBIT</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.length > 0 ? filtered.map((t) => (
-                <tr key={t.id} style={{ transition: 'background 0.2s' }}>
-                  <td style={{ ...S.td, textAlign: 'center', fontSize: 'clamp(10px, 2.5vw, 12px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.date}</td>
-                  <td style={{ ...S.td, textAlign: 'center', fontWeight: '600', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.name}</td>
-                  <td style={{ ...S.td, textAlign: 'center', color: '#64748b', fontSize: 'clamp(10px, 2.5vw, 13px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.desc}</td>
-                  <td style={{ ...S.td, textAlign: 'center', color: '#64748b', fontSize: 'clamp(10px, 2.5vw, 13px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.paymentMode || '—'}</td>
-                  <td style={{ ...S.td, textAlign: 'right', color: '#059669', fontWeight: 'bold', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.type === 'credit' ? t.amount.toLocaleString() : '—'}</td>
-                  <td style={{ ...S.td, textAlign: 'right', color: '#dc2626', fontWeight: 'bold', fontSize: 'clamp(11px, 2.5vw, 14px)', padding: 'clamp(10px, 2.5vw, 14px)' }}>{t.type === 'debit' ? t.amount.toLocaleString() : '—'}</td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="5" style={{ padding: 'clamp(30px, 10vw, 50px)', textAlign: 'center', color: '#94a3b8', fontSize: 'clamp(11px, 2.5vw, 14px)' }}>No transactions found for this period.</td>
-                </tr>
+              {filtered.length > 0 ? (
+                filtered.map((t) => (
+                  <tr key={t.id} style={tbodyRow}>
+                    <td style={tdCol}>{t.date}</td>
+                    <td style={{ ...tdCol, fontWeight: "600", color: "#1e293b" }}>{t.name}</td>
+                    <td style={tdCol}>{t.desc}</td>
+                    <td style={tdCol}>
+                      <span style={{ ...modeBadge, backgroundColor: getPaymentModeColor(t.paymentMode) }}>{t.paymentMode}</span>
+                    </td>
+                    <td style={{ ...tdCol, textAlign: "right", color: "#059669", fontWeight: "700" }}>
+                      {t.type === "credit" ? `Rs ${t.amount.toLocaleString()}` : "—"}
+                    </td>
+                    <td style={{ ...tdCol, textAlign: "right", color: "#dc2626", fontWeight: "700" }}>
+                      {t.type === "debit" ? `Rs ${t.amount.toLocaleString()}` : "—"}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan="6" style={noDataStyle}>No transactions found for the selected criteria.</td></tr>
               )}
             </tbody>
           </table>
-          </div>
         </div>
       </div>
     </div>
   );
+};
+
+// --- STYLING ---
+const containerStyle = { backgroundColor: "#f1f5f9", minHeight: "100vh", padding: "30px", fontFamily: "'Inter', sans-serif" };
+const headerCard = { backgroundColor: "white", padding: "24px", borderRadius: "16px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px", marginBottom: "30px", border: "1px solid #e2e8f0" };
+const brandBox = { display: "flex", alignItems: "center", gap: "15px" };
+const titleStyle = { margin: 0, fontSize: "24px", fontWeight: "800", color: "#1e3a8a" };
+const subtitleStyle = { margin: 0, fontSize: "13px", color: "#64748b" };
+const filterActionBox = { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-end" };
+const inputGroup = { display: "flex", flexDirection: "column", gap: "6px" };
+const labelMini = { fontSize: "10px", fontWeight: "bold", color: "#94a3b8", letterSpacing: "1px" };
+const selectStyled = { padding: "10px 14px", borderRadius: "10px", border: "1px solid #cbd5e1", fontSize: "14px", outline: "none", backgroundColor: "#ffffff", color: "#000000", fontWeight: "500", cursor: "pointer" };
+const btnDownload = { backgroundColor: "#1e3a8a", color: "white", border: "none", padding: "12px 20px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", transition: "0.2s" };
+const statsGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px", marginBottom: "30px" };
+const statCard = { backgroundColor: "white", padding: "24px", borderRadius: "16px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", border: "1px solid #e2e8f0" };
+const statLabel = { color: "#64748b", fontSize: "13px", fontWeight: "600", textTransform: "uppercase" };
+const statValue = { fontSize: "28px", fontWeight: "800", marginTop: "10px", color: "#1e293b" };
+const tableWrapper = { backgroundColor: "white", borderRadius: "16px", overflow: "hidden", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" };
+const tableHeader = { padding: "20px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" };
+const badgeCount = { backgroundColor: "#eff6ff", color: "#2563eb", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" };
+const mainTable = { width: "100%", borderCollapse: "collapse" };
+const theadRow = { backgroundColor: "#f8fafc" };
+const thCol = { padding: "16px 24px", textAlign: "left", fontSize: "11px", fontWeight: "bold", color: "#64748b", letterSpacing: "0.5px" };
+const tbodyRow = { borderBottom: "1px solid #f1f5f9", transition: "0.2s" };
+const tdCol = { padding: "16px 24px", fontSize: "14px", color: "#475569" };
+const modeBadge = { padding: "4px 10px", borderRadius: "8px", color: "white", fontSize: "11px", fontWeight: "bold" };
+const noDataStyle = { padding: "60px", textAlign: "center", color: "#94a3b8" };
+
+// Loader Styles
+const loaderWrapper = { 
+  height: "100vh", 
+  display: "flex", 
+  flexDirection: "column", 
+  justifyContent: "center", 
+  alignItems: "center", 
+  backgroundColor: "#f8fafc" 
+};
+const spinner = { 
+  width: "50px", 
+  height: "50px", 
+  border: "5px solid #e2e8f0", 
+  borderTop: "5px solid #1e3a8a", 
+  borderRadius: "50%", 
+  animation: "spin 0.8s linear infinite" 
 };
 
 export default FinanceStatementApp;

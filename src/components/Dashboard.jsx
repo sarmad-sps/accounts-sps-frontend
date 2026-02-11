@@ -44,14 +44,29 @@ function StatCard({ title, value, hint, variant = "default" }) {
         minWidth: "0",
       }}
     >
-      <div style={{ fontSize: "12px", fontWeight: "700", opacity: 0.6, textTransform: "uppercase", letterSpacing: "1px" }}>
+      <div
+        style={{
+          fontSize: "12px",
+          fontWeight: "700",
+          opacity: 0.6,
+          textTransform: "uppercase",
+          letterSpacing: "1px",
+        }}
+      >
         {title}
       </div>
       <div style={{ fontSize: "clamp(22px, 6vw, 26px)", fontWeight: "800" }}>
         {value}
       </div>
       {hint && (
-        <div style={{ fontSize: "12px", color: style.hintColor, marginTop: "4px", fontWeight: "500" }}>
+        <div
+          style={{
+            fontSize: "12px",
+            color: style.hintColor,
+            marginTop: "4px",
+            fontWeight: "500",
+          }}
+        >
           {hint}
         </div>
       )}
@@ -61,7 +76,7 @@ function StatCard({ title, value, hint, variant = "default" }) {
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({
-    totalAssets: 0,                    // Total Balance = Banks + Cash in Hand (net)
+    totalAssets: 0, // Total Balance = Banks + Cash in Hand (net)
     totalReceived: 0,
     totalPending: 0,
     totalPaid: 0,
@@ -83,14 +98,28 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchState() {
       try {
-        const [resState, resPayments, resSalaries, resInventory] = await Promise.all([
-          fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state"),
-          fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments"),
-          fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries"),
-          fetch("https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests"),
-        ]);
+        const [resState, resPayments, resSalaries, resInventory] =
+          await Promise.all([
+            fetch(
+              "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/state",
+            ),
+            fetch(
+              "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments",
+            ),
+            fetch(
+              "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/salaries",
+            ),
+            fetch(
+              "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/inventory-requests",
+            ),
+          ]);
 
-        if (!resState.ok || !resPayments.ok || !resSalaries.ok || !resInventory.ok) {
+        if (
+          !resState.ok ||
+          !resPayments.ok ||
+          !resSalaries.ok ||
+          !resInventory.ok
+        ) {
           throw new Error("One or more API calls failed");
         }
 
@@ -108,10 +137,10 @@ export default function Dashboard() {
         };
 
         const openingBalances = stateData.openingBalances || {};
-        
+
         // Start with opening balances for all (including CASH)
         let bankBalanceByBank = { ...openingBalances };
-        
+
         let receivedByBank = {};
         let pendingByBank = {};
         let paidByBank = {};
@@ -127,7 +156,13 @@ export default function Dashboard() {
         let totalPending = 0;
         let totalPaid = 0;
 
-        const processTransaction = (item, modeField, bankField, amountField, statusField) => {
+        const processTransaction = (
+          item,
+          modeField,
+          bankField,
+          amountField,
+          statusField,
+        ) => {
           const amount = Number(item[amountField]) || 0;
           if (amount === 0) return;
 
@@ -168,17 +203,30 @@ export default function Dashboard() {
           }
         };
 
-        (stateData.receivings || []).forEach(r => processTransaction(r, "mode", "bank", "amount", "status"));
-        (payments || []).forEach(p => processTransaction(p, "paymentMode", "bank", "amount", "status"));
-        (salaries || []).forEach(s => processTransaction(s, "paymentMode", "bank", "amount", "status"));
-        (inventoryRequests || []).forEach(r => {
-          if (r.receipt) processTransaction(r.receipt, "mode", "bank", "amount", "paymentStatus");
+        (stateData.receivings || []).forEach((r) =>
+          processTransaction(r, "mode", "bank", "amount", "status"),
+        );
+        (payments || []).forEach((p) =>
+          processTransaction(p, "paymentMode", "bank", "amount", "status"),
+        );
+        (salaries || []).forEach((s) =>
+          processTransaction(s, "paymentMode", "bank", "amount", "status"),
+        );
+        (inventoryRequests || []).forEach((r) => {
+          if (r.receipt)
+            processTransaction(
+              r.receipt,
+              "mode",
+              "bank",
+              "amount",
+              "paymentStatus",
+            );
         });
 
-        // ──────────────────────────────────────────────
-        // Total Assets = Sum of all bank balances (including CASH opening) + net cash transactions
-        const totalBankBalances = Object.values(bankBalanceByBank)
-          .reduce((sum, val) => sum + (Number(val) || 0), 0);
+        const totalBankBalances = Object.values(bankBalanceByBank).reduce(
+          (sum, val) => sum + (Number(val) || 0),
+          0,
+        );
 
         const netCashEffect = cashInHand.received - cashInHand.paid;
 
@@ -208,8 +256,22 @@ export default function Dashboard() {
     fetchState();
   }, []);
 
-  if (loading) return <div style={{ padding: "60px", textAlign: "center", color: "#64748b" }}>Loading dashboard...</div>;
-  if (error) return <div style={{ padding: "40px", color: "red", textAlign: "center" }}>Error: {error}</div>;
+  if (loading) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h2 style={{ color: "#64748b", fontWeight: "600" }}>
+          Loading Dashboard...
+        </h2>
+      </div>
+    );
+  }
+
+  if (error)
+    return (
+      <div style={{ padding: "40px", color: "red", textAlign: "center" }}>
+        Error: {error}
+      </div>
+    );
 
   return (
     <div
@@ -222,62 +284,148 @@ export default function Dashboard() {
     >
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: "40px", display: "flex", flexDirection: "column", gap: "16px", alignItems: "flex-start" }}>
+        <div
+          style={{
+            marginBottom: "40px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            alignItems: "flex-start",
+          }}
+        >
           <div>
-            <h1 style={{ fontSize: "clamp(28px, 7vw, 32px)", fontWeight: "800", color: "#0f172a", margin: 0 }}>
+            <h1
+              style={{
+                fontSize: "clamp(28px, 7vw, 32px)",
+                fontWeight: "800",
+                color: "#0f172a",
+                margin: 0,
+              }}
+            >
               Finance <span style={{ color: "#3b82f6" }}>Dashboard</span>
             </h1>
-            <p style={{ color: "#64748b", margin: "4px 0 0", fontSize: "clamp(14px, 4vw, 16px)", fontWeight: "500" }}>
+            <p
+              style={{
+                color: "#64748b",
+                margin: "4px 0 0",
+                fontSize: "clamp(14px, 4vw, 16px)",
+                fontWeight: "500",
+              }}
+            >
               Monitoring real-time cashflow and bank assets
             </p>
           </div>
-          <div style={{ padding: "8px 16px", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)", fontSize: "14px", fontWeight: "600", color: "black" }}>
+          <div
+            style={{
+              padding: "8px 16px",
+              background: "#fff",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "black",
+            }}
+          >
             Today: {new Date().toLocaleDateString()}
           </div>
         </div>
 
         {/* Top Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", marginBottom: "48px" }}>
-          <StatCard 
-            title="Total Balance" 
-            value={toMoney(summary.totalAssets)} 
-            variant="blue" 
-            hint="All banks + net cash in hand" 
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "24px",
+            marginBottom: "48px",
+          }}
+        >
+          <StatCard
+            title="Total Balance"
+            value={toMoney(summary.totalAssets)}
+            variant="blue"
+            hint="All banks + net cash in hand"
           />
-          <StatCard title="Total Received" value={toMoney(summary.totalReceived)} hint="Status: received" />
-          <StatCard title="Total Paid" value={toMoney(summary.totalPaid)} hint="Operational expenses" />
-          <StatCard title="Pending" value={toMoney(summary.totalPending)} hint="Status: pending / unpaid" />
-          <StatCard 
-            title="Cash in Hand" 
-            value={toMoney(summary.cashInHand.balance || 0)} 
-            hint="Opening + received - paid" 
+          <StatCard
+            title="Total Received"
+            value={toMoney(summary.totalReceived)}
+            hint="Status: received"
+          />
+          <StatCard
+            title="Total Paid"
+            value={toMoney(summary.totalPaid)}
+            hint="Operational expenses"
+          />
+          <StatCard
+            title="Pending"
+            value={toMoney(summary.totalPending)}
+            hint="Status: pending / unpaid"
+          />
+          <StatCard
+            title="Cash in Hand"
+            value={toMoney(summary.cashInHand.balance || 0)}
+            hint="Opening + received - paid"
           />
         </div>
 
         {/* Accounts Breakdown */}
-        <div style={{ background: "#fff", borderRadius: "24px", padding: "clamp(20px, 5vw, 32px)", boxShadow: "0 20px 50px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px" }}>
-            <div style={{ width: "4px", height: "24px", background: "#3b82f6", borderRadius: "10px" }}></div>
-            <h2 style={{ fontSize: "clamp(20px, 5.5vw, 22px)", fontWeight: "800", color: "#0f172a", margin: 0 }}>
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: "24px",
+            padding: "clamp(20px, 5vw, 32px)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.04)",
+            border: "1px solid #f1f5f9",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: "32px",
+            }}
+          >
+            <div
+              style={{
+                width: "4px",
+                height: "24px",
+                background: "#3b82f6",
+                borderRadius: "10px",
+              }}
+            ></div>
+            <h2
+              style={{
+                fontSize: "clamp(20px, 5.5vw, 22px)",
+                fontWeight: "800",
+                color: "#0f172a",
+                margin: 0,
+              }}
+            >
               Accounts Breakdown
             </h2>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "clamp(16px, 4vw, 24px)" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(16px, 4vw, 24px)",
+            }}
+          >
             {BANKS.map((b) => {
               const isCash = b.key === "CASH";
-              const balance = isCash 
-                ? summary.cashInHand.balance 
-                : (summary.bankBalanceByBank[b.key] || 0);
-              const received = isCash 
-                ? summary.cashInHand.received 
-                : (summary.receivedByBank[b.key] || 0);
-              const paid = isCash 
-                ? summary.cashInHand.paid 
-                : (summary.paidByBank[b.key] || 0);
-              const pending = isCash 
-                ? summary.cashInHand.pending 
-                : (summary.pendingByBank[b.key] || 0);
+              const balance = isCash
+                ? summary.cashInHand.balance
+                : summary.bankBalanceByBank[b.key] || 0;
+              const received = isCash
+                ? summary.cashInHand.received
+                : summary.receivedByBank[b.key] || 0;
+              const paid = isCash
+                ? summary.cashInHand.paid
+                : summary.paidByBank[b.key] || 0;
+              const pending = isCash
+                ? summary.cashInHand.pending
+                : summary.pendingByBank[b.key] || 0;
 
               return (
                 <div
@@ -294,27 +442,123 @@ export default function Dashboard() {
                     gap: "20px",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-                    <span style={{ fontWeight: "700", fontSize: "clamp(15px, 4.2vw, 16px)", color: "#334155" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "12px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: "700",
+                        fontSize: "clamp(15px, 4.2vw, 16px)",
+                        color: "#334155",
+                      }}
+                    >
                       {b.label}
                     </span>
-                    <span style={{ fontSize: "clamp(20px, 5.8vw, 24px)", fontWeight: "800", color: "#2563eb" }}>
+                    <span
+                      style={{
+                        fontSize: "clamp(20px, 5.8vw, 24px)",
+                        fontWeight: "800",
+                        color: "#2563eb",
+                      }}
+                    >
                       {toMoney(balance)}
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "clamp(12px, 3.5vw, 16px)", background: "#fff", padding: "16px", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <div style={{ color: "#94a3b8", fontSize: "clamp(10px, 3vw, 11px)", fontWeight: "700", textTransform: "uppercase" }}>Received</div>
-                      <div style={{ fontWeight: "800", color: "#10b981", fontSize: "clamp(14px, 4vw, 16px)" }}>{toMoney(received)}</div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "clamp(12px, 3.5vw, 16px)",
+                      background: "#fff",
+                      padding: "16px",
+                      borderRadius: "16px",
+                      border: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#94a3b8",
+                          fontSize: "clamp(10px, 3vw, 11px)",
+                          fontWeight: "700",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Received
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: "800",
+                          color: "#10b981",
+                          fontSize: "clamp(14px, 4vw, 16px)",
+                        }}
+                      >
+                        {toMoney(received)}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <div style={{ color: "#94a3b8", fontSize: "clamp(10px, 3vw, 11px)", fontWeight: "700", textTransform: "uppercase" }}>Paid</div>
-                      <div style={{ fontWeight: "800", color: "#ef4444", fontSize: "clamp(14px, 4vw, 16px)" }}>{toMoney(paid)}</div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#94a3b8",
+                          fontSize: "clamp(10px, 3vw, 11px)",
+                          fontWeight: "700",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Paid
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: "800",
+                          color: "#ef4444",
+                          fontSize: "clamp(14px, 4vw, 16px)",
+                        }}
+                      >
+                        {toMoney(paid)}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <div style={{ color: "#94a3b8", fontSize: "clamp(10px, 3vw, 11px)", fontWeight: "700", textTransform: "uppercase" }}>Pending</div>
-                      <div style={{ fontWeight: "800", color: "#f59e0b", fontSize: "clamp(14px, 4vw, 16px)" }}>{toMoney(pending)}</div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#94a3b8",
+                          fontSize: "clamp(10px, 3vw, 11px)",
+                          fontWeight: "700",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Pending
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: "800",
+                          color: "#f59e0b",
+                          fontSize: "clamp(14px, 4vw, 16px)",
+                        }}
+                      >
+                        {toMoney(pending)}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -3,7 +3,15 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BANKS } from "../store";
 import Invoice from "./Invoice";
-import { Search, Download, Edit, Trash2, Eye, FileText, Receipt as ReceiptIcon } from "lucide-react";
+import {
+  Search,
+  Download,
+  Edit,
+  Trash2,
+  Eye,
+  FileText,
+  Receipt as ReceiptIcon,
+} from "lucide-react";
 
 const CATEGORIES = ["Tracker", "Insurance", "IT Software", "Other"];
 
@@ -199,7 +207,10 @@ export default function Receivings({ state, actions }) {
     setSelected(record);
     setTimeout(() => {
       if (previewRef.current) {
-        previewRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        previewRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }
     }, 150);
   };
@@ -209,7 +220,10 @@ export default function Receivings({ state, actions }) {
     setSelectedReceipt(record);
     setTimeout(() => {
       if (previewRef.current) {
-        previewRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        previewRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }
     }, 150);
   };
@@ -244,17 +258,20 @@ export default function Receivings({ state, actions }) {
       if (!insuranceCover) return alert("Select Insurance cover type");
     }
 
-    const extra = category === "Tracker" ? {
-      trackerCompany,
-      trackerType,
-      addonService: addonService.trim() || null,
-      vehicleType,
-      registrationNo: registrationNo.trim().toUpperCase(),
-      vehicleBrand: vehicleBrand.trim(),
-      chassisNumber: chassisNumber.trim().toUpperCase(),
-      engineNumber: engineno.trim().toUpperCase(),
-      agentName: agentName.trim(),
-    } : {};
+    const extra =
+      category === "Tracker"
+        ? {
+            trackerCompany,
+            trackerType,
+            addonService: addonService.trim() || null,
+            vehicleType,
+            registrationNo: registrationNo.trim().toUpperCase(),
+            vehicleBrand: vehicleBrand.trim(),
+            chassisNumber: chassisNumber.trim().toUpperCase(),
+            engineNumber: engineno.trim().toUpperCase(),
+            agentName: agentName.trim(),
+          }
+        : {};
 
     const receivingData = {
       clientName: clientName.trim(),
@@ -284,14 +301,29 @@ export default function Receivings({ state, actions }) {
 
   const onExportCSV = () => {
     const headers = [
-      "Date", "Client Name", "Client Address", "Client Phone", "Party",
-      "Category", "Tracker Company", "Tracker Type", "Add-on Service",
-      "Vehicle Type", "Registration No", "Vehicle Brand", "Chassis Number",
-      "Engine Number", "Agent Name", "Status", "Bank", "Payment Mode",
-      "Amount", "Notes"
+      "Date",
+      "Client Name",
+      "Client Address",
+      "Client Phone",
+      "Party",
+      "Category",
+      "Tracker Company",
+      "Tracker Type",
+      "Add-on Service",
+      "Vehicle Type",
+      "Registration No",
+      "Vehicle Brand",
+      "Chassis Number",
+      "Engine Number",
+      "Agent Name",
+      "Status",
+      "Bank",
+      "Payment Mode",
+      "Amount",
+      "Notes",
     ];
 
-    const rows = filtered.map(r => [
+    const rows = filtered.map((r) => [
       r.date || "",
       `"${(r.clientName || "").replace(/"/g, '""')}"`,
       `"${(r.clientAddress || "").replace(/"/g, '""')}"`,
@@ -311,10 +343,10 @@ export default function Receivings({ state, actions }) {
       r.bank || "",
       r.paymentMode || "Cash",
       r.amount || "",
-      `"${(r.notes || "").replace(/"/g, '""').replace(/\n/g, " ")}"`
+      `"${(r.notes || "").replace(/"/g, '""').replace(/\n/g, " ")}"`,
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
+    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -325,7 +357,12 @@ export default function Receivings({ state, actions }) {
   };
 
   const getCategoryColor = (cat) => {
-    const map = { Tracker: "#7c3aed", Insurance: "#dc2626", "IT Software": "#2563eb", Other: "#4b5563" };
+    const map = {
+      Tracker: "#7c3aed",
+      Insurance: "#dc2626",
+      "IT Software": "#2563eb",
+      Other: "#4b5563",
+    };
     return map[cat] || "#4b5563";
   };
 
@@ -346,7 +383,9 @@ export default function Receivings({ state, actions }) {
         <div>
           <h1 style={styles.title}>Receivings</h1>
           <div style={styles.summary}>
-            Total: <strong>{fmt(totals.total)}</strong> • Received: <strong>{fmt(totals.received)}</strong> • Pending: <strong>{fmt(totals.pending)}</strong>
+            Total: <strong>{fmt(totals.total)}</strong> • Received:{" "}
+            <strong>{fmt(totals.received)}</strong> • Pending:{" "}
+            <strong>{fmt(totals.pending)}</strong>
           </div>
         </div>
         <div style={styles.headerActions}>
@@ -380,18 +419,32 @@ export default function Receivings({ state, actions }) {
           <div style={styles.formGrid3}>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Client Name *</label>
-              <input style={styles.input} value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client name" required />
+              <input
+                style={styles.input}
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder="Client name"
+                required
+              />
             </div>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Client Address *</label>
-              <input style={styles.input} value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder="Full address" required />
+              <input
+                style={styles.input}
+                value={clientAddress}
+                onChange={(e) => setClientAddress(e.target.value)}
+                placeholder="Full address"
+                required
+              />
             </div>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Client Phone *</label>
               <input
                 style={styles.input}
                 value={clientPhone}
-                onChange={(e) => setClientPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                onChange={(e) =>
+                  setClientPhone(e.target.value.replace(/[^0-9]/g, ""))
+                }
                 placeholder="03001234567"
                 inputMode="tel"
                 maxLength={13}
@@ -403,14 +456,22 @@ export default function Receivings({ state, actions }) {
           <div style={styles.formGrid2}>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Company / Party *</label>
-              <input style={styles.input} value={party} onChange={(e) => setParty(e.target.value)} placeholder="ABC Traders" required />
+              <input
+                style={styles.input}
+                value={party}
+                onChange={(e) => setParty(e.target.value)}
+                placeholder="ABC Traders"
+                required
+              />
             </div>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Amount (PKR) *</label>
               <input
                 style={styles.input}
                 value={amount}
-                onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9]/g, ""))
+                }
                 placeholder="145000"
                 inputMode="numeric"
                 required
@@ -431,7 +492,11 @@ export default function Receivings({ state, actions }) {
             </div>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Status</label>
-              <select style={styles.select} value={status} onChange={(e) => setStatus(e.target.value)}>
+              <select
+                style={styles.select}
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
                 <option value="PENDING">Pending</option>
                 <option value="RECEIVED">Received</option>
               </select>
@@ -444,7 +509,12 @@ export default function Receivings({ state, actions }) {
               <select
                 style={{
                   ...styles.select,
-                  background: paymentMode === "Cash" ? "rgba(251,146,60,0.12)" : paymentMode === "Check" ? "rgba(139,92,246,0.12)" : "rgba(52,211,153,0.12)",
+                  background:
+                    paymentMode === "Cash"
+                      ? "rgba(251,146,60,0.12)"
+                      : paymentMode === "Check"
+                        ? "rgba(139,92,246,0.12)"
+                        : "rgba(52,211,153,0.12)",
                   color: "#111827",
                 }}
                 value={paymentMode}
@@ -463,9 +533,16 @@ export default function Receivings({ state, actions }) {
             <div style={styles.formGrid2}>
               <div style={styles.fieldWrapper}>
                 <label style={styles.label}>Bank *</label>
-                <select style={styles.select} value={bank} onChange={(e) => setBank(e.target.value)} required>
-                  {BANKS.map((b) => (
-                    <option key={b.key} value={b.key}>{b.label}</option>
+                <select
+                  style={styles.select}
+                  value={bank}
+                  onChange={(e) => setBank(e.target.value)}
+                  required
+                >
+                  {BANKS.filter((b) => b.key !== "CASH").map((b) => (
+                    <option key={b.key} value={b.key}>
+                      {b.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -476,14 +553,28 @@ export default function Receivings({ state, actions }) {
           <div style={styles.formGrid2}>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Category / Purpose *</label>
-              <select style={styles.select} value={category} onChange={(e) => handleCategoryChange(e.target.value)} required>
+              <select
+                style={styles.select}
+                value={category}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                required
+              >
                 <option value="">Select type</option>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </div>
             <div style={styles.fieldWrapper}>
               <label style={styles.label}>Notes</label>
-              <input style={styles.input} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
+              <input
+                style={styles.input}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Optional notes..."
+              />
             </div>
           </div>
 
@@ -491,7 +582,13 @@ export default function Receivings({ state, actions }) {
             <div style={styles.formGrid2}>
               <div style={styles.fieldWrapper}>
                 <label style={styles.label}>Custom Category Name *</label>
-                <input style={styles.input} value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} placeholder="e.g. Health Insurance..." required />
+                <input
+                  style={styles.input}
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  placeholder="e.g. Health Insurance..."
+                  required
+                />
               </div>
               <div style={styles.fieldWrapper}></div>
             </div>
@@ -499,11 +596,18 @@ export default function Receivings({ state, actions }) {
 
           {category === "Tracker" && (
             <div style={styles.trackerCard}>
-              <div style={styles.trackerTitle}>Tracker Installation Details</div>
+              <div style={styles.trackerTitle}>
+                Tracker Installation Details
+              </div>
               <div style={styles.formGrid2}>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Tracker Company *</label>
-                  <select style={styles.select} value={trackerCompany} onChange={(e) => setTrackerCompany(e.target.value)} required>
+                  <select
+                    style={styles.select}
+                    value={trackerCompany}
+                    onChange={(e) => setTrackerCompany(e.target.value)}
+                    required
+                  >
                     <option value="">Select Company</option>
                     <option value="TPL">TPL</option>
                     <option value="Promaset">Promaset</option>
@@ -511,15 +615,30 @@ export default function Receivings({ state, actions }) {
                 </div>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Tracker Type *</label>
-                  <select style={styles.select} value={trackerType} onChange={(e) => setTrackerType(e.target.value)} required>
+                  <select
+                    style={styles.select}
+                    value={trackerType}
+                    onChange={(e) => setTrackerType(e.target.value)}
+                    required
+                  >
                     <option value="">Select type</option>
-                    <option value="Simple Tracker (Rental)">Simple Tracker (Rental)</option>
-                    <option value="Simple Tracker (Cash)">Simple Tracker (Cash)</option>
-                    <option value="Simple OBD (Connector)">Simple OBD (Connector)</option>
+                    <option value="Simple Tracker (Rental)">
+                      Simple Tracker (Rental)
+                    </option>
+                    <option value="Simple Tracker (Cash)">
+                      Simple Tracker (Cash)
+                    </option>
+                    <option value="Simple OBD (Connector)">
+                      Simple OBD (Connector)
+                    </option>
                     <option value="Voice OBD">Voice OBD</option>
                     <option value="Voice Simple">Voice Simple</option>
-                    <option value="Video Surveillance Dashcam">Video Surveillance-Dashcam</option>
-                    <option value="Video Surveillance MDVR">Video Surveillance-MDVR</option>
+                    <option value="Video Surveillance Dashcam">
+                      Video Surveillance-Dashcam
+                    </option>
+                    <option value="Video Surveillance MDVR">
+                      Video Surveillance-MDVR
+                    </option>
                     <option value="Fuel Gauge">Fuel Gauge</option>
                   </select>
                 </div>
@@ -528,7 +647,11 @@ export default function Receivings({ state, actions }) {
               <div style={styles.formGrid2}>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Add-on Services</label>
-                  <select style={styles.select} value={addonService} onChange={(e) => setAddonService(e.target.value)}>
+                  <select
+                    style={styles.select}
+                    value={addonService}
+                    onChange={(e) => setAddonService(e.target.value)}
+                  >
                     <option value="">None</option>
                     <option value="SMS">SMS</option>
                     <option value="System Transfer">System Transfer</option>
@@ -537,7 +660,12 @@ export default function Receivings({ state, actions }) {
                 </div>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Vehicle Type *</label>
-                  <select style={styles.select} value={vehicleType} onChange={(e) => setVehicleType(e.target.value)} required>
+                  <select
+                    style={styles.select}
+                    value={vehicleType}
+                    onChange={(e) => setVehicleType(e.target.value)}
+                    required
+                  >
                     <option value="">Select vehicle type</option>
                     <option value="Car">Car</option>
                     <option value="Bike">Bike / Motorcycle</option>
@@ -550,26 +678,60 @@ export default function Receivings({ state, actions }) {
               <div style={styles.formGrid2}>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Registration Number *</label>
-                  <input style={styles.input} value={registrationNo} onChange={(e) => setRegistrationNo(e.target.value.toUpperCase())} placeholder="LEB-19-1234 or ABC-567" required />
+                  <input
+                    style={styles.input}
+                    value={registrationNo}
+                    onChange={(e) =>
+                      setRegistrationNo(e.target.value.toUpperCase())
+                    }
+                    placeholder="LEB-19-1234 or ABC-567"
+                    required
+                  />
                 </div>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Vehicle Brand *</label>
-                  <input style={styles.input} value={vehicleBrand} onChange={(e) => setVehicleBrand(e.target.value)} placeholder="Toyota, Honda, Suzuki..." required />
+                  <input
+                    style={styles.input}
+                    value={vehicleBrand}
+                    onChange={(e) => setVehicleBrand(e.target.value)}
+                    placeholder="Toyota, Honda, Suzuki..."
+                    required
+                  />
                 </div>
               </div>
 
               <div style={styles.formGrid3}>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Chassis Number *</label>
-                  <input style={styles.input} value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value.toUpperCase())} placeholder="JF53K-..." required />
+                  <input
+                    style={styles.input}
+                    value={chassisNumber}
+                    onChange={(e) =>
+                      setChassisNumber(e.target.value.toUpperCase())
+                    }
+                    placeholder="JF53K-..."
+                    required
+                  />
                 </div>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Engine No *</label>
-                  <input style={styles.input} value={engineno} onChange={(e) => setEngineNo(e.target.value.toUpperCase())} placeholder="1NZ-FXE-..." required />
+                  <input
+                    style={styles.input}
+                    value={engineno}
+                    onChange={(e) => setEngineNo(e.target.value.toUpperCase())}
+                    placeholder="1NZ-FXE-..."
+                    required
+                  />
                 </div>
                 <div style={styles.fieldWrapper}>
                   <label style={styles.label}>Agent / Installer Name *</label>
-                  <input style={styles.input} value={agentName} onChange={(e) => setAgentName(e.target.value)} placeholder="Ali Ahmed, Usman Installers..." required />
+                  <input
+                    style={styles.input}
+                    value={agentName}
+                    onChange={(e) => setAgentName(e.target.value)}
+                    placeholder="Ali Ahmed, Usman Installers..."
+                    required
+                  />
                 </div>
               </div>
             </div>
@@ -579,7 +741,12 @@ export default function Receivings({ state, actions }) {
             <div style={styles.formGrid2}>
               <div style={styles.fieldWrapper}>
                 <label style={styles.label}>Insurance Cover Type *</label>
-                <select style={styles.select} value={insuranceCover} onChange={(e) => setInsuranceCover(e.target.value)} required>
+                <select
+                  style={styles.select}
+                  value={insuranceCover}
+                  onChange={(e) => setInsuranceCover(e.target.value)}
+                  required
+                >
                   <option value="">Select Cover Type</option>
                   <option value="Motor">Motor</option>
                   <option value="Travel">Travel</option>
@@ -605,7 +772,16 @@ export default function Receivings({ state, actions }) {
       <section style={styles.tableSection}>
         <div style={styles.tableSectionHeader}>
           <div style={{ position: "relative", flex: 1, minWidth: "280px" }}>
-            <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+            <Search
+              size={18}
+              style={{
+                position: "absolute",
+                left: 14,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#6b7280",
+              }}
+            />
             <input
               placeholder="Search client, phone, party, category..."
               value={q}
@@ -613,7 +789,11 @@ export default function Receivings({ state, actions }) {
               style={styles.searchInputTable}
             />
           </div>
-          <button onClick={onExportCSV} disabled={!receivings.length} style={styles.exportBtnTable}>
+          <button
+            onClick={onExportCSV}
+            disabled={!receivings.length}
+            style={styles.exportBtnTable}
+          >
             <Download size={16} /> Export CSV
           </button>
         </div>
@@ -621,9 +801,13 @@ export default function Receivings({ state, actions }) {
         {filtered.length === 0 ? (
           <div style={styles.emptyState}>
             <FileText size={48} style={{ opacity: 0.4, marginBottom: 16 }} />
-            <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>No records found</h3>
+            <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>
+              No records found
+            </h3>
             <p style={{ marginTop: 8, fontSize: "clamp(12px, 3.5vw, 14px)" }}>
-              {q ? "Try different search terms" : "Add your first receiving above"}
+              {q
+                ? "Try different search terms"
+                : "Add your first receiving above"}
             </p>
           </div>
         ) : (
@@ -646,7 +830,10 @@ export default function Receivings({ state, actions }) {
                   <tr
                     key={r.id}
                     style={{
-                      background: r.status?.toUpperCase() === "RECEIVED" ? "#ecfdf5" : "#ffffff",
+                      background:
+                        r.status?.toUpperCase() === "RECEIVED"
+                          ? "#ecfdf5"
+                          : "#ffffff",
                       transition: "background 0.15s",
                     }}
                   >
@@ -656,41 +843,129 @@ export default function Receivings({ state, actions }) {
                       <div style={styles.secondaryText}>{r.clientPhone}</div>
                     </td>
                     <td style={styles.td}>
-                      <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getCategoryColor(r.category) }}>
+                      <span
+                        style={{
+                          padding: "4px 12px",
+                          borderRadius: "20px",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "white",
+                          backgroundColor: getCategoryColor(r.category),
+                        }}
+                      >
                         {r.category}
                       </span>
                     </td>
                     <td style={styles.td}>
-                      <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, backgroundColor: getStatusStyle(r.status).bg, color: getStatusStyle(r.status).color }}>
+                      <span
+                        style={{
+                          padding: "4px 12px",
+                          borderRadius: "20px",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          backgroundColor: getStatusStyle(r.status).bg,
+                          color: getStatusStyle(r.status).color,
+                        }}
+                      >
                         {r.status}
                       </span>
                     </td>
                     <td style={styles.td}>
-                      <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getPaymentModeColor(r.paymentMode) }}>
+                      <span
+                        style={{
+                          padding: "4px 12px",
+                          borderRadius: "20px",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "white",
+                          backgroundColor: getPaymentModeColor(r.paymentMode),
+                        }}
+                      >
                         {r.paymentMode || "Cash"}
                       </span>
                     </td>
                     <td style={styles.td}>
-                      {r.paymentMode === "Cash" || !r.bank ? "—" : (
-                        <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: "#047857" }}>
+                      {r.paymentMode === "Cash" || !r.bank ? (
+                        "—"
+                      ) : (
+                        <span
+                          style={{
+                            padding: "4px 12px",
+                            borderRadius: "20px",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "white",
+                            backgroundColor: "#047857",
+                          }}
+                        >
                           {r.bank}
                         </span>
                       )}
                     </td>
-                    <td style={{ ...styles.td, textAlign: "right", fontWeight: 700, color: r.status?.toUpperCase() === "RECEIVED" ? "#374151" : "#7c3aed", textDecoration: r.status?.toUpperCase() === "RECEIVED" ? "line-through" : "none" }}>
+                    <td
+                      style={{
+                        ...styles.td,
+                        textAlign: "right",
+                        fontWeight: 700,
+                        color:
+                          r.status?.toUpperCase() === "RECEIVED"
+                            ? "#374151"
+                            : "#7c3aed",
+                        textDecoration:
+                          r.status?.toUpperCase() === "RECEIVED"
+                            ? "line-through"
+                            : "none",
+                      }}
+                    >
                       Rs. {fmt(r.amount)}
                     </td>
-                    <td style={{ ...styles.td, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                      <button onClick={() => handleViewInvoice(r)} style={styles.actionBtn} title="View Invoice">
+                    <td
+                      style={{
+                        ...styles.td,
+                        display: "flex",
+                        gap: 8,
+                        justifyContent: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <button
+                        onClick={() => handleViewInvoice(r)}
+                        style={styles.actionBtn}
+                        title="View Invoice"
+                      >
                         <Eye size={18} />
                       </button>
-                      <button onClick={() => loadRecordForEdit(r)} style={{ ...styles.actionBtn, background: "rgba(180,83,9,0.1)", color: "#b45309" }} title="Edit">
+                      <button
+                        onClick={() => loadRecordForEdit(r)}
+                        style={{
+                          ...styles.actionBtn,
+                          background: "rgba(180,83,9,0.1)",
+                          color: "#b45309",
+                        }}
+                        title="Edit"
+                      >
                         <Edit size={18} />
                       </button>
-                      <button onClick={() => handleViewReceipt(r)} style={{ ...styles.actionBtn, background: "rgba(5,150,105,0.1)", color: "#059669" }} title="View Receipt">
+                      <button
+                        onClick={() => handleViewReceipt(r)}
+                        style={{
+                          ...styles.actionBtn,
+                          background: "rgba(5,150,105,0.1)",
+                          color: "#059669",
+                        }}
+                        title="View Receipt"
+                      >
                         <ReceiptIcon size={18} />
                       </button>
-                      <button onClick={() => actions.deleteReceiving(r.id)} style={{ ...styles.actionBtn, background: "rgba(220,38,38,0.1)", color: "#dc2626" }} title="Delete">
+                      <button
+                        onClick={() => actions.deleteReceiving(r.id)}
+                        style={{
+                          ...styles.actionBtn,
+                          background: "rgba(220,38,38,0.1)",
+                          color: "#dc2626",
+                        }}
+                        title="Delete"
+                      >
                         <Trash2 size={18} />
                       </button>
                     </td>
@@ -706,9 +981,17 @@ export default function Receivings({ state, actions }) {
         <div ref={previewRef} style={styles.card}>
           <div style={styles.previewHeader}>
             <h2 style={styles.cardTitle}>
-              {selected ? "Invoice / Voucher Preview" : "Official Payment Receipt"}
+              {selected
+                ? "Invoice / Voucher Preview"
+                : "Official Payment Receipt"}
             </h2>
-            <button style={styles.closeBtn} onClick={() => { setSelected(null); setSelectedReceipt(null); }}>
+            <button
+              style={styles.closeBtn}
+              onClick={() => {
+                setSelected(null);
+                setSelectedReceipt(null);
+              }}
+            >
               ✕ Close
             </button>
           </div>
@@ -723,14 +1006,12 @@ export default function Receivings({ state, actions }) {
   );
 }
 
-
 // ─── Styles ───
 const styles = {
   container: {
     padding: "clamp(16px, 4vw, 24px)",
     maxWidth: 1400,
     margin: "0 auto",
-    background: "#e5e7eb",
     minHeight: "100vh",
     fontFamily: "Inter, system-ui, sans-serif",
   },
@@ -915,7 +1196,8 @@ const styles = {
   },
   searchInputTable: {
     width: "100%",
-    padding: "clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px) clamp(8px, 2vw, 10px) clamp(38px, 8vw, 44px)",
+    padding:
+      "clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px) clamp(8px, 2vw, 10px) clamp(38px, 8vw, 44px)",
     background: "#f9fafb",
     border: "1px solid #d1d5db",
     borderRadius: 10,
