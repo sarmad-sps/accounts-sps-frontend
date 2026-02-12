@@ -190,8 +190,7 @@ export default function StoreInventory({ role }) {
           flexWrap: "wrap",
         }}
       >
-        {/* Updated Search Bar */}
-    {/* Updated Search Bar - No Outline on Click */}
+     
 <div
   style={{
     flex: 1,
@@ -210,7 +209,7 @@ export default function StoreInventory({ role }) {
       padding: "clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)",
       boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
       transition: "all 0.2s",
-      /* Focus state handle karne ke liye focus-within use kiya hai */
+     
     }}
   >
     <Search size={20} color="#64748b" style={{ marginRight: "12px" }} />
@@ -221,13 +220,13 @@ export default function StoreInventory({ role }) {
       onChange={(e) => setSearchTerm(e.target.value)}
       style={{
         flex: 1,
-        border: "none",        // Default border khatam
-        outline: "none",       // Click/Focus wala blue/black border khatam
-        boxShadow: "none",     // Kisi bhi qism ka shadow khatam
+        border: "none",     
+        outline: "none",       
+        boxShadow: "none",    
         background: "transparent",
         fontSize: "clamp(13px, 3.5vw, 15px)",
         color: "#1e293b",
-        WebkitAppearance: "none", // Mobile browser consistency ke liye
+        WebkitAppearance: "none",
       }}
     />
     {searchTerm && (

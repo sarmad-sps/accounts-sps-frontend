@@ -254,15 +254,52 @@ export default function Dashboard() {
     fetchState();
   }, []);
 
-  if (loading) {
-    return (
-      <div style={{ padding: "40px", textAlign: "center" }}>
-        <h2 style={{ color: "#64748b", fontWeight: "600" }}>
-          Loading Dashboard...
-        </h2>
+ if (loading) {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#f8fafc",
+        flexDirection: "column",
+        gap: "16px",
+      }}
+    >
+      <div
+        style={{
+          width: "50px",
+          height: "50px",
+          border: "5px solid #e2e8f0",
+          borderTop: "5px solid #3b82f6",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }}
+      />
+      <div
+        style={{
+          fontWeight: "600",
+          color: "#64748b",
+          fontSize: "16px",
+        }}
+      >
+        Loading Dashboard...
       </div>
-    );
-  }
+
+      {/* Animation */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+    </div>
+  );
+}
+
 
   if (error)
     return (
