@@ -61,7 +61,7 @@ const FinanceStatementApp = () => {
         (stateData.receivings || []).forEach((r) => {
           if (r.status?.toLowerCase() === "received") {
             const d = new Date(r.createdAt || r.date);
-            ledger.push({ id: `rec-${r._id}`, rawDate: d, date: d.toDateString(), name: r.clientName || "Receiving", desc: r.notes || "Amount Received", type: "credit", amount: Number(r.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: r.paymentMode || "Cash" });
+            ledger.push({ id: `rec-${r._id}`, rawDate: d, date: d.toDateString(), name: r.clientName || "Receiving", desc: r.notes || "", type: "credit", amount: Number(r.amount), month: d.toLocaleString("default", { month: "long" }), year: String(d.getFullYear()), paymentMode: r.paymentMode || "Cash" });
           }
         });
 

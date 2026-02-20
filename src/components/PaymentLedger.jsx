@@ -1,3 +1,1293 @@
+// import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+// import axios from "axios";
+// import {
+//   Plus,
+//   Search,
+//   Trash2,
+//   User,
+//   CreditCard,
+//   FileText,
+//   Download,
+//   Tag,
+//   ChevronDown,
+//   AlertCircle,
+//   Eye,
+//   Edit,
+//   CheckCircle,
+//   Clock,
+//   RotateCcw,
+// } from "lucide-react";
+// import jsPDF from "jspdf";
+// import html2canvas from "html2canvas";
+
+// import logo from "../assets/sps-logo.png";
+
+// export default function PaymentLedger() {
+//   const [payments, setPayments] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [payee, setPayee] = useState("");
+//   const [category, setCategory] = useState("Inventory");
+//   const [itemName, setItemName] = useState("");
+//   const [quantity, setQuantity] = useState("");
+//   const [amount, setAmount] = useState("");
+//   const [description, setDescription] = useState("");
+//   const [status, setStatus] = useState("Unpaid");
+//   const [paymentMode, setPaymentMode] = useState("Online");
+//   const [bank, setBank] = useState("HBL");
+//   const [dynamicFields, setDynamicFields] = useState({});
+//   const [editingId, setEditingId] = useState(null);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [selectedPayment, setSelectedPayment] = useState(null);
+
+//   const formRef = useRef(null);
+//   const voucherRef = useRef(null);
+//   const previewSectionRef = useRef(null);
+
+//   const categories = [
+//     "Inventory",
+//     "Utility Bill",
+//     "Rent",
+//     "Maintenance",
+//     "Marketing",
+//     "Tracker",
+//     "Other",
+//   ];
+
+//   const statusOptions = ["Paid", "Unpaid"];
+//   const paymentModes = ["Online", "Bank Transfer", "Check", "Cash"];
+//   const banks = ["HBL", "Bank Islami"];
+
+//   const API_URL = "https://accounts-sps-backend-git-main-secure-path-solutions-projects.vercel.app/api/payments";
+
+//   useEffect(() => {
+//     fetchPayments();
+//   }, []);
+
+//   useEffect(() => {
+//     setDynamicFields({});
+//     if (category !== "Inventory") {
+//       setItemName("");
+//       setQuantity("");
+//     }
+//   }, [category]);
+
+//   const fetchPayments = async () => {
+//     setLoading(true);
+//     try {
+//       const res = await axios.get(API_URL);
+//       const data = res.data.map((item) => ({
+//         id: item._id,
+//         date: new Date(item.paymentDate).toLocaleDateString("en-GB"),
+//         payee: item.payee,
+//         category: item.category,
+//         itemName: item.itemName || "—",
+//         quantity: item.quantity || null,
+//         details: item.details || {},
+//         amount: item.amount,
+//         description: item.description || "—",
+//         status: item.status || "Unpaid",
+//         paymentMode: item.paymentMode || "Online",
+//         bank: item.bank || "",
+//       }));
+//       setPayments(data);
+//     } catch (err) {
+//       console.error("Error fetching payments:", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const startEdit = (payment) => {
+//     setPayee(payment.payee);
+//     setCategory(payment.category);
+//     setItemName(payment.itemName === "—" ? "" : payment.itemName);
+//     setQuantity(payment.quantity || "");
+//     setDynamicFields(payment.details || {});
+//     setAmount(payment.amount.toLocaleString("en-PK", { minimumFractionDigits: 0, maximumFractionDigits: 0 }));
+//     setDescription(payment.description === "—" ? "" : payment.description);
+//     setStatus(payment.status);
+//     setPaymentMode(payment.paymentMode || "Online");
+//     setBank(payment.bank || (payment.paymentMode === "Cash" ? "" : "HBL"));
+//     setEditingId(payment.id);
+//     setSelectedPayment(null);
+
+//     setTimeout(() => {
+//       formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+//     }, 120);
+//   };
+
+//   const handleView = (payment) => {
+//     setSelectedPayment(payment);
+//     setTimeout(() => {
+//       previewSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+//     }, 150);
+//   };
+
+//   const handlePaymentModeChange = (e) => {
+//     const newMode = e.target.value;
+//     setPaymentMode(newMode);
+//     if (newMode === "Cash") {
+//       setBank("");
+//     }
+//   };
+
+//   const handleDynamicChange = (key, value) => {
+//     setDynamicFields((prev) => ({ ...prev, [key]: value }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     const cleaned = amount.replace(/[^0-9]/g, "");
+//     const numericAmount = Number(cleaned);
+
+//     if (!payee.trim() || !cleaned || numericAmount <= 0) {
+//       alert("Please enter a valid payee and amount greater than 0");
+//       return;
+//     }
+
+//     if (paymentMode !== "Cash" && (!bank || bank.trim() === "")) {
+//       alert("Please select a bank for Online, Bank Transfer or Check");
+//       return;
+//     }
+
+//     if (category === "Inventory" && (!itemName.trim() || !quantity || Number(quantity) < 1)) {
+//       alert("Item name and Quantity (at least 1) are required for Inventory");
+//       return;
+//     }
+
+//     if (category === "Tracker" && !dynamicFields.registrationNo?.trim()) {
+//       alert("Registration number is required for Tracker entries");
+//       return;
+//     }
+
+//     const payload = {
+//       payee: payee.trim(),
+//       category,
+//       itemName: category === "Inventory" ? itemName.trim() || null : null,
+//       quantity: category === "Inventory" ? (quantity ? Number(quantity) : null) : null,
+//       details: Object.keys(dynamicFields).length > 0 ? dynamicFields : undefined,
+//       amount: numericAmount,
+//       description: description.trim() || "—",
+//       status,
+//       paymentMode,
+//     };
+
+//     if (paymentMode !== "Cash" && bank.trim()) {
+//       payload.bank = bank.trim();
+//     }
+
+//     try {
+//       let res;
+//       if (editingId) {
+//         res = await axios.put(`${API_URL}/${editingId}`, payload);
+//         setPayments((prev) =>
+//           prev.map((p) =>
+//             p.id === editingId
+//               ? {
+//                   ...p,
+//                   payee: res.data.payee,
+//                   category: res.data.category,
+//                   itemName: res.data.itemName || "—",
+//                   quantity: res.data.quantity || null,
+//                   details: res.data.details || {},
+//                   amount: res.data.amount,
+//                   description: res.data.description || "—",
+//                   status: res.data.status,
+//                   paymentMode: res.data.paymentMode || "Online",
+//                   bank: res.data.bank || "",
+//                 }
+//               : p
+//           )
+//         );
+//         setEditingId(null);
+//       } else {
+//         res = await axios.post(API_URL, payload);
+//         setPayments((prev) => [
+//           {
+//             id: res.data._id,
+//             date: new Date(res.data.paymentDate).toLocaleDateString("en-GB"),
+//             payee: res.data.payee,
+//             category: res.data.category,
+//             itemName: res.data.itemName || "—",
+//             quantity: res.data.quantity || null,
+//             details: res.data.details || {},
+//             amount: res.data.amount,
+//             description: res.data.description || "—",
+//             status: res.data.status,
+//             paymentMode: res.data.paymentMode || "Online",
+//             bank: res.data.bank || "",
+//           },
+//           ...prev,
+//         ]);
+//       }
+//       resetForm();
+//       setSelectedPayment(null);
+//     } catch (err) {
+//       console.error("Error saving payment:", err);
+//       alert(err.response?.data?.error || "Failed to save payment. Check console.");
+//     }
+//   };
+
+//   const resetForm = () => {
+//     setPayee("");
+//     setItemName("");
+//     setQuantity("");
+//     setAmount("");
+//     setDescription("");
+//     setCategory("Inventory");
+//     setStatus("Unpaid");
+//     setPaymentMode("Online");
+//     setBank("HBL");
+//     setDynamicFields({});
+//     setEditingId(null);
+//   };
+
+//   const removePayment = useCallback(
+//     async (id) => {
+//       if (!window.confirm("Delete this payment record permanently?")) return;
+//       try {
+//         await axios.delete(`${API_URL}/${id}`);
+//         setPayments((prev) => prev.filter((p) => p.id !== id));
+//         if (selectedPayment?.id === id) setSelectedPayment(null);
+//       } catch (err) {
+//         console.error("Error deleting:", err);
+//       }
+//     },
+//     [selectedPayment]
+//   );
+
+//   const downloadAsPDF = async () => {
+//     if (!voucherRef.current || !selectedPayment) return;
+
+//     try {
+//       const canvas = await html2canvas(voucherRef.current, {
+//         scale: 2,
+//         useCORS: true,
+//         logging: false,
+//       });
+//       const imgData = canvas.toDataURL("image/png");
+
+//       const pdf = new jsPDF({
+//         orientation: "portrait",
+//         unit: "mm",
+//         format: "a4",
+//       });
+
+//       const pdfWidth = pdf.internal.pageSize.getWidth();
+//       const pdfHeight = pdf.internal.pageSize.getHeight();
+//       const imgWidth = canvas.width;
+//       const imgHeight = canvas.height;
+
+//       const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+//       pdf.addImage(imgData, "PNG", 0, 0, imgWidth * ratio, imgHeight * ratio);
+
+//       pdf.save(`Payment-Voucher-${selectedPayment.id.slice(-8)}.pdf`);
+//     } catch (err) {
+//       console.error("PDF generation failed:", err);
+//       alert("Failed to generate PDF. Please try again.");
+//     }
+//   };
+
+//   const filteredEntries = useMemo(() => {
+//     if (!searchTerm.trim()) return payments;
+//     const term = searchTerm.toLowerCase();
+//     return payments.filter(
+//       (p) =>
+//         p.payee.toLowerCase().includes(term) ||
+//         p.category.toLowerCase().includes(term) ||
+//         p.description.toLowerCase().includes(term) ||
+//         p.status.toLowerCase().includes(term) ||
+//         p.paymentMode.toLowerCase().includes(term) ||
+//         (p.bank && p.bank.toLowerCase().includes(term)) ||
+//         (p.itemName && p.itemName.toLowerCase().includes(term)) ||
+//         (p.quantity && String(p.quantity).includes(term)) ||
+//         (p.details && JSON.stringify(p.details).toLowerCase().includes(term))
+//     );
+//   }, [payments, searchTerm]);
+
+//   const stats = useMemo(() => {
+//     const unpaid = filteredEntries
+//       .filter((p) => p.status === "Unpaid")
+//       .reduce((sum, p) => sum + p.amount, 0);
+//     const paid = filteredEntries
+//       .filter((p) => p.status === "Paid")
+//       .reduce((sum, p) => sum + p.amount, 0);
+//     return { unpaid, paid, total: unpaid + paid };
+//   }, [filteredEntries]);
+
+//   const formatCurrency = (num) =>
+//     Number(num).toLocaleString("en-PK", {
+//       minimumFractionDigits: 0,
+//       maximumFractionDigits: 0,
+//     });
+
+//   const getCategoryColor = (cat) => {
+//     const map = {
+//       Salary: "#059669",
+//       "Utility Bill": "#dc2626",
+//       Rent: "#d97706",
+//       Maintenance: "#2563eb",
+//       Inventory: "#7c3aed",
+//       Marketing: "#db2777",
+//       Tracker: "#ea580c",
+//       Other: "#4b5563",
+//     };
+//     return map[cat] || "#4b5563";
+//   };
+
+//   const getStatusStyle = (stat) => {
+//     return stat === "Paid"
+//       ? { color: "#059669", bg: "#ecfdf5" }
+//       : { color: "#b45309", bg: "#fffbeb" };
+//   };
+
+//   const getPaymentModeColor = (mode) => {
+//     const map = {
+//       Online: "#2563eb",
+//       "Bank Transfer": "#1d4ed8",
+//       Check: "#d97706",
+//       Cash: "#ea580c",
+//     };
+//     return map[mode] || "#6b7280";
+//   };
+
+//   const getBankColor = (b) => {
+//     const map = {
+//       HBL: "#047857",
+//       "Bank Islami": "#1e40af",
+//       Other: "#6b7280",
+//     };
+//     return map[b] || "#6b7280";
+//   };
+
+//   const exportToCSV = () => {
+//     if (!payments.length) return;
+//     const headers = ["Date", "Payee", "Category", "Status", "Payment Mode", "Bank", "Amount", "Description"];
+//     const rows = payments.map((p) => [
+//       p.date,
+//       `"${p.payee.replace(/"/g, '""')}"`,
+//       p.category,
+//       p.status,
+//       p.paymentMode,
+//       p.bank || "",
+//       p.amount,
+//       `"${p.description.replace(/"/g, '""')}"`,
+//     ]);
+//     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+//     const blob = new Blob([csv], { type: "text/csv" });
+//     const url = window.URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = `payment-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+//     a.click();
+//     window.URL.revokeObjectURL(url);
+//   };
+
+//   return (
+//     <div
+//       style={{
+//         color: "#111827",
+//         padding: "clamp(16px, 4vw, 32px)",
+//         fontFamily: "Inter, system-ui, sans-serif",
+//         minHeight: "100vh",
+//       }}
+//     >
+//       <header
+//         style={{
+//           display: "flex",
+//           justifyContent: "space-between",
+//           alignItems: "center",
+//           marginBottom: "clamp(20px, 5vw, 32px)",
+//           gap: "clamp(12px, 3vw, 20px)",
+//           flexWrap: "wrap",
+//         }}
+//       >
+//         <div>
+//           <h1 style={{ fontSize: "clamp(22px, 6vw, 36px)", fontWeight: 800, margin: 0, letterSpacing: "-0.02em", color: "#111827" }}>
+//             Payment Ledger
+//           </h1>
+//           <p style={{ color: "#4b5563", marginTop: "8px", fontSize: "clamp(13px, 3.5vw, 15px)" }}>
+//             Track outgoing payments • {payments.length} record{payments.length !== 1 ? "s" : ""}
+//           </p>
+//         </div>
+//         <div style={{ display: "flex", gap: "clamp(10px, 2.5vw, 16px)", flexWrap: "wrap", width: "100%", justifyContent: "flex-start" }}>
+//           <div style={{ background: "#ffffff", padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 28px)", borderRadius: "16px", border: "1px solid #d1d5db", minWidth: "clamp(120px, calc(50% - 5px), 200px)", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", boxSizing: "border-box", flex: "1 1 auto" }}>
+//             <div style={{ color: "#4b5563", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Total Outstanding</div>
+//             <div style={{ fontSize: "clamp(14px, 4.5vw, 26px)", fontWeight: 800, marginTop: "clamp(6px, 1.5vw, 8px)", color: "#b45309" }}>
+//               Rs. {formatCurrency(stats.unpaid)}
+//             </div>
+//           </div>
+//           <div style={{ background: "#ffffff", padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 28px)", borderRadius: "16px", border: "1px solid #d1d5db", minWidth: "clamp(120px, calc(50% - 5px), 200px)", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", boxSizing: "border-box", flex: "1 1 auto" }}>
+//             <div style={{ color: "#4b5563", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Total Paid</div>
+//             <div style={{ fontSize: "clamp(14px, 4.5vw, 26px)", fontWeight: 800, marginTop: "clamp(6px, 1.5vw, 8px)", color: "#059669" }}>
+//               Rs. {formatCurrency(stats.paid)}
+//             </div>
+//           </div>
+//         </div>
+//       </header>
+
+//       <section style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #d1d5db", padding: "clamp(16px, 4vw, 24px)", marginBottom: "clamp(20px, 5vw, 32px)", boxShadow: "0 4px 12px rgba(0,0,0,0.06)", boxSizing: "border-box" }}>
+//         <form
+//           ref={formRef}
+//           onSubmit={handleSubmit}
+//           style={{
+//             display: "grid",
+//             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+//             gap: "clamp(16px, 4vw, 28px)",
+//             alignItems: "start",
+//           }}
+//         >
+//           {/* Payee */}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Payee</label>
+//             <div style={{ position: "relative" }}>
+//               <User size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//               <input
+//                 required
+//                 value={payee}
+//                 onChange={(e) => setPayee(e.target.value)}
+//                 placeholder="Supplier / Person name"
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                 }}
+//               />
+//             </div>
+//           </div>
+
+//           {/* Category */}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Category</label>
+//             <div style={{ position: "relative" }}>
+//               <Tag size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//               <select
+//                 value={category}
+//                 onChange={(e) => setCategory(e.target.value)}
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   appearance: "none",
+//                   cursor: "pointer",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                 }}
+//               >
+//                 {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+//               </select>
+//               <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+//             </div>
+//           </div>
+
+//           {/* Amount - moved up so it's always visible early */}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Amount (PKR)</label>
+//             <div style={{ position: "relative" }}>
+//               <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//               <input
+//                 type="text"
+//                 required
+//                 value={amount}
+//                 onChange={(e) => {
+//                   const val = e.target.value.replace(/[^0-9,]/g, "");
+//                   setAmount(val);
+//                 }}
+//                 placeholder="0"
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                 }}
+//               />
+//             </div>
+//           </div>
+
+//           {/* Inventory specific fields */}
+//           {category === "Inventory" && (
+//             <>
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Item / Product *</label>
+//                 <div style={{ position: "relative" }}>
+//                   <Tag size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//                   <input
+//                     required
+//                     value={itemName}
+//                     onChange={(e) => setItemName(e.target.value)}
+//                     placeholder="e.g. GPS Tracker MT200, Battery 12V"
+//                     style={{
+//                       width: "100%",
+//                       padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                       background: "#f9fafb",
+//                       border: "1px solid #d1d5db",
+//                       borderRadius: "10px",
+//                       color: "#111827",
+//                       fontSize: "clamp(13px, 3.5vw, 16px)",
+//                       boxSizing: "border-box",
+//                     }}
+//                   />
+//                 </div>
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Quantity *</label>
+//                 <div style={{ position: "relative" }}>
+//                   <Plus size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//                   <input
+//                     type="number"
+//                     min="1"
+//                     required
+//                     value={quantity}
+//                     onChange={(e) => setQuantity(e.target.value)}
+//                     placeholder="1"
+//                     style={{
+//                       width: "100%",
+//                       padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                       background: "#f9fafb",
+//                       border: "1px solid #d1d5db",
+//                       borderRadius: "10px",
+//                       color: "#111827",
+//                       fontSize: "clamp(13px, 3.5vw, 16px)",
+//                       boxSizing: "border-box",
+//                     }}
+//                   />
+//                 </div>
+//               </div>
+//             </>
+//           )}
+
+//           {/* Utility Bill */}
+//           {category === "Utility Bill" && (
+//             <>
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Bill Type *</label>
+//                 <select
+//                   required
+//                   value={dynamicFields.billType || ""}
+//                   onChange={(e) => handleDynamicChange("billType", e.target.value)}
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     appearance: "none",
+//                     cursor: "pointer",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 >
+//                   <option value="">Select</option>
+//                   <option value="Electricity">Electricity</option>
+//                   <option value="Gas">Gas</option>
+//                   <option value="Water">Water</option>
+//                   <option value="Internet">Internet</option>
+//                   <option value="Phone">Phone</option>
+//                 </select>
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Bill Period</label>
+//                 <input
+//                   value={dynamicFields.billPeriod || ""}
+//                   onChange={(e) => handleDynamicChange("billPeriod", e.target.value)}
+//                   placeholder="e.g. January 2026"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+//             </>
+//           )}
+
+//           {/* Rent */}
+//           {category === "Rent" && (
+//             <>
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Rent For *</label>
+//                 <input
+//                   required
+//                   value={dynamicFields.rentFor || ""}
+//                   onChange={(e) => handleDynamicChange("rentFor", e.target.value)}
+//                   placeholder="e.g. Office rent, House in DHA"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Period *</label>
+//                 <input
+//                   required
+//                   value={dynamicFields.period || ""}
+//                   onChange={(e) => handleDynamicChange("period", e.target.value)}
+//                   placeholder="e.g. February 2026"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+//             </>
+//           )}
+
+//           {/* Maintenance */}
+//           {category === "Maintenance" && (
+//             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//               <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Maintenance For *</label>
+//               <input
+//                 required
+//                 value={dynamicFields.maintenanceFor || ""}
+//                 onChange={(e) => handleDynamicChange("maintenanceFor", e.target.value)}
+//                 placeholder="e.g. Office AC, Company Car, Generator"
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                 }}
+//               />
+//             </div>
+//           )}
+
+//           {/* Tracker - spreads across multiple columns naturally */}
+//           {category === "Tracker" && (
+//             <>
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Tracker Company</label>
+//                 <input
+//                   value={dynamicFields.trackerCompany || ""}
+//                   onChange={(e) => handleDynamicChange("trackerCompany", e.target.value)}
+//                   placeholder="e.g. TPL, Falcon-i, Utrack"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Vehicle Type *</label>
+//                 <select
+//                   required
+//                   value={dynamicFields.vehicleType || ""}
+//                   onChange={(e) => handleDynamicChange("vehicleType", e.target.value)}
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     appearance: "none",
+//                     cursor: "pointer",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 >
+//                   <option value="">Select</option>
+//                   <option value="Car">Car</option>
+//                   <option value="Bike">Bike</option>
+//                   <option value="Truck">Truck</option>
+//                   <option value="Bus">Bus</option>
+//                   <option value="Other">Other</option>
+//                 </select>
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Registration No *</label>
+//                 <input
+//                   required
+//                   value={dynamicFields.registrationNo || ""}
+//                   onChange={(e) => handleDynamicChange("registrationNo", e.target.value)}
+//                   placeholder="e.g. LEB-1234"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Engine No</label>
+//                 <input
+//                   value={dynamicFields.engineNo || ""}
+//                   onChange={(e) => handleDynamicChange("engineNo", e.target.value)}
+//                   placeholder="Engine number"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Chassis No</label>
+//                 <input
+//                   value={dynamicFields.chassisNo || ""}
+//                   onChange={(e) => handleDynamicChange("chassisNo", e.target.value)}
+//                   placeholder="Chassis / VIN number"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Vehicle Brand</label>
+//                 <input
+//                   value={dynamicFields.vehicleBrand || ""}
+//                   onChange={(e) => handleDynamicChange("vehicleBrand", e.target.value)}
+//                   placeholder="e.g. Toyota Corolla, Honda CG 125"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//                 <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Installer Name</label>
+//                 <input
+//                   value={dynamicFields.installerName || ""}
+//                   onChange={(e) => handleDynamicChange("installerName", e.target.value)}
+//                   placeholder="Installer name / team"
+//                   style={{
+//                     width: "100%",
+//                     padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                     background: "#f9fafb",
+//                     border: "1px solid #d1d5db",
+//                     borderRadius: "10px",
+//                     color: "#111827",
+//                     fontSize: "clamp(13px, 3.5vw, 16px)",
+//                     boxSizing: "border-box",
+//                   }}
+//                 />
+//               </div>
+//             </>
+//           )}
+
+//           {/* Status */}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Status</label>
+//             <div style={{ position: "relative" }}>
+//               <Clock size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//               <select
+//                 value={status}
+//                 onChange={(e) => setStatus(e.target.value)}
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   appearance: "none",
+//                   cursor: "pointer",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                 }}
+//               >
+//                 {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+//               </select>
+//               <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+//             </div>
+//           </div>
+
+//           {/* Payment Mode */}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Payment Mode</label>
+//             <div style={{ position: "relative" }}>
+//               <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//               <select
+//                 value={paymentMode}
+//                 onChange={handlePaymentModeChange}
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   appearance: "none",
+//                   cursor: "pointer",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                 }}
+//               >
+//                 {paymentModes.map((m) => <option key={m} value={m}>{m}</option>)}
+//               </select>
+//               <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+//             </div>
+//           </div>
+
+//           {/* Bank */}
+//           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>
+//               Bank {paymentMode === "Cash" && <span style={{ color: "#9ca3af", fontWeight: 400, fontSize: "clamp(9px, 2.2vw, 10px)" }}>(N/A for Cash)</span>}
+//             </label>
+//             <div style={{ position: "relative" }}>
+//               <CreditCard size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: paymentMode === "Cash" ? "#d1d5db" : "#6b7280" }} />
+//               <select
+//                 value={paymentMode === "Cash" ? "" : bank}
+//                 onChange={(e) => setBank(e.target.value)}
+//                 disabled={paymentMode === "Cash"}
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: paymentMode === "Cash" ? "#f3f4f6" : "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: paymentMode === "Cash" ? "#9ca3af" : "#111827",
+//                   appearance: "none",
+//                   cursor: paymentMode === "Cash" ? "not-allowed" : "pointer",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                   opacity: paymentMode === "Cash" ? 0.7 : 1,
+//                 }}
+//               >
+//                 <option value="">Select Bank</option>
+//                 {banks.map((b) => <option key={b} value={b}>{b}</option>)}
+//               </select>
+//               <ChevronDown size={16} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: paymentMode === "Cash" ? "#d1d5db" : "#6b7280", pointerEvents: "none" }} />
+//             </div>
+//           </div>
+
+//           {/* Remarks - full width */}
+//           <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: "8px" }}>
+//             <label style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "#4b5563", textTransform: "uppercase", marginLeft: "4px" }}>Remarks / Invoice #</label>
+//             <div style={{ position: "relative" }}>
+//               <FileText size={18} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//               <textarea
+//                 value={description}
+//                 onChange={(e) => setDescription(e.target.value)}
+//                 placeholder="Invoice number, serial numbers, additional notes..."
+//                 rows={3}
+//                 style={{
+//                   width: "100%",
+//                   padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px) clamp(10px, 2.5vw, 12px) clamp(40px, 8vw, 48px)",
+//                   background: "#f9fafb",
+//                   border: "1px solid #d1d5db",
+//                   borderRadius: "10px",
+//                   color: "#111827",
+//                   fontSize: "clamp(13px, 3.5vw, 16px)",
+//                   boxSizing: "border-box",
+//                   resize: "vertical",
+//                 }}
+//               />
+//             </div>
+//           </div>
+
+//           {/* Submit Buttons - full width */}
+//           <div style={{ gridColumn: "1 / -1", display: "flex", gap: "clamp(8px, 2vw, 12px)", alignItems: "center", flexWrap: "wrap" }}>
+//             <button
+//               type="submit"
+//               style={{
+//                 background: "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
+//                 color: "white",
+//                 border: "none",
+//                 padding: "clamp(10px, 2.5vw, 14px) clamp(18px, 4vw, 28px)",
+//                 borderRadius: "10px",
+//                 fontWeight: 700,
+//                 cursor: "pointer",
+//                 display: "flex",
+//                 alignItems: "center",
+//                 gap: "clamp(6px, 1.5vw, 8px)",
+//                 minWidth: "clamp(140px, 100%, 160px)",
+//                 justifyContent: "center",
+//                 fontSize: "clamp(13px, 3.5vw, 15px)",
+//                 minHeight: "clamp(36px, 8vw, 44px)",
+//               }}
+//             >
+//               {editingId ? <Edit size={20} /> : <Plus size={20} />}
+//               {editingId ? "Update Entry" : "Add Entry"}
+//             </button>
+//             {editingId && (
+//               <button
+//                 type="button"
+//                 onClick={resetForm}
+//                 style={{
+//                   background: "#fef2f2",
+//                   color: "#b91c1c",
+//                   border: "1px solid #fecaca",
+//                   padding: "clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px)",
+//                   borderRadius: "10px",
+//                   fontWeight: 600,
+//                   cursor: "pointer",
+//                   display: "flex",
+//                   alignItems: "center",
+//                   gap: "clamp(6px, 1.5vw, 8px)",
+//                   fontSize: "clamp(13px, 3.5vw, 15px)",
+//                   minHeight: "clamp(36px, 8vw, 44px)",
+//                 }}
+//               >
+//                 <RotateCcw size={18} /> Cancel
+//               </button>
+//             )}
+//           </div>
+//         </form>
+//       </section>
+
+//       {/* Search & Export section remains unchanged */}
+//       <section style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #d1d5db", padding: "clamp(16px, 4vw, 24px)", boxShadow: "0 4px 12px rgba(0,0,0,0.06)", boxSizing: "border-box", overflowX: "auto" }}>
+//         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(16px, 4vw, 24px)", gap: "clamp(10px, 2.5vw, 16px)", flexWrap: "wrap" }}>
+//           <div style={{ position: "relative", flex: 1, minWidth: "clamp(200px, 100%, 280px)" }}>
+//             <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+//             <input
+//               placeholder="Search payee, category, mode, bank, remarks, item, reg no..."
+//               value={searchTerm}
+//               onChange={(e) => setSearchTerm(e.target.value)}
+//               style={{
+//                 width: "100%",
+//                 padding: "clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px) clamp(8px, 2vw, 10px) clamp(38px, 8vw, 44px)",
+//                 background: "#f9fafb",
+//                 border: "1px solid #d1d5db",
+//                 borderRadius: "10px",
+//                 color: "#111827",
+//                 fontSize: "clamp(13px, 3.5vw, 16px)",
+//                 boxSizing: "border-box",
+//               }}
+//             />
+//           </div>
+//           <button
+//             onClick={exportToCSV}
+//             disabled={!payments.length}
+//             style={{
+//               background: "#f3f4f6",
+//               border: "1px solid #d1d5db",
+//               color: "#374151",
+//               padding: "clamp(8px, 2vw, 10px) clamp(14px, 3.5vw, 20px)",
+//               borderRadius: "10px",
+//               cursor: "pointer",
+//               display: "flex",
+//               alignItems: "center",
+//               gap: "clamp(6px, 1.5vw, 8px)",
+//               fontWeight: 500,
+//               fontSize: "clamp(12px, 3.2vw, 14px)",
+//             }}
+//           >
+//             <Download size={16} /> Export CSV
+//           </button>
+//         </div>
+
+//         {loading ? (
+//           <div style={{ textAlign: "center", padding: "clamp(40px, 10vw, 80px) clamp(12px, 3vw, 20px)", color: "#6b7280" }}>
+//             <div style={{ fontSize: "clamp(24px, 6vw, 40px)", opacity: 0.4 }}>⌛</div>
+//             <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>Loading records...</h3>
+//           </div>
+//         ) : filteredEntries.length === 0 ? (
+//           <div style={{ textAlign: "center", padding: "clamp(40px, 10vw, 80px) clamp(12px, 3vw, 20px)", color: "#6b7280" }}>
+//             <AlertCircle size={48} style={{ opacity: 0.4, marginBottom: 16 }} />
+//             <h3 style={{ fontSize: "clamp(14px, 4vw, 18px)" }}>No transactions found</h3>
+//             <p style={{ marginTop: 8, fontSize: "clamp(12px, 3.5vw, 14px)" }}>
+//               {searchTerm ? "Try different search terms" : "Add your first payment above"}
+//             </p>
+//           </div>
+//         ) : (
+//           <div style={{ overflowX: "auto" }}>
+//             <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto", minWidth: "clamp(300px, 100%, 1100px)" }}>
+//               <thead>
+//                 <tr style={{ background: "#f9fafb" }}>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Date</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Payee</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Category</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Status</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Mode</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "left", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap", minWidth: "clamp(100px, 15vw, 140px)" }}>Bank</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>Amount</th>
+//                   <th style={{ padding: "clamp(10px, 2.5vw, 16px)", color: "#4b5563", fontSize: "clamp(10px, 2.5vw, 12px)", textTransform: "uppercase", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {filteredEntries.map((item) => (
+//                   <tr
+//                     key={item.id}
+//                     style={{
+//                       background: item.status === "Paid" ? "#ecfdf5" : "#ffffff",
+//                       transition: "background 0.15s",
+//                     }}
+//                   >
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", fontSize: "clamp(12px, 3.2vw, 14px)" }}>{item.date}</td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", fontWeight: 600, fontSize: "clamp(12px, 3.2vw, 14px)" }}>{item.payee}</td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb" }}>
+//                       <span style={{ padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)", borderRadius: "20px", fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 600, color: "white", backgroundColor: getCategoryColor(item.category) }}>
+//                         {item.category}
+//                       </span>
+//                     </td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb" }}>
+//                       <span style={{ padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)", borderRadius: "20px", fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 600, backgroundColor: getStatusStyle(item.status).bg, color: getStatusStyle(item.status).color }}>
+//                         {item.status}
+//                         {item.status === "Paid" && <CheckCircle size={14} style={{ marginLeft: 6 }} />}
+//                       </span>
+//                     </td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb" }}>
+//                       <span style={{ padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)", borderRadius: "20px", fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 600, color: "white", backgroundColor: getPaymentModeColor(item.paymentMode) }}>
+//                         {item.paymentMode}
+//                       </span>
+//                     </td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>
+//                       {item.paymentMode === "Cash" || !item.bank || item.bank.trim() === "" ? "—" : (
+//                         <span style={{ padding: "clamp(3px, 1vw, 4px) clamp(8px, 2vw, 12px)", borderRadius: "20px", fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 600, color: "white", backgroundColor: getBankColor(item.bank), whiteSpace: "nowrap", display: "inline-block" }}>
+//                           {item.bank}
+//                         </span>
+//                       )}
+//                     </td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", textAlign: "right", fontWeight: 700, color: item.status === "Unpaid" ? "#7c3aed" : "#374151", textDecoration: item.status === "Paid" ? "line-through" : "none", fontSize: "clamp(12px, 3.2vw, 14px)" }}>
+//                       Rs. {formatCurrency(item.amount)}
+//                     </td>
+//                     <td style={{ padding: "clamp(10px, 2.5vw, 16px)", borderBottom: "1px solid #e5e7eb", display: "flex", gap: "clamp(6px, 1.5vw, 8px)", justifyContent: "center", flexWrap: "wrap" }}>
+//                       <button onClick={() => handleView(item)} style={{ background: "rgba(37,99,235,0.1)", color: "#2563eb", border: "none", padding: "clamp(6px, 1.5vw, 8px)", borderRadius: "8px", cursor: "pointer", minHeight: "clamp(32px, 7vw, 36px)", minWidth: "clamp(32px, 7vw, 36px)", display: "flex", alignItems: "center", justifyContent: "center" }} title="View Voucher">
+//                         <Eye size={18} />
+//                       </button>
+//                       <button onClick={() => startEdit(item)} style={{ background: "rgba(180,83,9,0.1)", color: "#b45309", border: "none", padding: "clamp(6px, 1.5vw, 8px)", borderRadius: "8px", cursor: "pointer", minHeight: "clamp(32px, 7vw, 36px)", minWidth: "clamp(32px, 7vw, 36px)", display: "flex", alignItems: "center", justifyContent: "center" }} title="Edit">
+//                         <Edit size={18} />
+//                       </button>
+//                       <button onClick={() => removePayment(item.id)} style={{ background: "rgba(220,38,38,0.1)", color: "#dc2626", border: "none", padding: "clamp(6px, 1.5vw, 8px)", borderRadius: "8px", cursor: "pointer", minHeight: "clamp(32px, 7vw, 36px)", minWidth: "clamp(32px, 7vw, 36px)", display: "flex", alignItems: "center", justifyContent: "center" }} title="Delete">
+//                         <Trash2 size={18} />
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+//         )}
+//       </section>
+
+//    {selectedPayment && (
+//         <div
+//           ref={previewSectionRef}
+//           id="voucher-preview"
+//           style={{
+//             marginTop: "clamp(20px, 5vw, 40px)",
+//             display: "flex",
+//             flexDirection: "column",
+//             alignItems: "center",
+//             padding: "clamp(12px, 3vw, 20px)",
+//           }}
+//         >
+//           <div
+//             ref={voucherRef}
+//             style={{
+//               width: "100%",
+//               maxWidth: "210mm",
+//               minHeight: "297mm",
+//               background: "#ffffff",
+//               padding: "clamp(20px, 5vw, 40px) clamp(24px, 5vw, 50px)",
+//               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+//               display: "flex",
+//               flexDirection: "column",
+//               position: "relative",
+//               fontFamily: "'Helvetica', 'Arial', sans-serif",
+//               color: "#1a1a1a",
+//               boxSizing: "border-box",
+//             }}
+//           >
+//             {/* Header Section */}
+//             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(24px, 5vw, 40px)", gap: "clamp(12px, 3vw, 20px)", flexWrap: "wrap" }}>
+//               <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2.5vw, 15px)" }}>
+//                 <img src={logo} alt="Logo" style={{ height: "clamp(44px, 10vw, 60px)" }} />
+//                 <div>
+//                   <h2 style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 22px)", fontWeight: "bold", color: "#000" }}>Secure Path Solutions</h2>
+//                   <p style={{ margin: 0, fontSize: "clamp(10px, 2.5vw, 12px)", color: "#666" }}>Premium Vehicle Tracking & Security</p>
+//                 </div>
+//               </div>
+//               <div style={{ textAlign: "right" }}>
+//                 <div style={{ 
+//                   background: "#eef2ff", 
+//                   color: "#3b82f6", 
+//                   padding: "clamp(4px, 1vw, 6px) clamp(14px, 3vw, 20px)", 
+//                   borderRadius: "5px", 
+//                   fontSize: "clamp(12px, 3.2vw, 14px)", 
+//                   fontWeight: "bold",
+//                   display: "inline-block",
+//                   marginBottom: "10px",
+//                   border: "1px solid #dbeafe"
+//                 }}>
+//                   OFFICIAL RECEIPT
+//                 </div>
+//                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>No: <span style={{ fontWeight: "normal" }}>REC-{selectedPayment.id.slice(-8).toUpperCase()}</span></p>
+//                 <p style={{ margin: "2px 0 0 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Date: <span style={{ fontWeight: "normal" }}>{selectedPayment.date}</span></p>
+//               </div>
+//             </div>
+
+//             {/* Address Boxes */}
+//             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(16px, 4vw, 25px)", marginBottom: "clamp(20px, 5vw, 30px)" }}>
+//               <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+//                 <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
+//                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
+//                 <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563", lineHeight: "1.4" }}>
+//                   House 1-A, Upper Mall, Lahore<br />
+//                   Tel: 042-111-000-320
+//                 </p>
+//               </div>
+//               <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
+//                 <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Pay to</h4>
+//                 <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>{selectedPayment.payee}</p>
+//                 <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563" }}>
+//                   Category: {selectedPayment.category}<br />
+//                   Payment Mode: {selectedPayment.paymentMode}
+//                   {selectedPayment.bank && selectedPayment.bank.trim() !== "" && ` (${selectedPayment.bank})`}<br />
+//                   {selectedPayment.itemName && selectedPayment.itemName !== "—" && <>Item: {selectedPayment.itemName} • Qty: {selectedPayment.quantity || "?"}<br /></>}
+//                   {selectedPayment.details && Object.keys(selectedPayment.details).length > 0 && (
+//                     <>
+//                       {selectedPayment.category === "Tracker" && (
+//                         <>
+//                           Tracker: {selectedPayment.details.trackerCompany || ""} {selectedPayment.details.trackerModel || ""}<br />
+//                           Vehicle: {selectedPayment.details.vehicleType || ""} ({selectedPayment.details.vehicleBrand || ""})<br />
+//                           Reg #: {selectedPayment.details.registrationNo || "—"}<br />
+//                           Engine/Chassis: {selectedPayment.details.engineNo || "—"} / {selectedPayment.details.chassisNo || "—"}<br />
+//                           Installer: {selectedPayment.details.installerName || "—"}<br />
+//                         </>
+//                       )}
+//                       {selectedPayment.category === "Utility Bill" && <>Bill Type: {selectedPayment.details.billType || "—"} {selectedPayment.details.billPeriod && `(${selectedPayment.details.billPeriod})`}<br /></>}
+//                       {selectedPayment.category === "Rent" && <>Rent For: {selectedPayment.details.rentFor || "—"} {selectedPayment.details.period && `(${selectedPayment.details.period})`}<br /></>}
+//                       {selectedPayment.category === "Maintenance" && <>Maintenance For: {selectedPayment.details.maintenanceFor || "—"}<br /></>}
+//                     </>
+//                   )}
+//                 </p>
+//               </div>
+//             </div>
+
+//             {/* Amount Box */}
+//             <div style={{ 
+//               background: "#f9fafb", 
+//               borderLeft: "6px solid #2563eb", 
+//               padding: "clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 25px)", 
+//               borderRadius: "4px",
+//               marginBottom: "clamp(24px, 5vw, 40px)"
+//             }}>
+//               <p style={{ margin: "0 0 5px 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold", color: "#4b5563" }}>Total Amount</p>
+//               <h2 style={{ margin: 0, fontSize: "clamp(20px, 6vw, 28px)", fontWeight: "800", color: "#111827" }}>PKR Rs. {formatCurrency(selectedPayment.amount)}.00</h2>
+//             </div>
+
+//             {/* Remarks */}
+//             <div style={{ flexGrow: 1 }}>
+//               <h4 style={{ fontSize: "clamp(11px, 3vw, 13px)", color: "#111827", borderBottom: "1px solid #e5e7eb", paddingBottom: "8px", marginBottom: "10px" }}>Remarks / Description</h4>
+//               <p style={{ fontSize: "clamp(12px, 3.2vw, 14px)", color: "#4b5563", lineHeight: "1.6" }}>{selectedPayment.description}</p>
+//             </div>
+
+//             {/* Footer */}
+//             <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "clamp(12px, 3vw, 20px)", textAlign: "center" }}>
+//               <p style={{ margin: 0, fontSize: "clamp(9px, 2.2vw, 11px)", color: "#4b5563", fontWeight: "bold" }}>
+//                 Phone: <span style={{ fontWeight: "normal" }}>03006492075</span> | Email: <span style={{ fontWeight: "normal" }}>contact@securepathsolution.com</span>
+//               </p>
+//               <p style={{ margin: "4px 0 0 0", fontSize: "clamp(8px, 2vw, 10px)", color: "#9ca3af" }}>This is a computer-generated document.</p>
+//             </div>
+//           </div>
+
+//           <div style={{ margin: "clamp(20px, 5vw, 30px) 0", display: "flex", gap: "clamp(10px, 2.5vw, 15px)", flexWrap: "wrap", justifyContent: "center" }}>
+//             <button 
+//               onClick={downloadAsPDF} 
+//               style={{ 
+//                 background: "#2563eb", 
+//                 color: "white", 
+//                 padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", 
+//                 borderRadius: "6px", 
+//                 fontWeight: "bold", 
+//                 border: "none", 
+//                 cursor: "pointer", 
+//                 fontSize: "clamp(12px, 3.2vw, 14px)", 
+//                 minHeight: "clamp(36px, 8vw, 44px)" 
+//               }}
+//             >
+//               Download PDF
+//             </button>
+//             <button 
+//               onClick={() => setSelectedPayment(null)} 
+//               style={{ 
+//                 background: "#f3f4f6", 
+//                 color: "#4b5563", 
+//                 padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", 
+//                 borderRadius: "6px", 
+//                 fontWeight: "bold", 
+//                 border: "1px solid #d1d5db", 
+//                 cursor: "pointer", 
+//                 fontSize: "clamp(12px, 3.2vw, 14px)", 
+//                 minHeight: "clamp(36px, 8vw, 44px)" 
+//               }}
+//             >
+//               Close
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import {
@@ -16,6 +1306,9 @@ import {
   CheckCircle,
   Clock,
   RotateCcw,
+  Building2,
+  Calendar,
+  Receipt,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -262,9 +1555,10 @@ export default function PaymentLedger() {
 
     try {
       const canvas = await html2canvas(voucherRef.current, {
-        scale: 2,
+        scale: 2.5,
         useCORS: true,
         logging: false,
+        backgroundColor: '#ffffff',
       });
       const imgData = canvas.toDataURL("image/png");
 
@@ -999,7 +2293,7 @@ export default function PaymentLedger() {
         </form>
       </section>
 
-      {/* Search & Export section remains unchanged */}
+      {/* Search & Export section */}
       <section style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #d1d5db", padding: "clamp(16px, 4vw, 24px)", boxShadow: "0 4px 12px rgba(0,0,0,0.06)", boxSizing: "border-box", overflowX: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(16px, 4vw, 24px)", gap: "clamp(10px, 2.5vw, 16px)", flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: 1, minWidth: "clamp(200px, 100%, 280px)" }}>
@@ -1125,16 +2419,17 @@ export default function PaymentLedger() {
         )}
       </section>
 
-   {selectedPayment && (
+      {/* VOUCHER DESIGN - MATCHING EXISTING INVOICE STYLE */}
+      {selectedPayment && (
         <div
           ref={previewSectionRef}
           id="voucher-preview"
           style={{
-            marginTop: "clamp(20px, 5vw, 40px)",
+            marginTop: "clamp(24px, 6vw, 48px)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            padding: "clamp(12px, 3vw, 20px)",
+            padding: "clamp(12px, 3vw, 24px)",
           }}
         >
           <div
@@ -1143,142 +2438,478 @@ export default function PaymentLedger() {
               width: "100%",
               maxWidth: "210mm",
               minHeight: "297mm",
-              background: "#ffffff",
-              padding: "clamp(20px, 5vw, 40px) clamp(24px, 5vw, 50px)",
+              background: "#f5f5f5",
+              padding: "40px",
               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               display: "flex",
               flexDirection: "column",
               position: "relative",
-              fontFamily: "'Helvetica', 'Arial', sans-serif",
-              color: "#1a1a1a",
+              fontFamily: "'Arial', 'Helvetica', sans-serif",
+              color: "#000000",
               boxSizing: "border-box",
             }}
           >
             {/* Header Section */}
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "clamp(24px, 5vw, 40px)", gap: "clamp(12px, 3vw, 20px)", flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2.5vw, 15px)" }}>
-                <img src={logo} alt="Logo" style={{ height: "clamp(44px, 10vw, 60px)" }} />
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "flex-start",
+              marginBottom: "30px",
+              gap: "20px",
+              flexWrap: "wrap"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <img src={logo} alt="Logo" style={{ height: "50px", width: "auto" }} />
                 <div>
-                  <h2 style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 22px)", fontWeight: "bold", color: "#000" }}>Secure Path Solutions</h2>
-                  <p style={{ margin: 0, fontSize: "clamp(10px, 2.5vw, 12px)", color: "#666" }}>Premium Vehicle Tracking & Security</p>
+                  <h1 style={{ 
+                    margin: 0, 
+                    fontSize: "20px", 
+                    fontWeight: "bold", 
+                    color: "#000000",
+                    lineHeight: "1.2"
+                  }}>
+                    Secure Path Solutions
+                  </h1>
+                  <p style={{ 
+                    margin: "2px 0 0 0", 
+                    fontSize: "11px", 
+                    color: "#666666"
+                  }}>
+                    Premium Vehicle Tracking & Security
+                  </p>
                 </div>
               </div>
+              
               <div style={{ textAlign: "right" }}>
                 <div style={{ 
-                  background: "#eef2ff", 
-                  color: "#3b82f6", 
-                  padding: "clamp(4px, 1vw, 6px) clamp(14px, 3vw, 20px)", 
-                  borderRadius: "5px", 
-                  fontSize: "clamp(12px, 3.2vw, 14px)", 
+                  color: "#2563eb", 
+                  fontSize: "16px", 
                   fontWeight: "bold",
-                  display: "inline-block",
-                  marginBottom: "10px",
-                  border: "1px solid #dbeafe"
+                  marginBottom: "8px",
+                  textTransform: "uppercase"
                 }}>
-                  OFFICIAL RECEIPT
+                  OFFICIAL Receipt
                 </div>
-                <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>No: <span style={{ fontWeight: "normal" }}>REC-{selectedPayment.id.slice(-8).toUpperCase()}</span></p>
-                <p style={{ margin: "2px 0 0 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Date: <span style={{ fontWeight: "normal" }}>{selectedPayment.date}</span></p>
+                <div style={{ fontSize: "12px", color: "#333333", lineHeight: "1.6" }}>
+                  <div><strong>No:</strong> INV-{selectedPayment.id.slice(-12).toUpperCase()}</div>
+                  <div><strong>Date:</strong> {selectedPayment.date}</div>
+                </div>
               </div>
             </div>
 
-            {/* Address Boxes */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(16px, 4vw, 25px)", marginBottom: "clamp(20px, 5vw, 30px)" }}>
-              <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
-                <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Issued By</h4>
-                <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>Secure Path Solutions Pvt Ltd.</p>
-                <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563", lineHeight: "1.4" }}>
+            {/* Issued By and Bill To Cards */}
+            <div style={{ 
+              display: "grid", 
+              gridTemplateColumns: "1fr 1fr", 
+              gap: "20px", 
+              marginBottom: "25px" 
+            }}>
+              {/* Issued By Card */}
+              <div style={{ 
+                background: "#ffffff",
+                border: "1px solid #000000", 
+                borderRadius: "8px", 
+                padding: "16px"
+              }}>
+                <h4 style={{ 
+                  margin: "0 0 10px 0", 
+                  fontSize: "11px", 
+                  color: "#2563eb", 
+                  fontWeight: "bold", 
+                  textTransform: "uppercase"
+                }}>
+                  ISSUED BY
+                </h4>
+                <p style={{ 
+                  margin: "0 0 6px 0", 
+                  fontSize: "13px", 
+                  fontWeight: "bold", 
+                  color: "#000000"
+                }}>
+                  Secure Path Solutions Pvt Ltd.
+                </p>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: "11px", 
+                  color: "#333333", 
+                  lineHeight: "1.5"
+                }}>
                   House 1-A, Upper Mall, Lahore<br />
-                  Tel: 042-111-000-320
+                  03008492075
                 </p>
               </div>
-              <div style={{ border: "1px solid black", borderRadius: "8px", padding: "clamp(10px, 2.5vw, 15px)" }}>
-                <h4 style={{ margin: "0 0 8px 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#3b82f6", fontWeight: "bold", textTransform: "uppercase" }}>Pay to</h4>
-                <p style={{ margin: 0, fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold" }}>{selectedPayment.payee}</p>
-                <p style={{ margin: "4px 0 0 0", fontSize: "clamp(10px, 2.5vw, 12px)", color: "#4b5563" }}>
-                  Category: {selectedPayment.category}<br />
-                  Payment Mode: {selectedPayment.paymentMode}
-                  {selectedPayment.bank && selectedPayment.bank.trim() !== "" && ` (${selectedPayment.bank})`}<br />
-                  {selectedPayment.itemName && selectedPayment.itemName !== "—" && <>Item: {selectedPayment.itemName} • Qty: {selectedPayment.quantity || "?"}<br /></>}
-                  {selectedPayment.details && Object.keys(selectedPayment.details).length > 0 && (
-                    <>
-                      {selectedPayment.category === "Tracker" && (
+
+              {/* Bill To / Client Card */}
+              <div style={{ 
+                background: "#ffffff",
+                border: "1px solid #000000", 
+                borderRadius: "8px", 
+                padding: "16px"
+              }}>
+                <h4 style={{ 
+                  margin: "0 0 10px 0", 
+                  fontSize: "11px", 
+                  color: "#2563eb", 
+                  fontWeight: "bold", 
+                  textTransform: "uppercase"
+                }}>
+                  BILL TO / CLIENT
+                </h4>
+                <p style={{ 
+                  margin: "0 0 6px 0", 
+                  fontSize: "13px", 
+                  fontWeight: "bold", 
+                  color: "#000000"
+                }}>
+                  {selectedPayment.payee}
+                </p>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: "11px", 
+                  color: "#333333", 
+                  lineHeight: "1.5"
+                }}>
+                  {selectedPayment.paymentMode === "Cash" ? "Cash Payment" : `${selectedPayment.paymentMode}${selectedPayment.bank ? ` (${selectedPayment.bank})` : ""}`}
+                </p>
+              </div>
+            </div>
+
+            {/* Category-Specific Details Box */}
+            {(selectedPayment.category === "Tracker" || 
+              selectedPayment.category === "Inventory" || 
+              selectedPayment.category === "Utility Bill" || 
+              selectedPayment.category === "Rent" || 
+              selectedPayment.category === "Maintenance") && (
+              <div style={{ 
+                background: "#ffffff",
+                border: "1px solid #000000",
+                borderRadius: "8px",
+                padding: "18px",
+                marginBottom: "25px"
+              }}>
+                {/* Tracker Category */}
+                {selectedPayment.category === "Tracker" && selectedPayment.details && (
+                  <>
+                    <h4 style={{ 
+                      margin: "0 0 14px 0", 
+                      fontSize: "12px", 
+                      color: "#2563eb", 
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingBottom: "8px"
+                    }}>
+                      Vehicle & Tracker Details
+                    </h4>
+                    <div style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "auto 1fr auto 1fr",
+                      gap: "8px 16px",
+                      fontSize: "11px",
+                      alignItems: "center"
+                    }}>
+                      {selectedPayment.details.trackerCompany && (
                         <>
-                          Tracker: {selectedPayment.details.trackerCompany || ""} {selectedPayment.details.trackerModel || ""}<br />
-                          Vehicle: {selectedPayment.details.vehicleType || ""} ({selectedPayment.details.vehicleBrand || ""})<br />
-                          Reg #: {selectedPayment.details.registrationNo || "—"}<br />
-                          Engine/Chassis: {selectedPayment.details.engineNo || "—"} / {selectedPayment.details.chassisNo || "—"}<br />
-                          Installer: {selectedPayment.details.installerName || "—"}<br />
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Tracker Company</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.trackerCompany}</div>
                         </>
                       )}
-                      {selectedPayment.category === "Utility Bill" && <>Bill Type: {selectedPayment.details.billType || "—"} {selectedPayment.details.billPeriod && `(${selectedPayment.details.billPeriod})`}<br /></>}
-                      {selectedPayment.category === "Rent" && <>Rent For: {selectedPayment.details.rentFor || "—"} {selectedPayment.details.period && `(${selectedPayment.details.period})`}<br /></>}
-                      {selectedPayment.category === "Maintenance" && <>Maintenance For: {selectedPayment.details.maintenanceFor || "—"}<br /></>}
-                    </>
-                  )}
-                </p>
+                      {selectedPayment.details.trackerModel && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Tracker Type</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.trackerModel}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.registrationNo && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Registration No</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.registrationNo}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.vehicleBrand && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Vehicle Brand</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.vehicleBrand}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.chassisNo && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Chassis Number</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.chassisNo}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.engineNo && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Engine Number</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.engineNo}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.vehicleType && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Vehicle Type</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.vehicleType}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.installerName && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Installer Name</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.installerName}</div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Inventory Category */}
+                {selectedPayment.category === "Inventory" && selectedPayment.itemName && selectedPayment.itemName !== "—" && (
+                  <>
+                    <h4 style={{ 
+                      margin: "0 0 14px 0", 
+                      fontSize: "12px", 
+                      color: "#2563eb", 
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingBottom: "8px"
+                    }}>
+                      Inventory Details
+                    </h4>
+                    <div style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "auto 1fr auto 1fr",
+                      gap: "8px 16px",
+                      fontSize: "11px",
+                      alignItems: "center"
+                    }}>
+                      <div style={{ fontWeight: "normal", color: "#000000" }}>Item Name</div>
+                      <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.itemName}</div>
+                      <div style={{ fontWeight: "normal", color: "#000000" }}>Quantity</div>
+                      <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.quantity || "—"}</div>
+                    </div>
+                  </>
+                )}
+
+                {/* Utility Bill Category */}
+                {selectedPayment.category === "Utility Bill" && selectedPayment.details && (
+                  <>
+                    <h4 style={{ 
+                      margin: "0 0 14px 0", 
+                      fontSize: "12px", 
+                      color: "#2563eb", 
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingBottom: "8px"
+                    }}>
+                      Utility Bill Details
+                    </h4>
+                    <div style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "auto 1fr auto 1fr",
+                      gap: "8px 16px",
+                      fontSize: "11px",
+                      alignItems: "center"
+                    }}>
+                      {selectedPayment.details.billType && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Bill Type</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.billType}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.billPeriod && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Bill Period</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.billPeriod}</div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Rent Category */}
+                {selectedPayment.category === "Rent" && selectedPayment.details && (
+                  <>
+                    <h4 style={{ 
+                      margin: "0 0 14px 0", 
+                      fontSize: "12px", 
+                      color: "#2563eb", 
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingBottom: "8px"
+                    }}>
+                      Rent Details
+                    </h4>
+                    <div style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "auto 1fr auto 1fr",
+                      gap: "8px 16px",
+                      fontSize: "11px",
+                      alignItems: "center"
+                    }}>
+                      {selectedPayment.details.rentFor && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Rent For</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.rentFor}</div>
+                        </>
+                      )}
+                      {selectedPayment.details.period && (
+                        <>
+                          <div style={{ fontWeight: "normal", color: "#000000" }}>Period</div>
+                          <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.period}</div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Maintenance Category */}
+                {selectedPayment.category === "Maintenance" && selectedPayment.details?.maintenanceFor && (
+                  <>
+                    <h4 style={{ 
+                      margin: "0 0 14px 0", 
+                      fontSize: "12px", 
+                      color: "#2563eb", 
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingBottom: "8px"
+                    }}>
+                      Maintenance Details
+                    </h4>
+                    <div style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "auto 1fr",
+                      gap: "8px 16px",
+                      fontSize: "11px",
+                      alignItems: "center"
+                    }}>
+                      <div style={{ fontWeight: "normal", color: "#000000" }}>Maintenance For</div>
+                      <div style={{ fontWeight: "bold", color: "#000000" }}>{selectedPayment.details.maintenanceFor}</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Amount Section */}
+            <div style={{ 
+              background: "#ffffff",
+              borderLeft: "4px solid #2563eb", 
+              padding: "18px 24px", 
+              marginBottom: "30px",
+              border: "1px solid #000000",
+              borderRadius: "8px"
+            }}>
+              <div style={{ marginBottom: "8px" }}>
+                <div style={{ fontSize: "11px", fontWeight: "normal", color: "#666666", marginBottom: "4px" }}>
+                  Total Amount
+                </div>
+                <div style={{ fontSize: "28px", fontWeight: "bold", color: "#000000", letterSpacing: "-0.5px" }}>
+                  PKR Rs {formatCurrency(selectedPayment.amount)}.00
+                </div>
               </div>
             </div>
 
-            {/* Amount Box */}
-            <div style={{ 
-              background: "#f9fafb", 
-              borderLeft: "6px solid #2563eb", 
-              padding: "clamp(14px, 3.5vw, 20px) clamp(16px, 4vw, 25px)", 
-              borderRadius: "4px",
-              marginBottom: "clamp(24px, 5vw, 40px)"
-            }}>
-              <p style={{ margin: "0 0 5px 0", fontSize: "clamp(11px, 3vw, 13px)", fontWeight: "bold", color: "#4b5563" }}>Total Amount</p>
-              <h2 style={{ margin: 0, fontSize: "clamp(20px, 6vw, 28px)", fontWeight: "800", color: "#111827" }}>PKR Rs. {formatCurrency(selectedPayment.amount)}.00</h2>
-            </div>
+            {/* Remarks Section */}
+            {selectedPayment.description && selectedPayment.description !== "—" && (
+              <div style={{ 
+                background: "#ffffff",
+                border: "1px solid #000000",
+                borderRadius: "8px",
+                padding: "16px",
+                marginBottom: "30px"
+              }}>
+                <h4 style={{ 
+                  fontSize: "11px", 
+                  color: "#2563eb", 
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  marginBottom: "10px",
+                  borderBottom: "1px solid #e0e0e0",
+                  paddingBottom: "6px"
+                }}>
+                  Remarks / Notes
+                </h4>
+                <p style={{ 
+                  fontSize: "11px", 
+                  color: "#333333", 
+                  lineHeight: "1.6",
+                  margin: 0,
+                  whiteSpace: "pre-wrap"
+                }}>
+                  {selectedPayment.description}
+                </p>
+              </div>
+            )}
 
-            {/* Remarks */}
-            <div style={{ flexGrow: 1 }}>
-              <h4 style={{ fontSize: "clamp(11px, 3vw, 13px)", color: "#111827", borderBottom: "1px solid #e5e7eb", paddingBottom: "8px", marginBottom: "10px" }}>Remarks / Description</h4>
-              <p style={{ fontSize: "clamp(12px, 3.2vw, 14px)", color: "#4b5563", lineHeight: "1.6" }}>{selectedPayment.description}</p>
-            </div>
+            {/* Spacer for signatures */}
+            <div style={{ flex: 1, minHeight: "100px" }} />
 
             {/* Footer */}
-            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "clamp(12px, 3vw, 20px)", textAlign: "center" }}>
-              <p style={{ margin: 0, fontSize: "clamp(9px, 2.2vw, 11px)", color: "#4b5563", fontWeight: "bold" }}>
-                Phone: <span style={{ fontWeight: "normal" }}>03006492075</span> | Email: <span style={{ fontWeight: "normal" }}>contact@securepathsolution.com</span>
-              </p>
-              <p style={{ margin: "4px 0 0 0", fontSize: "clamp(8px, 2vw, 10px)", color: "#9ca3af" }}>This is a computer-generated document.</p>
+            <div style={{ 
+              borderTop: "1px solid #cccccc",
+              paddingTop: "16px",
+              marginTop: "auto"
+            }}>
+              <div style={{ textAlign: "center", marginBottom: "8px" }}>
+                <div style={{ fontSize: "11px", color: "#333333", fontWeight: "normal" }}>
+                  <strong>Phone:</strong> 03008492075 | <strong>Email:</strong> contact@securepathsolution.com
+                </div>
+              </div>
+              <div style={{ 
+                textAlign: "center",
+                fontSize: "10px", 
+                color: "#666666"
+              }}>
+                This is a computer-generated document.
+              </div>
             </div>
           </div>
 
-          <div style={{ margin: "clamp(20px, 5vw, 30px) 0", display: "flex", gap: "clamp(10px, 2.5vw, 15px)", flexWrap: "wrap", justifyContent: "center" }}>
+          {/* Action Buttons */}
+          <div style={{ 
+            margin: "32px 0", 
+            display: "flex", 
+            gap: "16px", 
+            flexWrap: "wrap", 
+            justifyContent: "center" 
+          }}>
             <button 
               onClick={downloadAsPDF} 
               style={{ 
-                background: "#2563eb", 
+                background: "#2563eb",
                 color: "white", 
-                padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", 
-                borderRadius: "6px", 
+                padding: "14px 32px", 
+                borderRadius: "8px", 
                 fontWeight: "bold", 
                 border: "none", 
                 cursor: "pointer", 
-                fontSize: "clamp(12px, 3.2vw, 14px)", 
-                minHeight: "clamp(36px, 8vw, 44px)" 
+                fontSize: "14px", 
+                minHeight: "48px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px"
               }}
             >
+              <Download size={20} />
               Download PDF
             </button>
             <button 
               onClick={() => setSelectedPayment(null)} 
               style={{ 
-                background: "#f3f4f6", 
-                color: "#4b5563", 
-                padding: "clamp(10px, 2.5vw, 12px) clamp(18px, 4vw, 25px)", 
-                borderRadius: "6px", 
+                background: "#ffffff", 
+                color: "#333333", 
+                padding: "14px 32px", 
+                borderRadius: "8px", 
                 fontWeight: "bold", 
-                border: "1px solid #d1d5db", 
+                border: "2px solid #cccccc", 
                 cursor: "pointer", 
-                fontSize: "clamp(12px, 3.2vw, 14px)", 
-                minHeight: "clamp(36px, 8vw, 44px)" 
+                fontSize: "14px", 
+                minHeight: "48px"
               }}
             >
-              Close
+              Close Preview
             </button>
           </div>
         </div>
