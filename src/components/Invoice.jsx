@@ -286,6 +286,7 @@ export default function Invoice({ record, companyName, mode = "invoice" }) {
                 Notes / Remarks
               </div>
               <div
+              
                 style={{
                   padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)",
                   whiteSpace: "pre-wrap",
