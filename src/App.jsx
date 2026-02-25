@@ -305,6 +305,7 @@ import Salaries from "./components/Salaries";
 import UserReqForm from "./components/UserReqForm";
 import PaymentLedger from "./components/PaymentLedger";
 import DailyBook from "./components/DailyBook";
+import ClientLedger from "./components/ClientLedger";
 
 const TABS = [
   { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} />, roles: ["admin", "accountant"] },
@@ -313,6 +314,7 @@ const TABS = [
   { key: "party", label: "Parties", icon: <Users size={20} />, roles: ["admin", "accountant"] },
   { key: "salaries", label: "Salaries & Payroll", icon: <Wallet size={20} />, roles: ["admin", "accountant"] },
   { key: "payment_ledger", label: "Payment Ledger", icon: <BookOpen size={20} />, roles: ["admin", "accountant"] },
+  { key: "client_ledger", label: "Client Ledger", icon: <BookOpen size={20} />, roles: ["admin", "accountant"] },
   { key: "daily_book", label: "Daily Book", icon: <Library size={20} />, roles: ["admin", "accountant"] },
   { key: "monthly", label: "Summary", icon: <CalendarDays size={20} />, roles: ["admin", "accountant"] },
   { key: "user_req", label: "User Requests", icon: <ClipboardList size={20} />, roles: ["user", "admin", "store", "accountant"], hasBadge: true },
@@ -544,6 +546,7 @@ export default function App() {
             {tab === "receivings" && <Receivings state={state} actions={actions} />}
             {tab === "payments" && <StoreInventory state={state} actions={actions} role={role} />}
             {tab === "payment_ledger" && <PaymentLedger state={state} actions={actions} role={role} />}
+             {tab === "client_ledger" && <ClientLedger state={state} actions={actions} role={role} />}
             {tab === "daily_book" && <DailyBook state={state} actions={actions} role={role} />}
             {tab === "party" && <PartyStatement state={state} />}
             {tab === "salaries" && <Salaries state={state} actions={actions} />}

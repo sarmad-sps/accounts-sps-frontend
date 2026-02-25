@@ -1574,6 +1574,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BANKS } from "../store";
 import Invoice from "./Invoice";
+import spsLogo from '../assets/sps-logo.png';
+
 import {
   Search,
   Download,
@@ -1616,6 +1618,7 @@ export default function Receivings({ state, actions }) {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [party, setParty] = useState("");
   const [amount, setAmount] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
   const [dateObj, setDateObj] = useState(new Date());
   const [status, setStatus] = useState("PENDING");
   const [bank, setBank] = useState(BANKS?.[0]?.key || "BANK_ISLAMI");
@@ -1662,6 +1665,7 @@ export default function Receivings({ state, actions }) {
         date: r.date, party: r.party, category: r.category,
         amount: Number(r.amount) || 0, status: r.status,
         paymentMode: r.paymentMode, notes: r.notes,
+        totalAmount: Number(r.totalAmount) || 0,
       });
     });
     Object.keys(ledger).forEach((client) => {
@@ -1697,7 +1701,7 @@ export default function Receivings({ state, actions }) {
 
   const resetForm = () => {
     setClientName(""); setClientAddress(""); setClientPhone("");
-    setParty(""); setAmount(""); setNotes("");
+    setParty(""); setAmount(""); setTotalAmount(""); setNotes("");
     setStatus("PENDING"); setCategory(""); setCustomCategory("");
     setDateObj(new Date()); setTrackerCompany(""); setTrackerType("");
     setAddonService(""); setVehicleType(""); setRegistrationNo("");
@@ -1710,7 +1714,9 @@ export default function Receivings({ state, actions }) {
     setEditingId(record.id);
     setClientName(record.clientName || ""); setClientAddress(record.clientAddress || "");
     setClientPhone(record.clientPhone || ""); setParty(record.party || "");
-    setAmount(String(record.amount || "")); setDateObj(parseMMDDYYYY(record.date));
+    setAmount(String(record.amount || ""));
+    setTotalAmount(String(record.totalAmount || ""));
+    setDateObj(parseMMDDYYYY(record.date));
     setStatus(record.status || "PENDING"); setBank(record.bank || BANKS?.[0]?.key || "BANK_ISLAMI");
     setNotes(record.notes || ""); setPaymentMode(record.paymentMode || "Cash");
     setInsuranceCover(record.insuranceCover || "");
@@ -1769,6 +1775,7 @@ export default function Receivings({ state, actions }) {
     const receivingData = {
       clientName: clientName.trim(), clientAddress: clientAddress.trim(),
       clientPhone: clientPhone.trim(), party: party.trim(), amount: Number(amount),
+      totalAmount: totalAmount ? Number(totalAmount) : null,
       date: formatMMDDYYYY(dateObj), status, bank: paymentMode === "Cash" ? null : bank,
       notes: notes.trim(), category: cat, paymentMode,
       insuranceCover: category === "Insurance" ? insuranceCover : null, ...extra,
@@ -1801,90 +1808,163 @@ export default function Receivings({ state, actions }) {
   const getCategoryColor = (cat) => ({ Tracker: "#7c3aed", Insurance: "#dc2626", "IT Software": "#2563eb", Other: "#4b5563" }[cat] || "#4b5563");
   const getStatusStyle = (stat) => stat?.toUpperCase() === "RECEIVED" ? { color: "#059669", bg: "#ecfdf5" } : { color: "#b45309", bg: "#fffbeb" };
   const getPaymentModeColor = (mode) => ({ Cash: "#ea580c", Online: "#2563eb", Check: "#d97706" }[mode] || "#6b7280");
+const handleDownloadLedgerPDF = async (client, entries, logoSrc) => {
+  const companyName = "SECURE PATH SOLUTIONS";
 
-  // ─── PDF Download ───
-  const handleDownloadLedgerPDF = (client, entries) => {
-    let totalAmount = 0, totalReceived = 0, totalPending = 0;
-    entries.forEach((e) => {
-      totalAmount += e.amount;
-      if (e.status === "RECEIVED") totalReceived += e.amount;
-      else totalPending += e.amount;
-    });
-    const generatePDF = () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-      const pageW = doc.internal.pageSize.getWidth();
-      const pageH = doc.internal.pageSize.getHeight();
-      const margin = 40;
-      let y = margin;
-      doc.setFontSize(18); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-      doc.text(`Client Ledger: ${client}`, margin, y); y += 22;
-      doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 116, 139);
-      doc.text(`Generated: ${new Date().toLocaleDateString("en-PK", { year: "numeric", month: "long", day: "numeric" })}   |   Company: ${state?.companyName || "Secure Path Solutions"}`, margin, y); y += 18;
-      doc.setDrawColor(203, 213, 225); doc.line(margin, y, pageW - margin, y); y += 18;
-      const cols = [
-        { label: "Date", w: 65, right: false }, { label: "Party", w: 115, right: false },
-        { label: "Category", w: 80, right: false }, { label: "Amount", w: 80, right: true },
-        { label: "Status", w: 65, right: false }, { label: "Running Balance", w: 95, right: true },
-      ];
-      doc.setFillColor(241, 245, 249); doc.rect(margin, y - 13, pageW - margin * 2, 22, "F");
-      doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(71, 85, 105);
-      let x = margin + 6;
-      cols.forEach((col) => { if (col.right) doc.text(col.label, x + col.w - 6, y, { align: "right" }); else doc.text(col.label, x, y); x += col.w; });
-      y += 16;
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-      let rb = 0;
-      entries.forEach((e, i) => {
-        rb += e.status === "RECEIVED" ? e.amount : 0;
-        if (i % 2 !== 0) { doc.setFillColor(249, 250, 251); doc.rect(margin, y - 11, pageW - margin * 2, 18, "F"); }
-        const rowData = [
-          { val: e.date || "", right: false, color: [30, 41, 59] },
-          { val: e.party || "", right: false, color: [30, 41, 59] },
-          { val: e.category || "", right: false, color: [30, 41, 59] },
-          { val: `Rs. ${e.amount.toLocaleString()}`, right: true, color: [30, 41, 59] },
-          { val: e.status || "", right: false, color: e.status === "RECEIVED" ? [6, 95, 70] : [146, 64, 0] },
-          { val: `Rs. ${rb.toLocaleString()}`, right: true, color: [30, 64, 175] },
-        ];
-        x = margin + 6;
-        rowData.forEach((cell, ci) => {
-          doc.setTextColor(...cell.color);
-          if (cell.right) doc.text(cell.val, x + cols[ci].w - 6, y, { align: "right" });
-          else doc.text(cell.val, x, y);
-          x += cols[ci].w;
-        });
-        y += 18;
-        if (y > pageH - 90) { doc.addPage(); y = margin + 20; }
-      });
-      y += 14;
-      doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(margin, y, pageW - margin * 2, 44, 5, 5, "FD");
-      const summaryItems = [
-        { label: "Total", val: `Rs. ${totalAmount.toLocaleString()}`, color: [30, 64, 175] },
-        { label: "Received", val: `Rs. ${totalReceived.toLocaleString()}`, color: [6, 95, 70] },
-        { label: "Pending", val: `Rs. ${totalPending.toLocaleString()}`, color: [146, 64, 0] },
-        { label: "Balance", val: `Rs. ${totalReceived.toLocaleString()}`, color: [15, 23, 42] },
-      ];
-      const colW = (pageW - margin * 2) / summaryItems.length;
-      summaryItems.forEach((item, i) => {
-        const sx = margin + i * colW + colW / 2;
-        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 116, 139);
-        doc.text(item.label, sx, y + 16, { align: "center" });
-        doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(...item.color);
-        doc.text(item.val, sx, y + 32, { align: "center" });
-      });
-      doc.save(`Ledger_${client}_${new Date().toISOString().slice(0, 10)}.pdf`);
-    };
-    if (window.jspdf) generatePDF();
-    else {
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) return resolve();
       const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-      script.onload = generatePDF;
-      script.onerror = () => alert("PDF library load nahi ho saki. Internet connection check karo.");
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
       document.head.appendChild(script);
-    }
+    });
   };
 
-  // ─── Ledger filtering logic ───
+  try {
+    if (!window.jspdf) {
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    }
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js");
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 40;
+
+    const getLogoData = (src) => {
+      return new Promise((resolve) => {
+        if (!src) return resolve(null);
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = src;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = () => resolve(null);
+      });
+    };
+
+    const finalLogo = await getLogoData(logoSrc);
+
+    const totalBilled = entries.reduce((s, e) => s + (Number(e.totalAmount) || 0), 0);
+    const totalPaid = entries.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const balance = totalBilled - totalPaid;
+
+    // Header Section
+    doc.setFillColor(15, 23, 42); 
+    doc.rect(0, 0, pageW, 100, "F");
+
+    if (finalLogo) {
+      doc.addImage(finalLogo, "PNG", margin, 25, 50, 50);
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(companyName, finalLogo ? 100 : margin, 50);
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(148, 163, 184);
+    doc.text("OFFICIAL CLIENT LEDGER STATEMENT", finalLogo ? 100 : margin, 68);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageW - margin, 50, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.text(`CLIENT: ${client.toUpperCase()}`, pageW - margin, 68, { align: "right" });
+
+    // Stats Cards
+    let y = 130;
+    const cardW = (pageW - (margin * 2) - 30) / 3;
+    const stats = [
+      { label: "TOTAL BILLED", value: totalBilled, color: [79, 70, 229] },
+      { label: "TOTAL PAID", value: totalPaid, color: [22, 163, 74] },
+      { label: "OUTSTANDING", value: balance, color: [220, 38, 38] }
+    ];
+
+    stats.forEach((s, i) => {
+      const x = margin + (i * (cardW + 15));
+      doc.setDrawColor(241, 245, 249);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, y, cardW, 60, 4, 4, "FD");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(s.label, x + 15, y + 22);
+      doc.setFontSize(11);
+      doc.setTextColor(...s.color);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Rs. ${s.value.toLocaleString()}`, x + 15, y + 45);
+    });
+
+    // --- UPDATED TABLE: CATEGORY INSTEAD OF DESCRIPTION ---
+    const tableRows = entries.map((e, index) => [
+      index + 1,
+      e.date || "-",
+      e.category || e.party || "N/A", // Agar category field hai toh wo, warna party dikhayega
+      (Number(e.totalAmount) || 0).toLocaleString(),
+      (Number(e.amount) || 0).toLocaleString()
+    ]);
+
+    doc.autoTable({
+      startY: y + 90,
+      head: [['S.NO', 'DATE', 'CATEGORY', 'BILLED (Rs.)', 'PAID (Rs.)']],
+      body: tableRows,
+      theme: 'striped',
+      styles: { 
+        fontSize: 8, 
+        halign: 'center', // Poori table center-aligned
+        valign: 'middle', 
+        cellPadding: 8 
+      },
+      headStyles: { 
+        fillColor: [15, 23, 42], 
+        textColor: 255, 
+        fontStyle: 'bold',
+        halign: 'center' 
+      },
+      columnStyles: {
+        0: { cellWidth: 35 }, 
+        1: { cellWidth: 80 }, 
+        2: { cellWidth: 'auto' }, // Category field automatic width lega aur center rahega
+        3: { cellWidth: 90 }, 
+        4: { cellWidth: 90 }, 
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      margin: { left: margin, right: margin },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Page ${pageCount}`, pageW / 2, doc.internal.pageSize.getHeight() - 20, { align: "center" });
+      }
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 50;
+    if (finalY > doc.internal.pageSize.getHeight() - 70) {
+      doc.addPage();
+      finalY = 50;
+    }
+    doc.setDrawColor(203, 213, 225);
+    doc.line(pageW - margin - 140, finalY, pageW - margin, finalY);
+    doc.setFontSize(8);
+    doc.setTextColor(30, 41, 59);
+    doc.text("AUTHORIZED SIGNATORY", pageW - margin - 70, finalY + 15, { align: "center" });
+
+    doc.save(`Ledger_${client.replace(/\s+/g, '_')}.pdf`);
+
+  } catch (err) {
+    console.error("PDF Error:", err);
+    alert("Error generating PDF.");
+  }
+};
   const filteredLedgerClients = useMemo(() => {
     const s = ledgerSearch.trim().toLowerCase();
     const allEntries = Object.entries(clientLedger);
@@ -1895,56 +1975,106 @@ export default function Receivings({ state, actions }) {
 
   const totalClientCount = Object.keys(clientLedger).length;
 
-  // ─── Ledger Card ───
   const renderLedgerCard = ([client, entries]) => {
-    let runningBalance = 0, totalAmount = 0, totalReceived = 0, totalPending = 0;
-    entries.forEach((e) => {
-      totalAmount += e.amount;
-      if (e.status === "RECEIVED") totalReceived += e.amount;
-      else totalPending += e.amount;
-    });
+    let runningBalance = 0;
+
+    // Client-level grand totals
+    const grandInvoice = entries.reduce((s, e) => s + (e.totalAmount || 0), 0);
+    const grandReceived = entries.reduce((s, e) => s + e.amount, 0);
+    const grandPending = grandInvoice > 0 ? Math.max(0, grandInvoice - grandReceived) : 0;
+
     return (
       <div key={client} style={ledgerStyles.clientCard}>
+        {/* Header */}
         <div style={ledgerStyles.clientCardHeader}>
           <h3 style={ledgerStyles.clientName}>{client}</h3>
-          <button onClick={() => handleDownloadLedgerPDF(client, entries)} style={ledgerStyles.downloadBtn}>
+          <button onClick={() => handleDownloadLedgerPDF(client, entries,spsLogo)} style={ledgerStyles.downloadBtn}>
             <Download size={15} /> Download Ledger PDF
           </button>
         </div>
-        <table style={ledgerStyles.table}>
-          <thead style={ledgerStyles.thead}>
-            <tr>
-              <th style={ledgerStyles.th}>Date</th>
-              <th style={ledgerStyles.th}>Party</th>
-              <th style={ledgerStyles.th}>Category</th>
-              <th style={{ ...ledgerStyles.th, textAlign: "right" }}>Amount</th>
-              <th style={ledgerStyles.th}>Status</th>
-              <th style={{ ...ledgerStyles.th, textAlign: "right" }}>Running Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e, i) => {
-              runningBalance += e.status === "RECEIVED" ? e.amount : 0;
-              return (
-                <tr key={i} style={{ backgroundColor: i % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
-                  <td style={ledgerStyles.td}>{e.date}</td>
-                  <td style={ledgerStyles.td}>{e.party}</td>
-                  <td style={ledgerStyles.td}>{e.category}</td>
-                  <td style={{ ...ledgerStyles.td, ...ledgerStyles.amountCell }}>Rs. {e.amount.toLocaleString()}</td>
-                  <td style={ledgerStyles.td}>
-                    <span style={e.status === "RECEIVED" ? ledgerStyles.statusReceived : ledgerStyles.statusPending}>{e.status}</span>
-                  </td>
-                  <td style={{ ...ledgerStyles.td, ...ledgerStyles.balanceCell }}>Rs. {runningBalance.toLocaleString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <div style={ledgerStyles.clientFooter}>
-          <span style={ledgerStyles.statItem}>Total: <strong style={{ color: "#1e40af" }}>Rs. {totalAmount.toLocaleString()}</strong></span>
-          <span style={{ ...ledgerStyles.statItem, color: "#065f46" }}>Received: <strong>Rs. {totalReceived.toLocaleString()}</strong></span>
-          <span style={{ ...ledgerStyles.statItem, color: "#b45309" }}>Pending: <strong>Rs. {totalPending.toLocaleString()}</strong></span>
-          <span style={{ ...ledgerStyles.statItem, color: "#1e293b" }}>Balance: <strong>Rs. {totalReceived.toLocaleString()}</strong></span>
+
+        {/* Grand summary bar */}
+        {grandInvoice > 0 && (
+          <div style={ledgerStyles.invoiceSummaryBar}>
+            <div style={ledgerStyles.invoiceSummaryItem}>
+              <span style={ledgerStyles.invoiceSummaryLabel}>Total Invoice</span>
+              <span style={{ ...ledgerStyles.invoiceSummaryValue, color: "#1e40af" }}>Rs. {grandInvoice.toLocaleString()}</span>
+            </div>
+            <div style={ledgerStyles.invoiceSummaryDivider} />
+            <div style={ledgerStyles.invoiceSummaryItem}>
+              <span style={ledgerStyles.invoiceSummaryLabel}>Received</span>
+              <span style={{ ...ledgerStyles.invoiceSummaryValue, color: "#059669" }}>Rs. {grandReceived.toLocaleString()}</span>
+            </div>
+            <div style={ledgerStyles.invoiceSummaryDivider} />
+            <div style={ledgerStyles.invoiceSummaryItem}>
+              <span style={ledgerStyles.invoiceSummaryLabel}>Pending</span>
+              <span style={{ ...ledgerStyles.invoiceSummaryValue, color: grandPending > 0 ? "#b45309" : "#059669" }}>
+                {grandPending > 0 ? `Rs. ${grandPending.toLocaleString()}` : "✓ Cleared"}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ── TABLE — now with per-entry Total Inv. & Pending columns ── */}
+        <div style={{ overflowX: "auto" }}>
+          <table style={ledgerStyles.table}>
+            <thead style={ledgerStyles.thead}>
+              <tr>
+                <th style={ledgerStyles.th}>Date</th>
+                <th style={ledgerStyles.th}>Party</th>
+                <th style={ledgerStyles.th}>Category</th>
+                <th style={{ ...ledgerStyles.th, textAlign: "right" }}>Paid Amount</th>
+                {/* ← NEW */}
+                <th style={{ ...ledgerStyles.th, textAlign: "right" }}>Total Inv.</th>
+                <th style={{ ...ledgerStyles.th, textAlign: "right" }}>Entry Pending</th>
+                {/* ← NEW */}
+                <th style={ledgerStyles.th}>Status</th>
+                <th style={{ ...ledgerStyles.th, textAlign: "right" }}>Running Bal.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((e, i) => {
+                runningBalance += e.status === "RECEIVED" ? e.amount : 0;
+                const entryTotal = e.totalAmount || 0;
+                const entryPending = entryTotal > 0 ? Math.max(0, entryTotal - e.amount) : null;
+                return (
+                  <tr key={i} style={{ backgroundColor: i % 2 === 0 ? "#ffffff" : "#f9fafb" }}>
+                    <td style={ledgerStyles.td}>{e.date}</td>
+                    <td style={ledgerStyles.td}>{e.party}</td>
+                    <td style={ledgerStyles.td}>{e.category}</td>
+                    <td style={{ ...ledgerStyles.td, ...ledgerStyles.amountCell }}>
+                      Rs. {e.amount.toLocaleString()}
+                    </td>
+
+                    {/* ← NEW: Total Invoice per entry */}
+                    <td style={{ ...ledgerStyles.td, textAlign: "right", fontWeight: 600, color: "#1e40af" }}>
+                      {entryTotal > 0 ? `Rs. ${entryTotal.toLocaleString()}` : <span style={{ color: "#9ca3af" }}>—</span>}
+                    </td>
+
+                    {/* ← NEW: Entry-level Pending */}
+                    <td style={{ ...ledgerStyles.td, textAlign: "right", fontWeight: 600 }}>
+                      {entryPending === null ? (
+                        <span style={{ color: "#9ca3af" }}>—</span>
+                      ) : entryPending === 0 ? (
+                        <span style={ledgerStyles.statusReceived}>✓ Clear</span>
+                      ) : (
+                        <span style={ledgerStyles.statusPending}>Rs. {entryPending.toLocaleString()}</span>
+                      )}
+                    </td>
+
+                    <td style={ledgerStyles.td}>
+                      <span style={e.status === "RECEIVED" ? ledgerStyles.statusReceived : ledgerStyles.statusPending}>
+                        {e.status}
+                      </span>
+                    </td>
+                    <td style={{ ...ledgerStyles.td, ...ledgerStyles.balanceCell }}>
+                      Rs. {runningBalance.toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     );
@@ -1984,6 +2114,18 @@ export default function Receivings({ state, actions }) {
           <div style={styles.formGrid2}>
             <div style={styles.fieldWrapper}><label style={styles.label}>Company / Party *</label><input style={styles.input} value={party} onChange={(e) => setParty(e.target.value)} placeholder="ABC Traders" required /></div>
             <div style={styles.fieldWrapper}><label style={styles.label}>Amount (PKR) *</label><input style={styles.input} value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))} placeholder="145000" inputMode="numeric" required /></div>
+          </div>
+          <div style={styles.formGrid2}>
+            <div style={styles.fieldWrapper}>
+              <label style={styles.label}>Total Invoice Amount (PKR)</label>
+              <input style={styles.input} value={totalAmount} onChange={(e) => setTotalAmount(e.target.value.replace(/[^0-9]/g, ""))} placeholder="Full invoice value e.g. 150000" inputMode="numeric" />
+              {totalAmount && amount && (
+                <span style={{ fontSize: 12, marginTop: 5, marginLeft: 4, fontWeight: 600, color: Number(amount) >= Number(totalAmount) ? "#059669" : "#b45309" }}>
+                  {Number(amount) >= Number(totalAmount) ? "✓ Fully Paid" : `Pending: Rs. ${(Number(totalAmount) - Number(amount)).toLocaleString()}`}
+                </span>
+              )}
+            </div>
+            <div style={styles.fieldWrapper}></div>
           </div>
           <div style={styles.formGrid2}>
             <div style={styles.fieldWrapper}><label style={styles.label}>Date *</label><DatePicker selected={dateObj} onChange={(d) => setDateObj(d || new Date())} dateFormat="MM/dd/yyyy" customInput={<input style={styles.input} />} required /></div>
@@ -2065,27 +2207,38 @@ export default function Receivings({ state, actions }) {
                   <th style={styles.th}>Date</th><th style={styles.th}>Client</th><th style={styles.th}>Category</th>
                   <th style={styles.th}>Status</th><th style={styles.th}>Mode</th><th style={styles.th}>Bank</th>
                   <th style={{ ...styles.th, textAlign: "right" }}>Amount</th>
+                  <th style={{ ...styles.th, textAlign: "right" }}>Total Inv.</th>
+                  <th style={{ ...styles.th, textAlign: "right" }}>Pending</th>
                   <th style={{ ...styles.th, textAlign: "center" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((r) => (
-                  <tr key={r.id} style={{ background: r.status?.toUpperCase() === "RECEIVED" ? "#ecfdf5" : "#ffffff", transition: "background 0.15s" }}>
-                    <td style={styles.td}>{r.date}</td>
-                    <td style={{ ...styles.td, fontWeight: 600 }}>{r.clientName}<div style={styles.secondaryText}>{r.clientPhone}</div></td>
-                    <td style={styles.td}><span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getCategoryColor(r.category) }}>{r.category}</span></td>
-                    <td style={styles.td}><span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, backgroundColor: getStatusStyle(r.status).bg, color: getStatusStyle(r.status).color }}>{r.status}</span></td>
-                    <td style={styles.td}><span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getPaymentModeColor(r.paymentMode) }}>{r.paymentMode || "Cash"}</span></td>
-                    <td style={styles.td}>{r.paymentMode === "Cash" || !r.bank ? "—" : <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: "#047857" }}>{r.bank}</span>}</td>
-                    <td style={{ ...styles.td, textAlign: "right", fontWeight: 700, color: r.status?.toUpperCase() === "RECEIVED" ? "#374151" : "#7c3aed", textDecoration: r.status?.toUpperCase() === "RECEIVED" ? "line-through" : "none" }}>Rs. {fmt(r.amount)}</td>
-                    <td style={{ ...styles.td, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                      <button onClick={() => handleViewInvoice(r)} style={styles.actionBtn} title="View Invoice"><Eye size={18} /></button>
-                      <button onClick={() => loadRecordForEdit(r)} style={{ ...styles.actionBtn, background: "rgba(180,83,9,0.1)", color: "#b45309" }} title="Edit"><Edit size={18} /></button>
-                      <button onClick={() => handleViewReceipt(r)} style={{ ...styles.actionBtn, background: "rgba(5,150,105,0.1)", color: "#059669" }} title="View Receipt"><ReceiptIcon size={18} /></button>
-                      <button onClick={() => actions.deleteReceiving(r.id)} style={{ ...styles.actionBtn, background: "rgba(220,38,38,0.1)", color: "#dc2626" }} title="Delete"><Trash2 size={18} /></button>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map((r) => {
+                  const tot = Number(r.totalAmount) || 0;
+                  const rec = Number(r.amount) || 0;
+                  const pen = tot > 0 ? Math.max(0, tot - rec) : null;
+                  return (
+                    <tr key={r.id} style={{ background: r.status?.toUpperCase() === "RECEIVED" ? "#ecfdf5" : "#ffffff", transition: "background 0.15s" }}>
+                      <td style={styles.td}>{r.date}</td>
+                      <td style={{ ...styles.td, fontWeight: 600 }}>{r.clientName}<div style={styles.secondaryText}>{r.clientPhone}</div></td>
+                      <td style={styles.td}><span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getCategoryColor(r.category) }}>{r.category}</span></td>
+                      <td style={styles.td}><span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, backgroundColor: getStatusStyle(r.status).bg, color: getStatusStyle(r.status).color }}>{r.status}</span></td>
+                      <td style={styles.td}><span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: getPaymentModeColor(r.paymentMode) }}>{r.paymentMode || "Cash"}</span></td>
+                      <td style={styles.td}>{r.paymentMode === "Cash" || !r.bank ? "—" : <span style={{ padding: "4px 12px", borderRadius: "20px", fontSize: 12, fontWeight: 600, color: "white", backgroundColor: "#047857" }}>{r.bank}</span>}</td>
+                      <td style={{ ...styles.td, textAlign: "right", fontWeight: 700, color: r.status?.toUpperCase() === "RECEIVED" ? "#374151" : "#7c3aed", textDecoration: r.status?.toUpperCase() === "RECEIVED" ? "line-through" : "none" }}>Rs. {fmt(r.amount)}</td>
+                      <td style={{ ...styles.td, textAlign: "right", fontWeight: 600, color: "#1e40af" }}>{tot > 0 ? `Rs. ${fmt(tot)}` : "—"}</td>
+                      <td style={{ ...styles.td, textAlign: "right", fontWeight: 600 }}>
+                        {pen === null ? "—" : pen === 0 ? <span style={{ color: "#059669" }}>✓ Clear</span> : <span style={{ color: "#b45309" }}>Rs. {fmt(pen)}</span>}
+                      </td>
+                      <td style={{ ...styles.td, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                        <button onClick={() => handleViewInvoice(r)} style={styles.actionBtn} title="View Invoice"><Eye size={18} /></button>
+                        <button onClick={() => loadRecordForEdit(r)} style={{ ...styles.actionBtn, background: "rgba(180,83,9,0.1)", color: "#b45309" }} title="Edit"><Edit size={18} /></button>
+                        <button onClick={() => handleViewReceipt(r)} style={{ ...styles.actionBtn, background: "rgba(5,150,105,0.1)", color: "#059669" }} title="View Receipt"><ReceiptIcon size={18} /></button>
+                        <button onClick={() => actions.deleteReceiving(r.id)} style={{ ...styles.actionBtn, background: "rgba(220,38,38,0.1)", color: "#dc2626" }} title="Delete"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -2106,10 +2259,7 @@ export default function Receivings({ state, actions }) {
       {/* ─── Client Ledger Section ─── */}
       <section style={ledgerStyles.container}>
         <h2 style={ledgerStyles.title}>Client Ledger</h2>
-
-        {/* Search + Show All / Close All */}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 28 }}>
-          {/* Search */}
           <div style={{ position: "relative", flex: 1, minWidth: 240 }}>
             <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
             <input
@@ -2119,49 +2269,24 @@ export default function Receivings({ state, actions }) {
               style={{ width: "100%", padding: "11px 16px 11px 44px", background: "#f9fafb", border: "1.5px solid #d1d5db", borderRadius: 10, color: "#111827", fontSize: 15, boxSizing: "border-box", outline: "none" }}
             />
           </div>
-
-          {/* Toggle button */}
           {!showAllLedgers ? (
-            <button
-              onClick={() => { setShowAllLedgers(true); setLedgerSearch(""); }}
-              disabled={totalClientCount === 0}
-              style={{
-                display: "flex", alignItems: "center", gap: 7, padding: "11px 22px",
-                background: totalClientCount === 0 ? "#e5e7eb" : "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)",
-                color: totalClientCount === 0 ? "#9ca3af" : "#fff",
-                border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13,
-                cursor: totalClientCount === 0 ? "not-allowed" : "pointer",
-                boxShadow: totalClientCount === 0 ? "none" : "0 2px 8px rgba(124,58,237,0.3)",
-                whiteSpace: "nowrap",
-              }}
-            >
+            <button onClick={() => { setShowAllLedgers(true); setLedgerSearch(""); }} disabled={totalClientCount === 0} style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 22px", background: totalClientCount === 0 ? "#e5e7eb" : "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)", color: totalClientCount === 0 ? "#9ca3af" : "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: totalClientCount === 0 ? "not-allowed" : "pointer", boxShadow: totalClientCount === 0 ? "none" : "0 2px 8px rgba(124,58,237,0.3)", whiteSpace: "nowrap" }}>
               📋 Show All ({totalClientCount}) Clients
             </button>
           ) : (
-            <button
-              onClick={() => { setShowAllLedgers(false); setLedgerSearch(""); }}
-              style={{
-                display: "flex", alignItems: "center", gap: 7, padding: "11px 22px",
-                background: "linear-gradient(135deg, #dc2626 0%, #f87171 100%)",
-                color: "#fff", border: "none", borderRadius: 10, fontWeight: 700,
-                fontSize: 13, cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(220,38,38,0.3)", whiteSpace: "nowrap",
-              }}
-            >
+            <button onClick={() => { setShowAllLedgers(false); setLedgerSearch(""); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 22px", background: "linear-gradient(135deg, #dc2626 0%, #f87171 100%)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 2px 8px rgba(220,38,38,0.3)", whiteSpace: "nowrap" }}>
               ✕ Close All Ledgers
             </button>
           )}
         </div>
-
-        {/* Ledger Results */}
         {!showAllLedgers && !ledgerSearch.trim() ? (
-          <div style={ledgerStyles.emptyText}>
-            click to view ledger details for all clients.
-          </div>
+         <div style={ledgerStyles.emptyText}>
+  Please click <strong>"Show All Clients"</strong> to view complete ledger details.
+</div>
         ) : filteredLedgerClients.length === 0 ? (
           <div style={ledgerStyles.emptyText}>
-            ❌ <strong>"{ledgerSearch}"</strong> "No client found with this name."
-          </div>
+  No client records found for <strong>"{ledgerSearch}"</strong>.
+</div>
         ) : (
           filteredLedgerClients.map(renderLedgerCard)
         )}
@@ -2178,9 +2303,12 @@ const ledgerStyles = {
   clientCard: { background: "#ffffff", borderRadius: "12px", border: "1px solid #e2e8f0", marginBottom: "28px", overflow: "hidden", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04)" },
   clientCardHeader: { padding: "16px 20px", background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 },
   downloadBtn: { display: "flex", alignItems: "center", gap: 7, padding: "8px 18px", background: "linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)", color: "#fff", border: "none", borderRadius: 9, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 2px 8px rgba(37,99,235,0.25)", whiteSpace: "nowrap" },
-  clientFooter: { padding: "14px 20px", background: "#f8fafc", borderTop: "1px solid #e2e8f0", display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" },
+  invoiceSummaryBar: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0, background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "10px 20px" },
+  invoiceSummaryItem: { display: "flex", flexDirection: "column", paddingRight: 20 },
+  invoiceSummaryLabel: { fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" },
+  invoiceSummaryValue: { fontSize: 15, fontWeight: 800, marginTop: 1 },
+  invoiceSummaryDivider: { width: 1, height: 28, background: "#bfdbfe", marginRight: 20, flexShrink: 0 },
   clientName: { fontSize: "1.2rem", fontWeight: "700", color: "#1e293b", margin: 0 },
-  statItem: { fontSize: "0.92rem", fontWeight: "600", color: "#475569" },
   table: { width: "100%", borderCollapse: "collapse", fontSize: "0.93rem" },
   thead: { background: "#f1f5f9" },
   th: { padding: "12px 16px", textAlign: "left", fontSize: "0.8rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", letterSpacing: "0.4px", borderBottom: "2px solid #cbd5e1", whiteSpace: "nowrap" },
